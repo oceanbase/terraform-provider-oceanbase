@@ -1,0 +1,5254 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "API Documentation for OceanBase Cloud",
+    "version": "v1",
+    "title": "OceanBase Cloud API"
+  },
+  "host": "api.example.com",
+  "basePath": "/",
+  "tags": [
+    {
+      "name": "MultiCloudOpen"
+    }
+  ],
+  "schemes": [
+    "http",
+    "https"
+  ],
+  "paths": {
+    "api/v2/instances/{instanceId}/tenants": {
+      "get": {
+        "tags": [
+          "MultiCloudOpen"
+        ],
+        "summary": "\u6761\u4ef6\u67e5\u8be2\u79df\u6237",
+        "description": "",
+        "operationId": "queryTenants",
+        "parameters": [
+          {
+            "name": "instanceId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "requestId",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "pageNumber",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "tenantName",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "tagList",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/OBCloudResultOBCloudPagingDataTenantDTO"
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "MultiCloudOpen"
+        ],
+        "summary": "\u521b\u5efa\u79df\u6237",
+        "description": "",
+        "operationId": "createTenant",
+        "parameters": [
+          {
+            "name": "instanceId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "requestId",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/CreateTenantRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/OBCloudResultCreateTenantResponse"
+            }
+          }
+        }
+      }
+    },
+    "api/v2/instances/{instanceId}/tenants/{tenantId}": {
+      "get": {
+        "tags": [
+          "MultiCloudOpen"
+        ],
+        "summary": "\u67e5\u8be2\u7279\u5b9a\u79df\u6237",
+        "description": "",
+        "operationId": "describeTenant",
+        "parameters": [
+          {
+            "name": "instanceId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "tenantId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "requestId",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/OBCloudResultTenantDTO"
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "MultiCloudOpen"
+        ],
+        "summary": "\u4fee\u6539\u79df\u6237",
+        "description": "",
+        "operationId": "updateTenant",
+        "parameters": [
+          {
+            "name": "instanceId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "tenantId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "requestId",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/UpdateTenantRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/OBCloudResultSimpleTenantResponse"
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "MultiCloudOpen"
+        ],
+        "summary": "\u5220\u9664\u79df\u6237",
+        "description": "",
+        "operationId": "deleteTenant",
+        "parameters": [
+          {
+            "name": "instanceId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "tenantId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "requestId",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/OBCloudResultSimpleTenantResponse"
+            }
+          }
+        }
+      }
+    },
+    "api/v2/instances/{instanceId}/tenants/{tenantId}/tenantName": {
+      "put": {
+        "tags": [
+          "MultiCloudOpen"
+        ],
+        "summary": "\u4fee\u6539\u79df\u6237\u540d\u79f0",
+        "description": "",
+        "operationId": "modifyTenantName",
+        "parameters": [
+          {
+            "name": "instanceId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "tenantId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "requestId",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/ModifyTenantNameRequestV2"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/OBCloudResultModifyTenantNameResponseV2"
+            }
+          }
+        }
+      }
+    },
+    "api/v2/instances/{instanceId}/tenants/{tenantId}/primaryZone": {
+      "put": {
+        "tags": [
+          "MultiCloudOpen"
+        ],
+        "summary": "\u4fee\u6539\u79df\u6237\u4e3b\u53ef\u7528\u533a",
+        "description": "",
+        "operationId": "modifyTenantPrimaryZone",
+        "parameters": [
+          {
+            "name": "instanceId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "tenantId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "requestId",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/ModifyTenantPrimaryZoneRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/OBCloudResultModifyTenantPrimaryZoneResponse"
+            }
+          }
+        }
+      }
+    },
+    "api/v2/instances/{instanceId}/tenants/{tenantId}/address": {
+      "get": {
+        "tags": [
+          "MultiCloudOpen"
+        ],
+        "summary": "\u67e5\u8be2\u79df\u6237\u5730\u5740",
+        "description": "",
+        "operationId": "describeTenantAddress",
+        "parameters": [
+          {
+            "name": "instanceId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "tenantId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "requestId",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "addressId",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/OBCloudResultTenantConnectionDTO"
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "MultiCloudOpen"
+        ],
+        "summary": "\u65b0\u5efa\u79df\u6237singleTunnelSLB\u5730\u5740",
+        "description": "",
+        "operationId": "createTenantAddress",
+        "parameters": [
+          {
+            "name": "instanceId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "tenantId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "requestId",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "X-Ob-Project-Id",
+            "in": "header",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/CreateMcTenantAddressRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/OBCloudResultCreateMcTenantAddressResponse"
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "MultiCloudOpen"
+        ],
+        "summary": "\u5220\u9664\u79df\u6237\u5730\u5740",
+        "description": "",
+        "operationId": "deleteTenantAddress",
+        "parameters": [
+          {
+            "name": "instanceId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "tenantId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "requestId",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "addressId",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/OBCloudResultBoolean"
+            }
+          }
+        }
+      }
+    },
+    "api/v2/instances/{instanceId}/tenants/{tenantId}/publicaddress": {
+      "get": {
+        "tags": [
+          "MultiCloudOpen"
+        ],
+        "summary": "\u67e5\u8be2\u79df\u6237\u7684\u516c\u7f51\u4e3b\u5730\u5740",
+        "description": "",
+        "operationId": "describeTenantPublicAddress",
+        "parameters": [
+          {
+            "name": "instanceId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "tenantId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "requestId",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/OBCloudResultTenantConnectionDTO"
+            }
+          }
+        }
+      }
+    },
+    "api/v2/instances/{instanceId}/tenants/{tenantId}/privatelink": {
+      "get": {
+        "tags": [
+          "MultiCloudOpen"
+        ],
+        "summary": "\u67e5\u8be2\u79df\u6237\u7684privatelink\u5730\u5740\u4fe1\u606f",
+        "description": "",
+        "operationId": "describeTenantPrivateLink",
+        "parameters": [
+          {
+            "name": "instanceId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "tenantId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "requestId",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "addressId",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/OBCloudResultListTenantConnectionDTO"
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "MultiCloudOpen"
+        ],
+        "summary": "\u5220\u9664privatelink\u5730\u5740",
+        "description": "",
+        "operationId": "deletePrivatelinkEndpoint",
+        "parameters": [
+          {
+            "name": "instanceId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "tenantId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "requestId",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "addressId",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "endpointId",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/OBCloudResultBoolean"
+            }
+          }
+        }
+      }
+    },
+    "api/v2/instances/{instanceId}/tenants/{tenantId}/privatelink/service": {
+      "post": {
+        "tags": [
+          "MultiCloudOpen"
+        ],
+        "summary": "\u521b\u5efa\u79df\u6237\u7684private link\u4e3b\u5730\u5740",
+        "description": "",
+        "operationId": "createPrivateLinkService",
+        "parameters": [
+          {
+            "name": "instanceId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "tenantId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "requestId",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/CreateTenantPlServiceRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/OBCloudResultCreateTenantPlServiceResponse"
+            }
+          }
+        }
+      }
+    },
+    "api/v2/instances/{instanceId}/tenants/{tenantId}/privatelink/user": {
+      "post": {
+        "tags": [
+          "MultiCloudOpen"
+        ],
+        "summary": "\u79df\u6237private link service\u589e\u52a0\u767d\u540d\u5355\u7528\u6237",
+        "description": "",
+        "operationId": "addPrivateLinkServiceUser",
+        "parameters": [
+          {
+            "name": "instanceId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "tenantId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "requestId",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/AddTenantPlServiceUserRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/OBCloudResultAddTenantPlServiceUserResponse"
+            }
+          }
+        }
+      }
+    },
+    "api/v2/instances/{instanceId}/tenants/{tenantId}/privatelink/information": {
+      "post": {
+        "tags": [
+          "MultiCloudOpen"
+        ],
+        "summary": "\u66f4\u65b0\u79df\u6237private link\u4fe1\u606f",
+        "description": "",
+        "operationId": "updatePrivatelinkInformation",
+        "parameters": [
+          {
+            "name": "instanceId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "tenantId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "requestId",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/UpdateTenantPrivatelinkInformationRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/OBCloudResultUpdateTenantPrivatelinkInformationResponse"
+            }
+          }
+        }
+      }
+    },
+    "api/v2/instances/{instanceId}/tenants/{tenantId}/privatelink/connection": {
+      "post": {
+        "tags": [
+          "MultiCloudOpen"
+        ],
+        "summary": "private link endpoint\u8fde\u63a5service",
+        "description": "",
+        "operationId": "connectPrivateLinkService",
+        "parameters": [
+          {
+            "name": "instanceId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "tenantId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "requestId",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/ConnectTenantPlServiceRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/OBCloudResultConnectTenantPlServiceResponse"
+            }
+          }
+        }
+      }
+    },
+    "api/v2/instances/{instanceId}/tenants/{tenantId}/privatelink/readonly": {
+      "post": {
+        "tags": [
+          "MultiCloudOpen"
+        ],
+        "summary": "\u521b\u5efa\u79df\u6237\u7684\u79c1\u7f51\u53ea\u8bfb\u5730\u5740",
+        "description": "",
+        "operationId": "createReadonlyPrivatelink",
+        "parameters": [
+          {
+            "name": "instanceId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "tenantId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "requestId",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/CreateReadonlyConnectionRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/OBCloudResultCreateReadonlyConnectionResponse"
+            }
+          }
+        }
+      }
+    },
+    "api/v2/instances/{instanceId}/tenants/{tenantId}/privatelink/confirmation": {
+      "post": {
+        "tags": [
+          "MultiCloudOpen"
+        ],
+        "summary": "\u786e\u8ba4\u5b8c\u6210private link\u79c1\u7f51\u8fde\u63a5",
+        "description": "",
+        "operationId": "confirmPrivatelinkConnection",
+        "parameters": [
+          {
+            "name": "instanceId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "tenantId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "requestId",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/ConfirmTenantPlServiceRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/OBCloudResultBoolean"
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/instances": {
+      "get": {
+        "tags": [
+          "MultiCloudOpen"
+        ],
+        "summary": "DescribeInstances",
+        "description": "",
+        "operationId": "describeInstances",
+        "produces": [
+          "application/json;charset=UTF-8"
+        ],
+        "parameters": [
+          {
+            "name": "instanceName",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "requestId",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "instanceId",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "X-Ob-Project-Id",
+            "in": "header",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "tagList",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "organizationId",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "pageNumber",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "default": 1,
+            "format": "int32"
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "default": 10,
+            "format": "int32"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/OBCloudResultOBCloudPagingDataListDescribeInstancesResponseV2OpenAPI"
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "MultiCloudOpen"
+        ],
+        "summary": "CreateInstance",
+        "description": "",
+        "operationId": "createInstance",
+        "produces": [
+          "application/json;charset=UTF-8"
+        ],
+        "parameters": [
+          {
+            "name": "requestId",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "X-Ob-Project-Id",
+            "in": "header",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/MultiCloudCreateInstanceRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/OBCloudResultCreateInstanceResponseV2OpenApi"
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "MultiCloudOpen"
+        ],
+        "summary": "DeleteInstance",
+        "description": "",
+        "operationId": "deleteInstance",
+        "produces": [
+          "application/json;charset=UTF-8"
+        ],
+        "parameters": [
+          {
+            "name": "requestId",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/DeleteInstanceOpenRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/OBCloudResultDeleteInstanceResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/instances/{instanceId}": {
+      "get": {
+        "tags": [
+          "MultiCloudOpen"
+        ],
+        "summary": "DescribeInstance",
+        "description": "",
+        "operationId": "describeInstance",
+        "produces": [
+          "application/json;charset=UTF-8"
+        ],
+        "parameters": [
+          {
+            "name": "instanceId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "requestId",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/OBCloudResultDescribeInstanceResponseV2OpenAPI"
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/instances/{instanceId}/instanceName": {
+      "put": {
+        "tags": [
+          "MultiCloudOpen"
+        ],
+        "summary": "ModifyInstanceName",
+        "description": "",
+        "operationId": "modifyInstanceName",
+        "produces": [
+          "application/json;charset=UTF-8"
+        ],
+        "parameters": [
+          {
+            "name": "instanceId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "requestId",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "X-Ob-Project-Id",
+            "in": "header",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/ModifyInstanceNameRequestV2"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/OBCloudResultModifyInstanceNameResponseV2"
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/instances/{instanceId}/nodeNum": {
+      "put": {
+        "tags": [
+          "MultiCloudOpen"
+        ],
+        "summary": "ModifyInstanceNodeNum",
+        "description": "",
+        "operationId": "modifyInstanceNodeNum",
+        "produces": [
+          "application/json;charset=UTF-8"
+        ],
+        "parameters": [
+          {
+            "name": "instanceId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "requestId",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "X-Ob-Project-Id",
+            "in": "header",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/MultiCloudModifyInstanceNodeNumRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/OBCloudResultModifyInstanceResponseV2OpenApi"
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/instances/{instanceId}/spec": {
+      "put": {
+        "tags": [
+          "MultiCloudOpen"
+        ],
+        "summary": "ModifyInstanceSpec",
+        "description": "",
+        "operationId": "modifyInstanceSpec",
+        "produces": [
+          "application/json;charset=UTF-8"
+        ],
+        "parameters": [
+          {
+            "name": "instanceId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "requestId",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "X-Ob-Project-Id",
+            "in": "header",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/MultiCloudModifyInstanceSpecRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/OBCloudResultModifyInstanceResponseV2OpenApi"
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/instances/{instanceId}/startCluster": {
+      "put": {
+        "tags": [
+          "MultiCloudOpen"
+        ],
+        "summary": "StartCluster",
+        "description": "",
+        "operationId": "startCluster",
+        "produces": [
+          "application/json;charset=UTF-8"
+        ],
+        "parameters": [
+          {
+            "name": "instanceId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "requestId",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/OBCloudResultString"
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/instances/{instanceId}/stopCluster": {
+      "put": {
+        "tags": [
+          "MultiCloudOpen"
+        ],
+        "summary": "StopCluster",
+        "description": "",
+        "operationId": "stopCluster",
+        "produces": [
+          "application/json;charset=UTF-8"
+        ],
+        "parameters": [
+          {
+            "name": "instanceId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "requestId",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/OBCloudResultString"
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/instances/{instanceId}/tenants/{tenantId}/securityIpGroups": {
+      "get": {
+        "tags": [
+          "MultiCloudOpen"
+        ],
+        "summary": "DescribeTenantSecurityIpGroups",
+        "description": "",
+        "operationId": "describeTenantSecurityIpGroups",
+        "parameters": [
+          {
+            "name": "instanceId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "tenantId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "requestId",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/OBCloudResultOBCloudPagingDataMcTenantSecurityIpGroupsResponse"
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "MultiCloudOpen"
+        ],
+        "summary": "CreateTenantSecurityIpGroup",
+        "description": "",
+        "operationId": "createTenantSecurityIpGroup",
+        "parameters": [
+          {
+            "name": "instanceId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "tenantId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "requestId",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/McModifyTenantSecurityIpGroupRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/OBCloudResultMcModifyTenantSecurityIpGroupResponse"
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "MultiCloudOpen"
+        ],
+        "summary": "ModifyTenantSecurityIpGroup",
+        "description": "",
+        "operationId": "modifyTenantSecurityIpGroup",
+        "parameters": [
+          {
+            "name": "instanceId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "tenantId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "requestId",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/McModifyTenantSecurityIpGroupRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/OBCloudResultMcModifyTenantSecurityIpGroupResponse"
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "MultiCloudOpen"
+        ],
+        "summary": "DeleteTenantSecurityIpGroup",
+        "description": "",
+        "operationId": "deleteTenantSecurityIpGroup",
+        "parameters": [
+          {
+            "name": "instanceId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "tenantId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "requestId",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/McDeleteTenantSecurityIpGroupRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/OBCloudResultMcDeleteTenantSecurityIpGroupResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/instances/{instanceId}/tenants/{tenantId}/databases": {
+      "get": {
+        "tags": [
+          "MultiCloudOpen"
+        ],
+        "summary": "DescribeDatabases",
+        "description": "",
+        "operationId": "describeDatabases",
+        "produces": [
+          "application/json;charset=UTF-8"
+        ],
+        "parameters": [
+          {
+            "name": "instanceId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "tenantId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "databaseName",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "pageNumber",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "requestId",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/OBCloudResultOBCloudPagingDataDescribeDatabasesResponseV2"
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "MultiCloudOpen"
+        ],
+        "summary": "CreateDatabase",
+        "description": "",
+        "operationId": "createDatabase",
+        "produces": [
+          "application/json;charset=UTF-8"
+        ],
+        "parameters": [
+          {
+            "name": "instanceId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "tenantId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/CreateDatabaseRequestV2"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/OBCloudResultMapStringString"
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "MultiCloudOpen"
+        ],
+        "operationId": "deleteDatabase",
+        "produces": [
+          "application/json;charset=UTF-8"
+        ],
+        "parameters": [
+          {
+            "name": "instanceId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "tenantId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/DeleteDatabasesParamDo"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/OBCloudResult"
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/instances/{instanceId}/tenants/{tenantId}/databases/{databaseName}/description": {
+      "put": {
+        "tags": [
+          "MultiCloudOpen"
+        ],
+        "summary": "ModifyDatabaseDescription",
+        "description": "",
+        "operationId": "modifyDatabaseDescription",
+        "produces": [
+          "application/json;charset=UTF-8"
+        ],
+        "parameters": [
+          {
+            "name": "instanceId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "tenantId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "databaseName",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "requestId",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/ModifyDatabaseDescriptionRequestV2"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/OBCloudResultModifyDatabaseDescriptionResponseV2"
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/instances/{instanceId}/tenants/{tenantId}/tenantUsers": {
+      "post": {
+        "tags": [
+          "MultiCloudOpen"
+        ],
+        "summary": "\u521b\u5efa\u79df\u6237\u5185\u7684\u7528\u6237",
+        "description": "",
+        "operationId": "createTenantUser",
+        "produces": [
+          "application/json;charset=UTF-8"
+        ],
+        "parameters": [
+          {
+            "name": "instanceId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "tenantId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "requestId",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/CreateUserParamDo"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/OBCloudResultCreateUserResponseDtoV2"
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "MultiCloudOpen"
+        ],
+        "summary": "\u67e5\u8be2\u79df\u6237\u5185\u7684\u7528\u6237",
+        "description": "",
+        "operationId": "describeTenantUsers",
+        "produces": [
+          "application/json;charset=UTF-8"
+        ],
+        "parameters": [
+          {
+            "name": "instanceId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "tenantId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "userName",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "pageNumber",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "searchKey",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "requestId",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/OBCloudResultOBCloudPagingDataOcpDbUserDtoV2"
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "MultiCloudOpen"
+        ],
+        "summary": "\u5220\u9664\u79df\u6237\u5185\u7279\u5b9a\u7528\u6237",
+        "description": "",
+        "operationId": "deleteTenantUsers",
+        "produces": [
+          "application/json;charset=UTF-8"
+        ],
+        "parameters": [
+          {
+            "name": "instanceId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "tenantId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/DeleteTenantUserParamDo"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/OBCloudResult"
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/instances/{instanceId}/tenants/{tenantId}/tenantUsers/{userName}/description": {
+      "put": {
+        "tags": [
+          "MultiCloudOpen"
+        ],
+        "summary": "\u4fee\u6539\u79df\u6237\u5185\u7684\u7528\u6237\u5907\u6ce8\u4fe1\u606f",
+        "description": "",
+        "operationId": "modifyTenantUserDescription",
+        "produces": [
+          "application/json;charset=UTF-8"
+        ],
+        "parameters": [
+          {
+            "name": "instanceId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "tenantId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "userName",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "requestId",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/ModifyTenantUserDescriptionParamDo"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/OBCloudResult"
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/instances/{instanceId}/tenants/{tenantId}/tenantUsers/{userName}/password": {
+      "put": {
+        "tags": [
+          "MultiCloudOpen"
+        ],
+        "summary": "\u4fee\u6539\u79df\u6237\u5185\u7684\u7528\u6237\u5bc6\u7801",
+        "description": "",
+        "operationId": "modifyTenantUserPassword",
+        "produces": [
+          "application/json;charset=UTF-8"
+        ],
+        "parameters": [
+          {
+            "name": "instanceId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "tenantId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "userName",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "requestId",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/ModifyUserPasswordParamDo"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/OBCloudResult"
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/instances/{instanceId}/tenants/{tenantId}/tenantUsers/{userName}/authorization": {
+      "post": {
+        "tags": [
+          "MultiCloudOpen"
+        ],
+        "summary": "\u4fee\u6539\u7528\u6237\u6743\u9650",
+        "description": "",
+        "operationId": "modifyTenantUserRole",
+        "produces": [
+          "application/json;charset=UTF-8"
+        ],
+        "parameters": [
+          {
+            "name": "instanceId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "tenantId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "userName",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/ModifyUserRolesParamDo"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/OBCloudResult"
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/instances/{instanceId}/tenants/{tenantId}/tenantUsers/{userName}/status": {
+      "put": {
+        "tags": [
+          "MultiCloudOpen"
+        ],
+        "summary": "\u4fee\u6539\u79df\u6237\u5185\u7684\u7528\u6237\u9501\u5b9a\u72b6\u6001",
+        "description": "",
+        "operationId": "modifyTenantUserStatus",
+        "produces": [
+          "application/json;charset=UTF-8"
+        ],
+        "parameters": [
+          {
+            "name": "instanceId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "tenantId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "userName",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "requestId",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/ModifyUserStatusParamDo"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/OBCloudResult"
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/instances/{instanceId}/tenants/{tenantId}/databases/{databaseId}/authorization": {
+      "post": {
+        "tags": [
+          "MultiCloudOpen"
+        ],
+        "summary": "\u4fee\u6539\u89d2\u8272\u5217\u8868",
+        "description": "",
+        "operationId": "modifyDatabaseUserRole",
+        "produces": [
+          "application/json;charset=UTF-8"
+        ],
+        "parameters": [
+          {
+            "name": "instanceId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "tenantId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "databaseId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/ModifyDatabaseUserRolesParamDo"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/OBCloudResult"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "OBCloudResultTenantDTO": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "errorCode": {
+          "type": "string"
+        },
+        "errorMessage": {
+          "type": "string"
+        },
+        "data": {
+          "$ref": "#/definitions/TenantDTO"
+        },
+        "cost": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "server": {
+          "type": "string"
+        },
+        "requestId": {
+          "type": "string"
+        },
+        "totalCount": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "extra": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    "ModifyDatabaseDescriptionRequestV2": {
+      "type": "object",
+      "properties": {
+        "requestId": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 256
+        }
+      }
+    },
+    "OBCloudPagingDataTenantDTO": {
+      "type": "object",
+      "properties": {
+        "dataList": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/TenantDTO"
+          }
+        },
+        "total": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "hasMore": {
+          "type": "boolean"
+        }
+      }
+    },
+    "OBCloudResultOBCloudPagingDataDescribeDatabasesResponseV2": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "errorCode": {
+          "type": "string"
+        },
+        "errorMessage": {
+          "type": "string"
+        },
+        "data": {
+          "$ref": "#/definitions/OBCloudPagingDataDescribeDatabasesResponseV2"
+        },
+        "cost": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "server": {
+          "type": "string"
+        },
+        "requestId": {
+          "type": "string"
+        },
+        "totalCount": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "extra": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    "MemoryDoV2": {
+      "type": "object",
+      "properties": {
+        "totalMemory": {
+          "type": "number",
+          "format": "double"
+        },
+        "usedMemory": {
+          "type": "number",
+          "format": "double"
+        }
+      }
+    },
+    "OBCloudResultOBCloudPagingDataListDescribeInstancesResponseV2OpenAPI": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "errorCode": {
+          "type": "string"
+        },
+        "errorMessage": {
+          "type": "string"
+        },
+        "data": {
+          "$ref": "#/definitions/OBCloudPagingDataListDescribeInstancesResponseV2OpenAPI"
+        },
+        "cost": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "server": {
+          "type": "string"
+        },
+        "requestId": {
+          "type": "string"
+        },
+        "totalCount": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "extra": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    "MultiCloudModifyInstanceSpecRequest": {
+      "type": "object",
+      "properties": {
+        "instanceClass": {
+          "type": "string"
+        },
+        "diskSize": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "dryRun": {
+          "type": "boolean"
+        }
+      }
+    },
+    "OBCloudResultSimpleTenantResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "errorCode": {
+          "type": "string"
+        },
+        "errorMessage": {
+          "type": "string"
+        },
+        "data": {
+          "$ref": "#/definitions/SimpleTenantResponse"
+        },
+        "cost": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "server": {
+          "type": "string"
+        },
+        "requestId": {
+          "type": "string"
+        },
+        "totalCount": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "extra": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    "TenantZoneDTO": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "replicaType": {
+          "type": "string"
+        },
+        "region": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string"
+        }
+      }
+    },
+    "OBCloudResultBoolean": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "errorCode": {
+          "type": "string"
+        },
+        "errorMessage": {
+          "type": "string"
+        },
+        "data": {
+          "type": "boolean"
+        },
+        "cost": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "server": {
+          "type": "string"
+        },
+        "requestId": {
+          "type": "string"
+        },
+        "totalCount": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "extra": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    "ModifyInstanceNameRequestV2" : {
+      "type" : "object",
+      "properties" : {
+        "requestId" : {
+          "type" : "string"
+        },
+        "instanceName" : {
+          "type" : "string",
+          "minLength" : 0,
+          "maxLength" : 64
+        }
+      }
+    },
+    "ModifyInstanceNameResponseV2" : {
+      "type" : "object",
+      "properties" : {
+        "instanceName" : {
+          "type" : "string"
+        }
+      }
+    },
+    "OBCloudResultModifyInstanceNameResponseV2" : {
+      "type" : "object",
+      "properties" : {
+        "success" : {
+          "type" : "boolean"
+        },
+        "errorCode" : {
+          "type" : "string"
+        },
+        "errorMessage" : {
+          "type" : "string"
+        },
+        "data" : {
+          "$ref" : "#/definitions/ModifyInstanceNameResponseV2"
+        },
+        "cost" : {
+          "type" : "integer",
+          "format" : "int64"
+        },
+        "server" : {
+          "type" : "string"
+        },
+        "requestId" : {
+          "type" : "string"
+        },
+        "totalCount" : {
+          "type" : "integer",
+          "format" : "int64"
+        },
+        "extra" : {
+          "type" : "object",
+          "additionalProperties" : {
+            "type" : "object"
+          }
+        }
+      }
+    },
+    "MultiCloudModifyInstanceNodeNumRequest": {
+      "type": "object",
+      "required": [
+        "nodeNum"
+      ],
+      "properties": {
+        "nodeNum": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "dryRun": {
+          "type": "boolean"
+        }
+      }
+    },
+    "ModifyTenantPrimaryZoneResponse": {
+      "type": "object"
+    },
+    "OBCloudResultOBCloudPagingDataTenantDTO": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "errorCode": {
+          "type": "string"
+        },
+        "errorMessage": {
+          "type": "string"
+        },
+        "data": {
+          "$ref": "#/definitions/OBCloudPagingDataTenantDTO"
+        },
+        "cost": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "server": {
+          "type": "string"
+        },
+        "requestId": {
+          "type": "string"
+        },
+        "totalCount": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "extra": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    "ModifyTenantNameResponseV2": {
+      "type": "object",
+      "properties": {
+        "requestId": {
+          "type": "string"
+        },
+        "instanceId": {
+          "type": "string"
+        },
+        "tenantId": {
+          "type": "string"
+        },
+        "tenantName": {
+          "type": "string"
+        }
+      }
+    },
+    "OBCloudPagingDataDescribeDatabasesResponseV2": {
+      "type": "object",
+      "properties": {
+        "dataList": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DescribeDatabasesResponseV2"
+          }
+        },
+        "total": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "hasMore": {
+          "type": "boolean"
+        }
+      }
+    },
+    "McDeleteTenantSecurityIpGroupResponse": {
+      "type": "object",
+      "properties": {
+        "instanceId": {
+          "type": "string"
+        },
+        "tenantId": {
+          "type": "string"
+        },
+        "securityIpGroupName": {
+          "type": "string"
+        }
+      }
+    },
+    "OBCloudResultAddTenantPlServiceUserResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "errorCode": {
+          "type": "string"
+        },
+        "errorMessage": {
+          "type": "string"
+        },
+        "data": {
+          "$ref": "#/definitions/AddTenantPlServiceUserResponse"
+        },
+        "cost": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "server": {
+          "type": "string"
+        },
+        "requestId": {
+          "type": "string"
+        },
+        "totalCount": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "extra": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    "DescribeDatabasesResponseV2": {
+      "type": "object",
+      "properties": {
+        "tenantId": {
+          "type": "string"
+        },
+        "databaseName": {
+          "type": "string"
+        },
+        "gmtCreate": {
+          "type": "string"
+        },
+        "encoding": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "users": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/OcpUserRoleDo"
+          }
+        },
+        "description": {
+          "type": "string"
+        },
+        "requiredSize": {
+          "type": "number",
+          "format": "double"
+        },
+        "tables": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/TableInfoDo"
+          }
+        },
+        "collation": {
+          "type": "string"
+        },
+        "dbType": {
+          "type": "string"
+        }
+      }
+    },
+    "TenantDiskDTO": {
+      "type": "object",
+      "properties": {
+        "totalDiskSize": {
+          "type": "number",
+          "format": "double"
+        },
+        "usedDiskSize": {
+          "type": "number",
+          "format": "double"
+        }
+      }
+    },
+    "OBCloudResultMcModifyTenantSecurityIpGroupResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "errorCode": {
+          "type": "string"
+        },
+        "errorMessage": {
+          "type": "string"
+        },
+        "data": {
+          "$ref": "#/definitions/McModifyTenantSecurityIpGroupResponse"
+        },
+        "cost": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "server": {
+          "type": "string"
+        },
+        "requestId": {
+          "type": "string"
+        },
+        "totalCount": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "extra": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    "DescribeInstancesResponseV2OpenAPI": {
+      "type": "object",
+      "properties": {
+        "region": {
+          "type": "string"
+        },
+        "instanceId": {
+          "type": "string"
+        },
+        "instanceName": {
+          "type": "string"
+        },
+        "instanceClass": {
+          "type": "string"
+        },
+        "series": {
+          "type": "string"
+        },
+        "createTime": {
+          "type": "string"
+        },
+        "obRpmVersion": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        },
+        "cpu": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "mem": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "usedDiskSize": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "state": {
+          "type": "string"
+        },
+        "resource": {
+          "$ref": "#/definitions/ResourceDoV2"
+        },
+        "status": {
+          "type": "string"
+        },
+        "deployMode": {
+          "type": "string"
+        },
+        "vpcId": {
+          "type": "string"
+        },
+        "payType": {
+          "type": "string"
+        },
+        "availableZones": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "deployType": {
+          "type": "string"
+        },
+        "expireTime": {
+          "type": "string"
+        },
+        "cloudProvider": {
+          "type": "string"
+        },
+        "managementMode": {
+          "type": "string"
+        },
+        "instanceType": {
+          "type": "string"
+        },
+        "diskType": {
+          "type": "string"
+        },
+        "diskSize": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "instanceRole": {
+          "type": "string"
+        },
+        "primaryInstanceId": {
+          "type": "string"
+        },
+        "standbyInstanceIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "stopTime": {
+          "type": "string"
+        },
+        "saleChannel": {
+          "type": "string"
+        },
+        "tagList": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/TagKeyValueDo"
+          }
+        },
+        "cpuArchitecture": {
+          "type": "string"
+        }
+      }
+    },
+    "OBCloudResult": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "errorCode": {
+          "type": "string"
+        },
+        "errorMessage": {
+          "type": "string"
+        },
+        "data": {
+          "type": "object"
+        },
+        "cost": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "server": {
+          "type": "string"
+        },
+        "requestId": {
+          "type": "string"
+        },
+        "totalCount": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "extra": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    "DiskDoV2": {
+      "type": "object",
+      "properties": {
+        "totalDiskSize": {
+          "type": "number",
+          "format": "double"
+        },
+        "usedDiskSize": {
+          "type": "number",
+          "format": "double"
+        }
+      }
+    },
+    "OBCloudResultMcDeleteTenantSecurityIpGroupResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "errorCode": {
+          "type": "string"
+        },
+        "errorMessage": {
+          "type": "string"
+        },
+        "data": {
+          "$ref": "#/definitions/McDeleteTenantSecurityIpGroupResponse"
+        },
+        "cost": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "server": {
+          "type": "string"
+        },
+        "requestId": {
+          "type": "string"
+        },
+        "totalCount": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "extra": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    "OBCloudPagingDataListDescribeInstancesResponseV2OpenAPI": {
+      "type": "object",
+      "properties": {
+        "dataList": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DescribeInstancesResponseV2OpenAPI"
+          }
+        },
+        "total": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "hasMore": {
+          "type": "boolean"
+        }
+      }
+    },
+    "ModifyInstanceResponseV2OpenApi": {
+      "type": "object",
+      "properties": {
+        "orderId": {
+          "type": "string"
+        },
+        "instanceId": {
+          "type": "string"
+        },
+        "dryRun": {
+          "type": "boolean"
+        },
+        "dryRunResult": {
+          "type": "boolean"
+        }
+      }
+    },
+    "CreateMcTenantAddressRequest": {
+      "type": "object",
+      "properties": {
+        "vipServiceType": {
+          "type": "string"
+        },
+        "vpcConnectionInfoId": {
+          "type": "string"
+        }
+      }
+    },
+    "TenantDTO": {
+      "type": "object",
+      "properties": {
+        "tenantId": {
+          "type": "string"
+        },
+        "ocpTenantId": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "tenantName": {
+          "type": "string"
+        },
+        "managementMode": {
+          "type": "string"
+        },
+        "gmtCreate": {
+          "type": "string"
+        },
+        "createTime": {
+          "type": "string"
+        },
+        "tenantMode": {
+          "type": "string"
+        },
+        "primaryRegion": {
+          "type": "string"
+        },
+        "primaryZone": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "cpu": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "mem": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "unitCpu": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "unitMem": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "unitNum": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "vpcId": {
+          "type": "string"
+        },
+        "deployType": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "tenantConnections": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/TenantConnectionDTO"
+          }
+        },
+        "tenantZones": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/TenantZoneDTO"
+          }
+        },
+        "tenantResource": {
+          "$ref": "#/definitions/TenantResourceDTO"
+        },
+        "enableBinlogService": {
+          "type": "boolean"
+        },
+        "readonlyConnectionAddable": {
+          "type": "string"
+        },
+        "timeZone": {
+          "type": "string"
+        },
+        "charset": {
+          "type": "string"
+        },
+        "lowerCaseTableNamesParam": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "tagList": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/TagKeyValueDo"
+          }
+        },
+        "tenantCompatibilityMode": {
+          "type": "string"
+        },
+        "dataMergeTime": {
+          "type": "string"
+        },
+        "enableProxyPublicLink": {
+          "type": "boolean"
+        }
+      }
+    },
+    "ModifyUserStatusParamDo": {
+      "type": "object",
+      "properties": {
+        "requestId": {
+          "type": "string"
+        },
+        "callerType": {
+          "type": "string"
+        },
+        "accessKeyId": {
+          "type": "string"
+        },
+        "securityToken": {
+          "type": "string"
+        },
+        "callerUid": {
+          "type": "string"
+        },
+        "callerBid": {
+          "type": "string"
+        },
+        "stsTokenCallerUid": {
+          "type": "string"
+        },
+        "stsTokenCallerBid": {
+          "type": "string"
+        },
+        "acceptLanguage": {
+          "type": "string"
+        },
+        "pageNumber": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "pageSize": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "mergedCallerBid": {
+          "type": "string"
+        },
+        "instanceId": {
+          "type": "string"
+        },
+        "tenantId": {
+          "type": "string"
+        },
+        "userName": {
+          "type": "string"
+        },
+        "userStatus": {
+          "type": "string"
+        },
+        "clusterGroupName": {
+          "type": "string"
+        },
+        "mergedCallerUid": {
+          "type": "string"
+        },
+        "user_ID": {
+          "type": "string"
+        },
+        "uid": {
+          "type": "string"
+        }
+      }
+    },
+    "UpdateTenantPrivatelinkInformationResponse": {
+      "type": "object"
+    },
+    "OBCloudResultUpdateTenantPrivatelinkInformationResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "errorCode": {
+          "type": "string"
+        },
+        "errorMessage": {
+          "type": "string"
+        },
+        "data": {
+          "$ref": "#/definitions/UpdateTenantPrivatelinkInformationResponse"
+        },
+        "cost": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "server": {
+          "type": "string"
+        },
+        "requestId": {
+          "type": "string"
+        },
+        "totalCount": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "extra": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    "CreateTenantRequest": {
+      "type": "object",
+      "properties": {
+        "instanceId": {
+          "type": "string"
+        },
+        "tenantName": {
+          "type": "string"
+        },
+        "tenantId": {
+          "type": "string"
+        },
+        "tenantMode": {
+          "type": "string"
+        },
+        "primaryZone": {
+          "type": "string"
+        },
+        "charset": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "whitelist": {
+          "type": "string"
+        },
+        "timeZone": {
+          "type": "string"
+        },
+        "cpu": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "memory": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "diskSize": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "unitNum": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "environment": {
+          "type": "string"
+        },
+        "enablePublicLink": {
+          "type": "boolean"
+        },
+        "createParams": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "tenantCompatibilityModeEnum": {
+          "type": "string",
+          "enum": [
+            "MySQL",
+            "Oracle",
+            "HBase",
+            "Table"
+          ]
+        }
+      }
+    },
+    "McTenantSecurityIpGroupsResponse": {
+      "type": "object",
+      "properties": {
+        "tenantId": {
+          "type": "string"
+        },
+        "securityIpGroupType": {
+          "type": "string"
+        },
+        "securityIpGroupName": {
+          "type": "string"
+        },
+        "securityIps": {
+          "type": "string"
+        }
+      }
+    },
+    "ModifyDatabaseDescriptionResponseV2": {
+      "type": "object",
+      "properties": {
+        "requestId": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        }
+      }
+    },
+    "TenantPrivateLinkDTO": {
+      "type": "object",
+      "properties": {
+        "privateLinkStatus": {
+          "type": "string"
+        },
+        "privateLinkServiceId": {
+          "type": "string"
+        },
+        "privateLinkEndpointId": {
+          "type": "string"
+        },
+        "privateLinkServiceAccount": {
+          "type": "string"
+        },
+        "privateLinkUserAccount": {
+          "type": "string"
+        },
+        "privateLinkDomain": {
+          "type": "string"
+        },
+        "intranetAddress": {
+          "type": "string"
+        },
+        "intranetDomain": {
+          "type": "string"
+        }
+      }
+    },
+    "OBCloudResultCreateTenantPlServiceResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "errorCode": {
+          "type": "string"
+        },
+        "errorMessage": {
+          "type": "string"
+        },
+        "data": {
+          "$ref": "#/definitions/CreateTenantPlServiceResponse"
+        },
+        "cost": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "server": {
+          "type": "string"
+        },
+        "requestId": {
+          "type": "string"
+        },
+        "totalCount": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "extra": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    "CreateUserParamDo": {
+      "type": "object",
+      "properties": {
+        "requestId": {
+          "type": "string"
+        },
+        "callerType": {
+          "type": "string"
+        },
+        "accessKeyId": {
+          "type": "string"
+        },
+        "securityToken": {
+          "type": "string"
+        },
+        "callerUid": {
+          "type": "string"
+        },
+        "callerBid": {
+          "type": "string"
+        },
+        "stsTokenCallerUid": {
+          "type": "string"
+        },
+        "stsTokenCallerBid": {
+          "type": "string"
+        },
+        "acceptLanguage": {
+          "type": "string"
+        },
+        "pageNumber": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "pageSize": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "mergedCallerBid": {
+          "type": "string"
+        },
+        "instanceId": {
+          "type": "string"
+        },
+        "tenantId": {
+          "type": "string"
+        },
+        "userName": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        },
+        "userType": {
+          "type": "string"
+        },
+        "roles": {
+          "type": "string"
+        },
+        "encryptionType": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 256
+        },
+        "mergedCallerUid": {
+          "type": "string"
+        },
+        "user_ID": {
+          "type": "string"
+        },
+        "uid": {
+          "type": "string"
+        }
+      }
+    },
+    "ModifyTenantUserDescriptionParamDo": {
+      "type": "object",
+      "properties": {
+        "requestId": {
+          "type": "string"
+        },
+        "callerType": {
+          "type": "string"
+        },
+        "accessKeyId": {
+          "type": "string"
+        },
+        "securityToken": {
+          "type": "string"
+        },
+        "callerUid": {
+          "type": "string"
+        },
+        "callerBid": {
+          "type": "string"
+        },
+        "stsTokenCallerUid": {
+          "type": "string"
+        },
+        "stsTokenCallerBid": {
+          "type": "string"
+        },
+        "acceptLanguage": {
+          "type": "string"
+        },
+        "pageNumber": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "pageSize": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "mergedCallerBid": {
+          "type": "string"
+        },
+        "instanceId": {
+          "type": "string"
+        },
+        "tenantId": {
+          "type": "string"
+        },
+        "userName": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 256
+        },
+        "mergedCallerUid": {
+          "type": "string"
+        },
+        "user_ID": {
+          "type": "string"
+        },
+        "uid": {
+          "type": "string"
+        }
+      }
+    },
+    "CreateReadonlyConnectionResponse": {
+      "type": "object",
+      "properties": {
+        "addressId": {
+          "type": "string"
+        }
+      }
+    },
+    "TenantCpuDTO": {
+      "type": "object",
+      "properties": {
+        "totalCpu": {
+          "type": "number",
+          "format": "double"
+        },
+        "usedCpu": {
+          "type": "number",
+          "format": "double"
+        },
+        "unitCpu": {
+          "type": "number",
+          "format": "double"
+        }
+      }
+    },
+    "CreateTenantPlServiceRequest": {
+      "type": "object",
+      "properties": {
+        "userAccount": {
+          "type": "string"
+        }
+      }
+    },
+    "ProxyClusterInfoDTO": {
+      "type": "object",
+      "properties": {
+        "proxyClusterId": {
+          "type": "string"
+        },
+        "proxyMode": {
+          "type": "string"
+        },
+        "zone": {
+          "type": "string"
+        },
+        "unitSpec": {
+          "type": "string"
+        },
+        "unitNum": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "unitNumLimit": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "status": {
+          "type": "string"
+        },
+        "proxyServiceVersion": {
+          "type": "string"
+        },
+        "proxyVersion": {
+          "type": "string"
+        },
+        "createTime": {
+          "type": "string"
+        },
+        "expireTime": {
+          "type": "string"
+        }
+      }
+    },
+    "ModifyUserPasswordParamDo": {
+      "type": "object",
+      "properties": {
+        "requestId": {
+          "type": "string"
+        },
+        "callerType": {
+          "type": "string"
+        },
+        "accessKeyId": {
+          "type": "string"
+        },
+        "securityToken": {
+          "type": "string"
+        },
+        "callerUid": {
+          "type": "string"
+        },
+        "callerBid": {
+          "type": "string"
+        },
+        "stsTokenCallerUid": {
+          "type": "string"
+        },
+        "stsTokenCallerBid": {
+          "type": "string"
+        },
+        "acceptLanguage": {
+          "type": "string"
+        },
+        "pageNumber": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "pageSize": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "mergedCallerBid": {
+          "type": "string"
+        },
+        "instanceId": {
+          "type": "string"
+        },
+        "tenantId": {
+          "type": "string"
+        },
+        "userName": {
+          "type": "string"
+        },
+        "userPassword": {
+          "type": "string"
+        },
+        "encryptionType": {
+          "type": "string"
+        },
+        "clusterGroupName": {
+          "type": "string"
+        },
+        "mergedCallerUid": {
+          "type": "string"
+        },
+        "user_ID": {
+          "type": "string"
+        },
+        "uid": {
+          "type": "string"
+        }
+      }
+    },
+    "CreateReadonlyConnectionRequest": {
+      "type": "object",
+      "properties": {
+        "zoneIdList": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "userAccount": {
+          "type": "string"
+        }
+      }
+    },
+    "McModifyTenantSecurityIpGroupRequest": {
+      "type": "object",
+      "properties": {
+        "securityIps": {
+          "type": "string"
+        },
+        "securityIpGroupName": {
+          "type": "string"
+        }
+      }
+    },
+    "CpuDoV2": {
+      "type": "object",
+      "properties": {
+        "totalCpu": {
+          "type": "number",
+          "format": "double"
+        },
+        "usedCpu": {
+          "type": "number",
+          "format": "double"
+        }
+      }
+    },
+    "TagKeyValueDo": {
+      "type": "object",
+      "properties": {
+        "tagKey": {
+          "type": "string"
+        },
+        "tagValue": {
+          "type": "string"
+        }
+      }
+    },
+    "UpdateTenantPrivatelinkInformationRequest": {
+      "type": "object",
+      "properties": {
+        "addressId": {
+          "type": "string"
+        },
+        "userEndpointAddress": {
+          "type": "string"
+        },
+        "endpointId": {
+          "type": "string"
+        }
+      }
+    },
+    "TableInfoDo": {
+      "type": "object",
+      "properties": {
+        "tableId": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "tableName": {
+          "type": "string"
+        },
+        "databaseId": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "databaseName": {
+          "type": "string"
+        },
+        "tenantOBId": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "tenantId": {
+          "type": "string"
+        },
+        "tableGroupName": {
+          "type": "string"
+        },
+        "zoneList": {
+          "type": "string"
+        },
+        "readOnly": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "ConfirmTenantPlServiceRequest": {
+      "type": "object",
+      "properties": {
+        "addressId": {
+          "type": "string"
+        },
+        "endpointId": {
+          "type": "string"
+        }
+      }
+    },
+    "ConnectTenantPlServiceResponse": {
+      "type": "object"
+    },
+    "OBCloudPagingDataOcpDbUserDtoV2": {
+      "type": "object",
+      "properties": {
+        "dataList": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/OcpDbUserDtoV2"
+          }
+        },
+        "total": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "hasMore": {
+          "type": "boolean"
+        }
+      }
+    },
+    "ConnectTenantPlServiceRequest": {
+      "type": "object",
+      "properties": {
+        "endpointId": {
+          "type": "string"
+        },
+        "addressId": {
+          "type": "string"
+        },
+        "userEndpointAddress": {
+          "type": "string"
+        }
+      }
+    },
+    "OBCloudResultDeleteInstanceResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "errorCode": {
+          "type": "string"
+        },
+        "errorMessage": {
+          "type": "string"
+        },
+        "data": {
+          "$ref": "#/definitions/DeleteInstanceResponse"
+        },
+        "cost": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "server": {
+          "type": "string"
+        },
+        "requestId": {
+          "type": "string"
+        },
+        "totalCount": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "extra": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    "OBCloudResultConnectTenantPlServiceResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "errorCode": {
+          "type": "string"
+        },
+        "errorMessage": {
+          "type": "string"
+        },
+        "data": {
+          "$ref": "#/definitions/ConnectTenantPlServiceResponse"
+        },
+        "cost": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "server": {
+          "type": "string"
+        },
+        "requestId": {
+          "type": "string"
+        },
+        "totalCount": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "extra": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    "CreateTenantResponse": {
+      "type": "object",
+      "properties": {
+        "tenantId": {
+          "type": "string"
+        },
+        "extra": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    "OBCloudResultCreateReadonlyConnectionResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "errorCode": {
+          "type": "string"
+        },
+        "errorMessage": {
+          "type": "string"
+        },
+        "data": {
+          "$ref": "#/definitions/CreateReadonlyConnectionResponse"
+        },
+        "cost": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "server": {
+          "type": "string"
+        },
+        "requestId": {
+          "type": "string"
+        },
+        "totalCount": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "extra": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    "ModifyDatabaseUserRolesParamDo": {
+      "type": "object",
+      "properties": {
+        "requestId": {
+          "type": "string"
+        },
+        "callerType": {
+          "type": "string"
+        },
+        "accessKeyId": {
+          "type": "string"
+        },
+        "securityToken": {
+          "type": "string"
+        },
+        "callerUid": {
+          "type": "string"
+        },
+        "callerBid": {
+          "type": "string"
+        },
+        "stsTokenCallerUid": {
+          "type": "string"
+        },
+        "stsTokenCallerBid": {
+          "type": "string"
+        },
+        "acceptLanguage": {
+          "type": "string"
+        },
+        "pageNumber": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "pageSize": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "mergedCallerBid": {
+          "type": "string"
+        },
+        "tenantId": {
+          "type": "string"
+        },
+        "databaseName": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 64
+        },
+        "users": {
+          "type": "string"
+        },
+        "instanceId": {
+          "type": "string"
+        },
+        "mergedCallerUid": {
+          "type": "string"
+        },
+        "user_ID": {
+          "type": "string"
+        },
+        "uid": {
+          "type": "string"
+        }
+      }
+    },
+    "OBCloudResultOBCloudPagingDataMcTenantSecurityIpGroupsResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "errorCode": {
+          "type": "string"
+        },
+        "errorMessage": {
+          "type": "string"
+        },
+        "data": {
+          "$ref": "#/definitions/OBCloudPagingDataMcTenantSecurityIpGroupsResponse"
+        },
+        "cost": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "server": {
+          "type": "string"
+        },
+        "requestId": {
+          "type": "string"
+        },
+        "totalCount": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "extra": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    "CreateTenantPlServiceResponse": {
+      "type": "object",
+      "properties": {
+        "addressId": {
+          "type": "string"
+        }
+      }
+    },
+    "OBCloudResultCreateMcTenantAddressResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "errorCode": {
+          "type": "string"
+        },
+        "errorMessage": {
+          "type": "string"
+        },
+        "data": {
+          "$ref": "#/definitions/CreateMcTenantAddressResponse"
+        },
+        "cost": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "server": {
+          "type": "string"
+        },
+        "requestId": {
+          "type": "string"
+        },
+        "totalCount": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "extra": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    "OBCloudResultDescribeInstanceResponseV2OpenAPI": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "errorCode": {
+          "type": "string"
+        },
+        "errorMessage": {
+          "type": "string"
+        },
+        "data": {
+          "$ref": "#/definitions/DescribeInstanceResponseV2OpenAPI"
+        },
+        "cost": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "server": {
+          "type": "string"
+        },
+        "requestId": {
+          "type": "string"
+        },
+        "totalCount": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "extra": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    "OBCloudResultModifyTenantNameResponseV2": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "errorCode": {
+          "type": "string"
+        },
+        "errorMessage": {
+          "type": "string"
+        },
+        "data": {
+          "$ref": "#/definitions/ModifyTenantNameResponseV2"
+        },
+        "cost": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "server": {
+          "type": "string"
+        },
+        "requestId": {
+          "type": "string"
+        },
+        "totalCount": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "extra": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    "CreateUserResponseDtoV2": {
+      "type": "object",
+      "properties": {
+        "userName": {
+          "type": "string"
+        },
+        "userType": {
+          "type": "string"
+        },
+        "userStatus": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "roles": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    "DeleteInstanceResponse": {
+      "type": "object"
+    },
+    "OBCloudResultModifyTenantPrimaryZoneResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "errorCode": {
+          "type": "string"
+        },
+        "errorMessage": {
+          "type": "string"
+        },
+        "data": {
+          "$ref": "#/definitions/ModifyTenantPrimaryZoneResponse"
+        },
+        "cost": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "server": {
+          "type": "string"
+        },
+        "requestId": {
+          "type": "string"
+        },
+        "totalCount": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "extra": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    "OBCloudPagingDataMcTenantSecurityIpGroupsResponse": {
+      "type": "object",
+      "properties": {
+        "dataList": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/McTenantSecurityIpGroupsResponse"
+          }
+        },
+        "total": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "hasMore": {
+          "type": "boolean"
+        }
+      }
+    },
+    "DeleteDatabasesParamDo": {
+      "type": "object",
+      "properties": {
+        "requestId": {
+          "type": "string"
+        },
+        "callerType": {
+          "type": "string"
+        },
+        "accessKeyId": {
+          "type": "string"
+        },
+        "securityToken": {
+          "type": "string"
+        },
+        "callerUid": {
+          "type": "string"
+        },
+        "callerBid": {
+          "type": "string"
+        },
+        "stsTokenCallerUid": {
+          "type": "string"
+        },
+        "stsTokenCallerBid": {
+          "type": "string"
+        },
+        "acceptLanguage": {
+          "type": "string"
+        },
+        "pageNumber": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "pageSize": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "mergedCallerBid": {
+          "type": "string"
+        },
+        "instanceId": {
+          "type": "string"
+        },
+        "tenantId": {
+          "type": "string"
+        },
+        "databaseNames": {
+          "type": "string"
+        },
+        "force": {
+          "type": "boolean"
+        },
+        "mergedCallerUid": {
+          "type": "string"
+        },
+        "user_ID": {
+          "type": "string"
+        },
+        "uid": {
+          "type": "string"
+        }
+      }
+    },
+    "McDeleteTenantSecurityIpGroupRequest": {
+      "type": "object",
+      "properties": {
+        "securityIpGroupName": {
+          "type": "string"
+        }
+      }
+    },
+    "DeleteInstanceOpenRequest": {
+      "type": "object",
+      "properties": {
+        "requestId": {
+          "type": "string"
+        },
+        "instanceId": {
+          "type": "string"
+        }
+      }
+    },
+    "DeleteTenantUserParamDo": {
+      "type": "object",
+      "properties": {
+        "requestId": {
+          "type": "string"
+        },
+        "callerType": {
+          "type": "string"
+        },
+        "accessKeyId": {
+          "type": "string"
+        },
+        "securityToken": {
+          "type": "string"
+        },
+        "callerUid": {
+          "type": "string"
+        },
+        "callerBid": {
+          "type": "string"
+        },
+        "stsTokenCallerUid": {
+          "type": "string"
+        },
+        "stsTokenCallerBid": {
+          "type": "string"
+        },
+        "acceptLanguage": {
+          "type": "string"
+        },
+        "pageNumber": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "pageSize": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "mergedCallerBid": {
+          "type": "string"
+        },
+        "InstanceId": {
+          "type": "string"
+        },
+        "TenantId": {
+          "type": "string"
+        },
+        "Users": {
+          "type": "string"
+        },
+        "mergedCallerUid": {
+          "type": "string"
+        },
+        "user_ID": {
+          "type": "string"
+        },
+        "uid": {
+          "type": "string"
+        }
+      }
+    },
+    "SimpleTenantResponse": {
+      "type": "object",
+      "properties": {
+        "tenantId": {
+          "type": "string"
+        },
+        "jobKey": {
+          "type": "string"
+        }
+      }
+    },
+    "McModifyTenantSecurityIpGroupResponse": {
+      "type": "object",
+      "properties": {
+        "instanceId": {
+          "type": "string"
+        },
+        "tenantId": {
+          "type": "string"
+        },
+        "securityIps": {
+          "type": "string"
+        },
+        "securityIpGroupName": {
+          "type": "string"
+        }
+      }
+    },
+    "OBCloudResultModifyInstanceResponseV2OpenApi": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "errorCode": {
+          "type": "string"
+        },
+        "errorMessage": {
+          "type": "string"
+        },
+        "data": {
+          "$ref": "#/definitions/ModifyInstanceResponseV2OpenApi"
+        },
+        "cost": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "server": {
+          "type": "string"
+        },
+        "requestId": {
+          "type": "string"
+        },
+        "totalCount": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "extra": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    "UpdateTenantRequest": {
+      "type": "object",
+      "properties": {
+        "instanceId": {
+          "type": "string"
+        },
+        "tenantId": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "tenantName": {
+          "type": "string"
+        },
+        "cpu": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "memory": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "unitNum": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "requestId": {
+          "type": "string"
+        }
+      }
+    },
+    "TenantConnectionDTO": {
+      "type": "object",
+      "properties": {
+        "tenantId": {
+          "type": "string"
+        },
+        "vpcId": {
+          "type": "string"
+        },
+        "userVpcOwnerId": {
+          "type": "string"
+        },
+        "addressId": {
+          "type": "string"
+        },
+        "serviceType": {
+          "type": "string"
+        },
+        "addressType": {
+          "type": "string"
+        },
+        "networkType": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string"
+        },
+        "intranetAddress": {
+          "type": "string"
+        },
+        "intranetPort": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "intranetDomain": {
+          "type": "string"
+        },
+        "intranetAddressStatus": {
+          "type": "string"
+        },
+        "internetAddress": {
+          "type": "string"
+        },
+        "internetPort": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "internetDomain": {
+          "type": "string"
+        },
+        "internetAddressStatus": {
+          "type": "string"
+        },
+        "intranetPeeringAddress": {
+          "type": "string"
+        },
+        "intranetPeeringPort": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "intranetPeeringDomain": {
+          "type": "string"
+        },
+        "intranetPeeringAddressStatus": {
+          "type": "string"
+        },
+        "intranetAddressMasterZoneId": {
+          "type": "string"
+        },
+        "intranetAddressSlaveZoneId": {
+          "type": "string"
+        },
+        "connectionZones": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "addressStatus": {
+          "type": "string"
+        },
+        "userNameFormat": {
+          "type": "string"
+        },
+        "privateLinkList": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/TenantPrivateLinkDTO"
+          }
+        },
+        "peeringDstVpcId": {
+          "type": "string"
+        },
+        "peeringDstCidrList": {
+          "type": "string"
+        },
+        "peeringId": {
+          "type": "string"
+        },
+        "useSSL": {
+          "type": "boolean"
+        },
+        "proxyClusterId": {
+          "type": "string"
+        },
+        "maxConnectionNum": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "internetMaxConnectionNum": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "intranetPeeringMaxConnectionNum": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "enableRPc": {
+          "type": "boolean"
+        },
+        "intranetRpcPort": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "internetRpcPort": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "proxyClusterInfo": {
+          "$ref": "#/definitions/ProxyClusterInfoDTO"
+        },
+        "vswitchId": {
+          "type": "string"
+        }
+      }
+    },
+    "OBCloudResultModifyDatabaseDescriptionResponseV2": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "errorCode": {
+          "type": "string"
+        },
+        "errorMessage": {
+          "type": "string"
+        },
+        "data": {
+          "$ref": "#/definitions/ModifyDatabaseDescriptionResponseV2"
+        },
+        "cost": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "server": {
+          "type": "string"
+        },
+        "requestId": {
+          "type": "string"
+        },
+        "totalCount": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "extra": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    "OBCloudResultCreateUserResponseDtoV2": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "errorCode": {
+          "type": "string"
+        },
+        "errorMessage": {
+          "type": "string"
+        },
+        "data": {
+          "$ref": "#/definitions/CreateUserResponseDtoV2"
+        },
+        "cost": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "server": {
+          "type": "string"
+        },
+        "requestId": {
+          "type": "string"
+        },
+        "totalCount": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "extra": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    "OBCloudResultOBCloudPagingDataOcpDbUserDtoV2": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "errorCode": {
+          "type": "string"
+        },
+        "errorMessage": {
+          "type": "string"
+        },
+        "data": {
+          "$ref": "#/definitions/OBCloudPagingDataOcpDbUserDtoV2"
+        },
+        "cost": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "server": {
+          "type": "string"
+        },
+        "requestId": {
+          "type": "string"
+        },
+        "totalCount": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "extra": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    "OBCloudResultCreateInstanceResponseV2OpenApi": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "errorCode": {
+          "type": "string"
+        },
+        "errorMessage": {
+          "type": "string"
+        },
+        "data": {
+          "$ref": "#/definitions/CreateInstanceResponseV2OpenApi"
+        },
+        "cost": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "server": {
+          "type": "string"
+        },
+        "requestId": {
+          "type": "string"
+        },
+        "totalCount": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "extra": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    "OcpDbUserDtoV2": {
+      "type": "object",
+      "properties": {
+        "userName": {
+          "type": "string"
+        },
+        "userType": {
+          "type": "string"
+        },
+        "userStatus": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "databases": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/OcpUserPrivilegeV2"
+          }
+        },
+        "password": {
+          "type": "string"
+        }
+      }
+    },
+    "TenantMemoryDTO": {
+      "type": "object",
+      "properties": {
+        "totalMemory": {
+          "type": "number",
+          "format": "double"
+        },
+        "usedMemory": {
+          "type": "number",
+          "format": "double"
+        },
+        "unitMemory": {
+          "type": "number",
+          "format": "double"
+        }
+      }
+    },
+    "TenantResourceDTO": {
+      "type": "object",
+      "properties": {
+        "cpu": {
+          "$ref": "#/definitions/TenantCpuDTO"
+        },
+        "memory": {
+          "$ref": "#/definitions/TenantMemoryDTO"
+        },
+        "disk": {
+          "$ref": "#/definitions/TenantDiskDTO"
+        },
+        "unitNum": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "AddTenantPlServiceUserRequest": {
+      "type": "object",
+      "properties": {
+        "userAccount": {
+          "type": "string"
+        }
+      }
+    },
+    "OBCloudResultMapStringString": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "errorCode": {
+          "type": "string"
+        },
+        "errorMessage": {
+          "type": "string"
+        },
+        "data": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "cost": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "server": {
+          "type": "string"
+        },
+        "requestId": {
+          "type": "string"
+        },
+        "totalCount": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "extra": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    "OcpUserPrivilegeV2": {
+      "type": "object",
+      "properties": {
+        "userName": {
+          "type": "string"
+        },
+        "database": {
+          "type": "string"
+        },
+        "table": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string"
+        },
+        "privileges": {
+          "type": "string"
+        },
+        "isSuccess": {
+          "type": "boolean"
+        },
+        "withGrant": {
+          "type": "integer",
+          "format": "int64"
+        }
+      }
+    },
+    "MultiCloudCreateInstanceRequest": {
+      "type": "object",
+      "required": [
+        "cloudProvider",
+        "diskSize",
+        "instanceClass",
+        "obVersion",
+        "region",
+        "zones"
+      ],
+      "properties": {
+        "chargeType": {
+          "type": "string"
+        },
+        "instanceName": {
+          "type": "string"
+        },
+        "cloudProvider": {
+          "type": "string"
+        },
+        "diskSize": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "region": {
+          "type": "string"
+        },
+        "obVersion": {
+          "type": "string"
+        },
+        "zones": {
+          "type": "string"
+        },
+        "instanceClass": {
+          "type": "string"
+        },
+        "replicaMode": {
+          "type": "string"
+        },
+        "dryRun": {
+          "type": "boolean"
+        },
+        "saleChannel": {
+          "type": "string"
+        },
+        "instanceType": {
+          "type": "string"
+        }
+      }
+    },
+    "DescribeInstanceResponseV2OpenAPI": {
+      "type": "object",
+      "properties": {
+        "region": {
+          "type": "string"
+        },
+        "vpcId": {
+          "type": "string"
+        },
+        "instanceId": {
+          "type": "string"
+        },
+        "instanceName": {
+          "type": "string"
+        },
+        "instanceClass": {
+          "type": "string"
+        },
+        "series": {
+          "type": "string"
+        },
+        "payType": {
+          "type": "string"
+        },
+        "createTime": {
+          "type": "string"
+        },
+        "expireTime": {
+          "type": "string"
+        },
+        "availableZones": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "version": {
+          "type": "string"
+        },
+        "obRpmVersion": {
+          "type": "string"
+        },
+        "deployType": {
+          "type": "string"
+        },
+        "diskType": {
+          "type": "string"
+        },
+        "deployMode": {
+          "type": "string"
+        },
+        "replicaMode": {
+          "type": "string"
+        },
+        "dataMergeTime": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "resource": {
+          "$ref": "#/definitions/ResourceDoV2"
+        },
+        "cloudProvider": {
+          "type": "string"
+        },
+        "instanceType": {
+          "type": "string"
+        },
+        "instanceRole": {
+          "type": "string"
+        },
+        "primaryInstanceId": {
+          "type": "string"
+        },
+        "standbyInstanceIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "saleChannel": {
+          "type": "string"
+        },
+        "managementMode": {
+          "type": "string"
+        },
+        "tagList": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/TagKeyValueDo"
+          }
+        },
+        "nodeNum": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "cpuArchitecture": {
+          "type": "string"
+        },
+        "projectId": {
+          "type": "string"
+        },
+        "stopTime": {
+          "type": "string"
+        }
+      }
+    },
+    "OBCloudResultCreateTenantResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "errorCode": {
+          "type": "string"
+        },
+        "errorMessage": {
+          "type": "string"
+        },
+        "data": {
+          "$ref": "#/definitions/CreateTenantResponse"
+        },
+        "cost": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "server": {
+          "type": "string"
+        },
+        "requestId": {
+          "type": "string"
+        },
+        "totalCount": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "extra": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    "ModifyTenantPrimaryZoneRequest": {
+      "type": "object",
+      "properties": {
+        "primaryZone": {
+          "type": "string"
+        }
+      }
+    },
+    "ModifyUserRolesParamDo": {
+      "type": "object",
+      "properties": {
+        "requestId": {
+          "type": "string"
+        },
+        "callerType": {
+          "type": "string"
+        },
+        "accessKeyId": {
+          "type": "string"
+        },
+        "securityToken": {
+          "type": "string"
+        },
+        "callerUid": {
+          "type": "string"
+        },
+        "callerBid": {
+          "type": "string"
+        },
+        "stsTokenCallerUid": {
+          "type": "string"
+        },
+        "stsTokenCallerBid": {
+          "type": "string"
+        },
+        "acceptLanguage": {
+          "type": "string"
+        },
+        "pageNumber": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "pageSize": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "mergedCallerBid": {
+          "type": "string"
+        },
+        "instanceId": {
+          "type": "string"
+        },
+        "tenantId": {
+          "type": "string"
+        },
+        "userName": {
+          "type": "string"
+        },
+        "userRole": {
+          "type": "string"
+        },
+        "modifyType": {
+          "type": "string"
+        },
+        "clusterGroupName": {
+          "type": "string"
+        },
+        "mergedCallerUid": {
+          "type": "string"
+        },
+        "user_ID": {
+          "type": "string"
+        },
+        "uid": {
+          "type": "string"
+        }
+      }
+    },
+    "CreateMcTenantAddressResponse": {
+      "type": "object",
+      "properties": {
+        "addressId": {
+          "type": "string"
+        }
+      }
+    },
+    "ResourceDoV2": {
+      "type": "object",
+      "properties": {
+        "cpu": {
+          "$ref": "#/definitions/CpuDoV2"
+        },
+        "memory": {
+          "$ref": "#/definitions/MemoryDoV2"
+        },
+        "disk": {
+          "$ref": "#/definitions/DiskDoV2"
+        }
+      }
+    },
+    "OBCloudResultTenantConnectionDTO": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "errorCode": {
+          "type": "string"
+        },
+        "errorMessage": {
+          "type": "string"
+        },
+        "data": {
+          "$ref": "#/definitions/TenantConnectionDTO"
+        },
+        "cost": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "server": {
+          "type": "string"
+        },
+        "requestId": {
+          "type": "string"
+        },
+        "totalCount": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "extra": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    "OBCloudResultListTenantConnectionDTO": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "errorCode": {
+          "type": "string"
+        },
+        "errorMessage": {
+          "type": "string"
+        },
+        "data": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/TenantConnectionDTO"
+          }
+        },
+        "cost": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "server": {
+          "type": "string"
+        },
+        "requestId": {
+          "type": "string"
+        },
+        "totalCount": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "extra": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    "AddTenantPlServiceUserResponse": {
+      "type": "object"
+    },
+    "OcpUserRoleDo": {
+      "type": "object",
+      "properties": {
+        "userName": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string"
+        },
+        "userType": {
+          "type": "string"
+        }
+      }
+    },
+    "CreateDatabaseRequestV2": {
+      "type": "object",
+      "properties": {
+        "instanceId": {
+          "type": "string"
+        },
+        "tenantId": {
+          "type": "string"
+        },
+        "databaseName": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 64
+        },
+        "encoding": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 256
+        },
+        "requestId": {
+          "type": "string"
+        }
+      }
+    },
+    "CreateInstanceResponseV2OpenApi": {
+      "type": "object",
+      "properties": {
+        "orderId": {
+          "type": "string"
+        },
+        "instanceId": {
+          "type": "string"
+        },
+        "dryRun": {
+          "type": "boolean"
+        },
+        "dryRunResult": {
+          "type": "boolean"
+        }
+      }
+    },
+    "OBCloudResultString": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "errorCode": {
+          "type": "string"
+        },
+        "errorMessage": {
+          "type": "string"
+        },
+        "data": {
+          "type": "string"
+        },
+        "cost": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "server": {
+          "type": "string"
+        },
+        "requestId": {
+          "type": "string"
+        },
+        "totalCount": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "extra": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    "ModifyTenantNameRequestV2": {
+      "type": "object",
+      "properties": {
+        "requestId": {
+          "type": "string"
+        },
+        "tenantName": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 64
+        },
+        "patternCheck": {
+          "type": "boolean"
+        }
+      }
+    }
+  }
+}
