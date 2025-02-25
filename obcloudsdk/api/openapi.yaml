@@ -1,0 +1,6600 @@
+openapi: 3.0.1
+info:
+  description: API Documentation for OceanBase Cloud
+  title: OceanBase Cloud API
+  version: v1
+servers:
+- url: http://api.example.com/
+- url: https://api.example.com/
+tags:
+- name: MultiCloudOpen
+paths:
+  api/v2/instances/{instanceId}/tenants:
+    get:
+      operationId: queryTenants
+      parameters:
+      - in: path
+        name: instanceId
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: requestId
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: pageNumber
+        schema:
+          format: int32
+          type: integer
+      - in: query
+        name: pageSize
+        schema:
+          format: int32
+          type: integer
+      - in: query
+        name: tenantName
+        schema:
+          type: string
+      - in: query
+        name: tagList
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/OBCloudResultOBCloudPagingDataTenantDTO'
+          description: successful operation
+      summary: 条件查询租户
+      tags:
+      - MultiCloudOpen
+    post:
+      operationId: createTenant
+      parameters:
+      - in: path
+        name: instanceId
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: requestId
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              $ref: '#/components/schemas/CreateTenantRequest'
+        required: false
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/OBCloudResultCreateTenantResponse'
+          description: successful operation
+      summary: 创建租户
+      tags:
+      - MultiCloudOpen
+      x-codegen-request-body-name: body
+  api/v2/instances/{instanceId}/tenants/{tenantId}:
+    delete:
+      operationId: deleteTenant
+      parameters:
+      - in: path
+        name: instanceId
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: tenantId
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: requestId
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/OBCloudResultSimpleTenantResponse'
+          description: successful operation
+      summary: 删除租户
+      tags:
+      - MultiCloudOpen
+    get:
+      operationId: describeTenant
+      parameters:
+      - in: path
+        name: instanceId
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: tenantId
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: requestId
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/OBCloudResultTenantDTO'
+          description: successful operation
+      summary: 查询特定租户
+      tags:
+      - MultiCloudOpen
+    put:
+      operationId: updateTenant
+      parameters:
+      - in: path
+        name: instanceId
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: tenantId
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: requestId
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              $ref: '#/components/schemas/UpdateTenantRequest'
+        required: false
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/OBCloudResultSimpleTenantResponse'
+          description: successful operation
+      summary: 修改租户
+      tags:
+      - MultiCloudOpen
+      x-codegen-request-body-name: body
+  api/v2/instances/{instanceId}/tenants/{tenantId}/tenantName:
+    put:
+      operationId: modifyTenantName
+      parameters:
+      - in: path
+        name: instanceId
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: tenantId
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: requestId
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              $ref: '#/components/schemas/ModifyTenantNameRequestV2'
+        required: false
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/OBCloudResultModifyTenantNameResponseV2'
+          description: successful operation
+      summary: 修改租户名称
+      tags:
+      - MultiCloudOpen
+      x-codegen-request-body-name: body
+  api/v2/instances/{instanceId}/tenants/{tenantId}/primaryZone:
+    put:
+      operationId: modifyTenantPrimaryZone
+      parameters:
+      - in: path
+        name: instanceId
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: tenantId
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: requestId
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              $ref: '#/components/schemas/ModifyTenantPrimaryZoneRequest'
+        required: false
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/OBCloudResultModifyTenantPrimaryZoneResponse'
+          description: successful operation
+      summary: 修改租户主可用区
+      tags:
+      - MultiCloudOpen
+      x-codegen-request-body-name: body
+  api/v2/instances/{instanceId}/tenants/{tenantId}/address:
+    delete:
+      operationId: deleteTenantAddress
+      parameters:
+      - in: path
+        name: instanceId
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: tenantId
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: requestId
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: addressId
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/OBCloudResultBoolean'
+          description: successful operation
+      summary: 删除租户地址
+      tags:
+      - MultiCloudOpen
+    get:
+      operationId: describeTenantAddress
+      parameters:
+      - in: path
+        name: instanceId
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: tenantId
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: requestId
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: addressId
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/OBCloudResultTenantConnectionDTO'
+          description: successful operation
+      summary: 查询租户地址
+      tags:
+      - MultiCloudOpen
+    post:
+      operationId: createTenantAddress
+      parameters:
+      - in: path
+        name: instanceId
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: tenantId
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: requestId
+        required: true
+        schema:
+          type: string
+      - in: header
+        name: X-Ob-Project-Id
+        schema:
+          type: string
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              $ref: '#/components/schemas/CreateMcTenantAddressRequest'
+        required: false
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/OBCloudResultCreateMcTenantAddressResponse'
+          description: successful operation
+      summary: 新建租户singleTunnelSLB地址
+      tags:
+      - MultiCloudOpen
+      x-codegen-request-body-name: body
+  api/v2/instances/{instanceId}/tenants/{tenantId}/publicaddress:
+    get:
+      operationId: describeTenantPublicAddress
+      parameters:
+      - in: path
+        name: instanceId
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: tenantId
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: requestId
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/OBCloudResultTenantConnectionDTO'
+          description: successful operation
+      summary: 查询租户的公网主地址
+      tags:
+      - MultiCloudOpen
+  api/v2/instances/{instanceId}/tenants/{tenantId}/privatelink:
+    delete:
+      operationId: deletePrivatelinkEndpoint
+      parameters:
+      - in: path
+        name: instanceId
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: tenantId
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: requestId
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: addressId
+        schema:
+          type: string
+      - in: query
+        name: endpointId
+        schema:
+          type: string
+      - in: query
+        name: status
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/OBCloudResultBoolean'
+          description: successful operation
+      summary: 删除privatelink地址
+      tags:
+      - MultiCloudOpen
+    get:
+      operationId: describeTenantPrivateLink
+      parameters:
+      - in: path
+        name: instanceId
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: tenantId
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: requestId
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: addressId
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/OBCloudResultListTenantConnectionDTO'
+          description: successful operation
+      summary: 查询租户的privatelink地址信息
+      tags:
+      - MultiCloudOpen
+  api/v2/instances/{instanceId}/tenants/{tenantId}/privatelink/service:
+    post:
+      operationId: createPrivateLinkService
+      parameters:
+      - in: path
+        name: instanceId
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: tenantId
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: requestId
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              $ref: '#/components/schemas/CreateTenantPlServiceRequest'
+        required: false
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/OBCloudResultCreateTenantPlServiceResponse'
+          description: successful operation
+      summary: 创建租户的private link主地址
+      tags:
+      - MultiCloudOpen
+      x-codegen-request-body-name: body
+  api/v2/instances/{instanceId}/tenants/{tenantId}/privatelink/user:
+    post:
+      operationId: addPrivateLinkServiceUser
+      parameters:
+      - in: path
+        name: instanceId
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: tenantId
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: requestId
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              $ref: '#/components/schemas/AddTenantPlServiceUserRequest'
+        required: false
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/OBCloudResultAddTenantPlServiceUserResponse'
+          description: successful operation
+      summary: 租户private link service增加白名单用户
+      tags:
+      - MultiCloudOpen
+      x-codegen-request-body-name: body
+  api/v2/instances/{instanceId}/tenants/{tenantId}/privatelink/information:
+    post:
+      operationId: updatePrivatelinkInformation
+      parameters:
+      - in: path
+        name: instanceId
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: tenantId
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: requestId
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              $ref: '#/components/schemas/UpdateTenantPrivatelinkInformationRequest'
+        required: false
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/OBCloudResultUpdateTenantPrivatelinkInformationResponse'
+          description: successful operation
+      summary: 更新租户private link信息
+      tags:
+      - MultiCloudOpen
+      x-codegen-request-body-name: body
+  api/v2/instances/{instanceId}/tenants/{tenantId}/privatelink/connection:
+    post:
+      operationId: connectPrivateLinkService
+      parameters:
+      - in: path
+        name: instanceId
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: tenantId
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: requestId
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              $ref: '#/components/schemas/ConnectTenantPlServiceRequest'
+        required: false
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/OBCloudResultConnectTenantPlServiceResponse'
+          description: successful operation
+      summary: private link endpoint连接service
+      tags:
+      - MultiCloudOpen
+      x-codegen-request-body-name: body
+  api/v2/instances/{instanceId}/tenants/{tenantId}/privatelink/readonly:
+    post:
+      operationId: createReadonlyPrivatelink
+      parameters:
+      - in: path
+        name: instanceId
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: tenantId
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: requestId
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              $ref: '#/components/schemas/CreateReadonlyConnectionRequest'
+        required: false
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/OBCloudResultCreateReadonlyConnectionResponse'
+          description: successful operation
+      summary: 创建租户的私网只读地址
+      tags:
+      - MultiCloudOpen
+      x-codegen-request-body-name: body
+  api/v2/instances/{instanceId}/tenants/{tenantId}/privatelink/confirmation:
+    post:
+      operationId: confirmPrivatelinkConnection
+      parameters:
+      - in: path
+        name: instanceId
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: tenantId
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: requestId
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              $ref: '#/components/schemas/ConfirmTenantPlServiceRequest'
+        required: false
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/OBCloudResultBoolean'
+          description: successful operation
+      summary: 确认完成private link私网连接
+      tags:
+      - MultiCloudOpen
+      x-codegen-request-body-name: body
+  /api/v2/instances:
+    delete:
+      operationId: deleteInstance
+      parameters:
+      - in: query
+        name: requestId
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              $ref: '#/components/schemas/DeleteInstanceOpenRequest'
+        required: false
+      responses:
+        "200":
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/OBCloudResultDeleteInstanceResponse'
+          description: successful operation
+      summary: DeleteInstance
+      tags:
+      - MultiCloudOpen
+      x-codegen-request-body-name: body
+    get:
+      operationId: describeInstances
+      parameters:
+      - in: query
+        name: instanceName
+        schema:
+          type: string
+      - in: query
+        name: requestId
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: instanceId
+        schema:
+          type: string
+      - in: header
+        name: X-Ob-Project-Id
+        schema:
+          type: string
+      - in: query
+        name: tagList
+        schema:
+          type: string
+      - in: query
+        name: organizationId
+        schema:
+          type: string
+      - in: query
+        name: pageNumber
+        schema:
+          default: 1
+          format: int32
+          type: integer
+      - in: query
+        name: pageSize
+        schema:
+          default: 10
+          format: int32
+          type: integer
+      responses:
+        "200":
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/OBCloudResultOBCloudPagingDataListDescribeInstancesResponseV2OpenAPI'
+          description: successful operation
+      summary: DescribeInstances
+      tags:
+      - MultiCloudOpen
+    post:
+      operationId: createInstance
+      parameters:
+      - in: query
+        name: requestId
+        required: true
+        schema:
+          type: string
+      - in: header
+        name: X-Ob-Project-Id
+        schema:
+          type: string
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              $ref: '#/components/schemas/MultiCloudCreateInstanceRequest'
+        required: false
+      responses:
+        "200":
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/OBCloudResultCreateInstanceResponseV2OpenApi'
+          description: successful operation
+      summary: CreateInstance
+      tags:
+      - MultiCloudOpen
+      x-codegen-request-body-name: body
+  /api/v2/instances/{instanceId}:
+    get:
+      operationId: describeInstance
+      parameters:
+      - in: path
+        name: instanceId
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: requestId
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/OBCloudResultDescribeInstanceResponseV2OpenAPI'
+          description: successful operation
+      summary: DescribeInstance
+      tags:
+      - MultiCloudOpen
+  /api/v2/instances/{instanceId}/instanceName:
+    put:
+      operationId: modifyInstanceName
+      parameters:
+      - in: path
+        name: instanceId
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: requestId
+        required: true
+        schema:
+          type: string
+      - in: header
+        name: X-Ob-Project-Id
+        schema:
+          type: string
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              $ref: '#/components/schemas/ModifyInstanceNameRequestV2'
+        required: false
+      responses:
+        "200":
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/OBCloudResultModifyInstanceNameResponseV2'
+          description: successful operation
+      summary: ModifyInstanceName
+      tags:
+      - MultiCloudOpen
+      x-codegen-request-body-name: body
+  /api/v2/instances/{instanceId}/nodeNum:
+    put:
+      operationId: modifyInstanceNodeNum
+      parameters:
+      - in: path
+        name: instanceId
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: requestId
+        required: true
+        schema:
+          type: string
+      - in: header
+        name: X-Ob-Project-Id
+        schema:
+          type: string
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              $ref: '#/components/schemas/MultiCloudModifyInstanceNodeNumRequest'
+        required: false
+      responses:
+        "200":
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/OBCloudResultModifyInstanceResponseV2OpenApi'
+          description: successful operation
+      summary: ModifyInstanceNodeNum
+      tags:
+      - MultiCloudOpen
+      x-codegen-request-body-name: body
+  /api/v2/instances/{instanceId}/spec:
+    put:
+      operationId: modifyInstanceSpec
+      parameters:
+      - in: path
+        name: instanceId
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: requestId
+        required: true
+        schema:
+          type: string
+      - in: header
+        name: X-Ob-Project-Id
+        schema:
+          type: string
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              $ref: '#/components/schemas/MultiCloudModifyInstanceSpecRequest'
+        required: false
+      responses:
+        "200":
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/OBCloudResultModifyInstanceResponseV2OpenApi'
+          description: successful operation
+      summary: ModifyInstanceSpec
+      tags:
+      - MultiCloudOpen
+      x-codegen-request-body-name: body
+  /api/v2/instances/{instanceId}/startCluster:
+    put:
+      operationId: startCluster
+      parameters:
+      - in: path
+        name: instanceId
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: requestId
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/OBCloudResultString'
+          description: successful operation
+      summary: StartCluster
+      tags:
+      - MultiCloudOpen
+  /api/v2/instances/{instanceId}/stopCluster:
+    put:
+      operationId: stopCluster
+      parameters:
+      - in: path
+        name: instanceId
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: requestId
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/OBCloudResultString'
+          description: successful operation
+      summary: StopCluster
+      tags:
+      - MultiCloudOpen
+  /api/v2/instances/{instanceId}/tenants/{tenantId}/securityIpGroups:
+    delete:
+      operationId: deleteTenantSecurityIpGroup
+      parameters:
+      - in: path
+        name: instanceId
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: tenantId
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: requestId
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              $ref: '#/components/schemas/McDeleteTenantSecurityIpGroupRequest'
+        required: false
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/OBCloudResultMcDeleteTenantSecurityIpGroupResponse'
+          description: successful operation
+      summary: DeleteTenantSecurityIpGroup
+      tags:
+      - MultiCloudOpen
+      x-codegen-request-body-name: body
+    get:
+      operationId: describeTenantSecurityIpGroups
+      parameters:
+      - in: path
+        name: instanceId
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: tenantId
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: requestId
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/OBCloudResultOBCloudPagingDataMcTenantSecurityIpGroupsResponse'
+          description: successful operation
+      summary: DescribeTenantSecurityIpGroups
+      tags:
+      - MultiCloudOpen
+    post:
+      operationId: createTenantSecurityIpGroup
+      parameters:
+      - in: path
+        name: instanceId
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: tenantId
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: requestId
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              $ref: '#/components/schemas/McModifyTenantSecurityIpGroupRequest'
+        required: false
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/OBCloudResultMcModifyTenantSecurityIpGroupResponse'
+          description: successful operation
+      summary: CreateTenantSecurityIpGroup
+      tags:
+      - MultiCloudOpen
+      x-codegen-request-body-name: body
+    put:
+      operationId: modifyTenantSecurityIpGroup
+      parameters:
+      - in: path
+        name: instanceId
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: tenantId
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: requestId
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              $ref: '#/components/schemas/McModifyTenantSecurityIpGroupRequest'
+        required: false
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/OBCloudResultMcModifyTenantSecurityIpGroupResponse'
+          description: successful operation
+      summary: ModifyTenantSecurityIpGroup
+      tags:
+      - MultiCloudOpen
+      x-codegen-request-body-name: body
+  /api/v2/instances/{instanceId}/tenants/{tenantId}/databases:
+    delete:
+      operationId: deleteDatabase
+      parameters:
+      - in: path
+        name: instanceId
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: tenantId
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              $ref: '#/components/schemas/DeleteDatabasesParamDo'
+        required: false
+      responses:
+        "200":
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/OBCloudResult'
+          description: successful operation
+      tags:
+      - MultiCloudOpen
+      x-codegen-request-body-name: body
+    get:
+      operationId: describeDatabases
+      parameters:
+      - in: path
+        name: instanceId
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: tenantId
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: databaseName
+        schema:
+          type: string
+      - in: query
+        name: pageNumber
+        schema:
+          format: int32
+          type: integer
+      - in: query
+        name: pageSize
+        schema:
+          format: int32
+          type: integer
+      - in: query
+        name: requestId
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/OBCloudResultOBCloudPagingDataDescribeDatabasesResponseV2'
+          description: successful operation
+      summary: DescribeDatabases
+      tags:
+      - MultiCloudOpen
+    post:
+      operationId: createDatabase
+      parameters:
+      - in: path
+        name: instanceId
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: tenantId
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              $ref: '#/components/schemas/CreateDatabaseRequestV2'
+        required: false
+      responses:
+        "200":
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/OBCloudResultMapStringString'
+          description: successful operation
+      summary: CreateDatabase
+      tags:
+      - MultiCloudOpen
+      x-codegen-request-body-name: body
+  /api/v2/instances/{instanceId}/tenants/{tenantId}/databases/{databaseName}/description:
+    put:
+      operationId: modifyDatabaseDescription
+      parameters:
+      - in: path
+        name: instanceId
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: tenantId
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: databaseName
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: requestId
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              $ref: '#/components/schemas/ModifyDatabaseDescriptionRequestV2'
+        required: false
+      responses:
+        "200":
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/OBCloudResultModifyDatabaseDescriptionResponseV2'
+          description: successful operation
+      summary: ModifyDatabaseDescription
+      tags:
+      - MultiCloudOpen
+      x-codegen-request-body-name: body
+  /api/v2/instances/{instanceId}/tenants/{tenantId}/tenantUsers:
+    delete:
+      operationId: deleteTenantUsers
+      parameters:
+      - in: path
+        name: instanceId
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: tenantId
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              $ref: '#/components/schemas/DeleteTenantUserParamDo'
+        required: false
+      responses:
+        "200":
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/OBCloudResult'
+          description: successful operation
+      summary: 删除租户内特定用户
+      tags:
+      - MultiCloudOpen
+      x-codegen-request-body-name: body
+    get:
+      operationId: describeTenantUsers
+      parameters:
+      - in: path
+        name: instanceId
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: tenantId
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: userName
+        schema:
+          type: string
+      - in: query
+        name: pageNumber
+        schema:
+          format: int32
+          type: integer
+      - in: query
+        name: pageSize
+        schema:
+          format: int32
+          type: integer
+      - in: query
+        name: searchKey
+        schema:
+          type: string
+      - in: query
+        name: requestId
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/OBCloudResultOBCloudPagingDataOcpDbUserDtoV2'
+          description: successful operation
+      summary: 查询租户内的用户
+      tags:
+      - MultiCloudOpen
+    post:
+      operationId: createTenantUser
+      parameters:
+      - in: path
+        name: instanceId
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: tenantId
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: requestId
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              $ref: '#/components/schemas/CreateUserParamDo'
+        required: false
+      responses:
+        "200":
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/OBCloudResultCreateUserResponseDtoV2'
+          description: successful operation
+      summary: 创建租户内的用户
+      tags:
+      - MultiCloudOpen
+      x-codegen-request-body-name: body
+  /api/v2/instances/{instanceId}/tenants/{tenantId}/tenantUsers/{userName}/description:
+    put:
+      operationId: modifyTenantUserDescription
+      parameters:
+      - in: path
+        name: instanceId
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: tenantId
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: userName
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: requestId
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              $ref: '#/components/schemas/ModifyTenantUserDescriptionParamDo'
+        required: false
+      responses:
+        "200":
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/OBCloudResult'
+          description: successful operation
+      summary: 修改租户内的用户备注信息
+      tags:
+      - MultiCloudOpen
+      x-codegen-request-body-name: body
+  /api/v2/instances/{instanceId}/tenants/{tenantId}/tenantUsers/{userName}/password:
+    put:
+      operationId: modifyTenantUserPassword
+      parameters:
+      - in: path
+        name: instanceId
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: tenantId
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: userName
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: requestId
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              $ref: '#/components/schemas/ModifyUserPasswordParamDo'
+        required: false
+      responses:
+        "200":
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/OBCloudResult'
+          description: successful operation
+      summary: 修改租户内的用户密码
+      tags:
+      - MultiCloudOpen
+      x-codegen-request-body-name: body
+  /api/v2/instances/{instanceId}/tenants/{tenantId}/tenantUsers/{userName}/authorization:
+    post:
+      operationId: modifyTenantUserRole
+      parameters:
+      - in: path
+        name: instanceId
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: tenantId
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: userName
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              $ref: '#/components/schemas/ModifyUserRolesParamDo'
+        required: false
+      responses:
+        "200":
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/OBCloudResult'
+          description: successful operation
+      summary: 修改用户权限
+      tags:
+      - MultiCloudOpen
+      x-codegen-request-body-name: body
+  /api/v2/instances/{instanceId}/tenants/{tenantId}/tenantUsers/{userName}/status:
+    put:
+      operationId: modifyTenantUserStatus
+      parameters:
+      - in: path
+        name: instanceId
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: tenantId
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: userName
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: requestId
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              $ref: '#/components/schemas/ModifyUserStatusParamDo'
+        required: false
+      responses:
+        "200":
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/OBCloudResult'
+          description: successful operation
+      summary: 修改租户内的用户锁定状态
+      tags:
+      - MultiCloudOpen
+      x-codegen-request-body-name: body
+  /api/v2/instances/{instanceId}/tenants/{tenantId}/databases/{databaseId}/authorization:
+    post:
+      operationId: modifyDatabaseUserRole
+      parameters:
+      - in: path
+        name: instanceId
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: tenantId
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: databaseId
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              $ref: '#/components/schemas/ModifyDatabaseUserRolesParamDo'
+        required: false
+      responses:
+        "200":
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/OBCloudResult'
+          description: successful operation
+      summary: 修改角色列表
+      tags:
+      - MultiCloudOpen
+      x-codegen-request-body-name: body
+components:
+  schemas:
+    OBCloudResultTenantDTO:
+      example:
+        server: server
+        cost: 0
+        data:
+          charset: charset
+          primaryZone: primaryZone
+          dataMergeTime: dataMergeTime
+          enableBinlogService: true
+          managementMode: managementMode
+          unitNum: 2
+          description: description
+          deployType: deployType
+          tenantName: tenantName
+          mem: 1
+          vpcId: vpcId
+          ocpTenantId: 0
+          unitMem: 5
+          enableProxyPublicLink: true
+          tenantResource:
+            disk:
+              totalDiskSize: 6.683562403749608
+              usedDiskSize: 8.762042012749001
+            memory:
+              usedMemory: 9.965781217890562
+              totalMemory: 5.025004791520295
+              unitMemory: 9.369310271410669
+            cpu:
+              totalCpu: 7.457744773683766
+              usedCpu: 1.1730742509559433
+              unitCpu: 4.965218492984954
+            unitNum: 9
+          tenantConnections:
+          - serviceType: serviceType
+            intranetAddressStatus: intranetAddressStatus
+            userVpcOwnerId: userVpcOwnerId
+            role: role
+            internetAddress: internetAddress
+            intranetPeeringMaxConnectionNum: 7
+            privateLinkList:
+            - privateLinkEndpointId: privateLinkEndpointId
+              intranetAddress: intranetAddress
+              privateLinkStatus: privateLinkStatus
+              privateLinkDomain: privateLinkDomain
+              privateLinkServiceId: privateLinkServiceId
+              intranetDomain: intranetDomain
+              privateLinkServiceAccount: privateLinkServiceAccount
+              privateLinkUserAccount: privateLinkUserAccount
+            - privateLinkEndpointId: privateLinkEndpointId
+              intranetAddress: intranetAddress
+              privateLinkStatus: privateLinkStatus
+              privateLinkDomain: privateLinkDomain
+              privateLinkServiceId: privateLinkServiceId
+              intranetDomain: intranetDomain
+              privateLinkServiceAccount: privateLinkServiceAccount
+              privateLinkUserAccount: privateLinkUserAccount
+            addressId: addressId
+            intranetPeeringAddress: intranetPeeringAddress
+            vswitchId: vswitchId
+            internetMaxConnectionNum: 4
+            intranetPeeringAddressStatus: intranetPeeringAddressStatus
+            vpcId: vpcId
+            proxyClusterInfo:
+              unitSpec: unitSpec
+              expireTime: expireTime
+              proxyClusterId: proxyClusterId
+              zone: zone
+              unitNumLimit: 6
+              createTime: createTime
+              unitNum: 1
+              proxyServiceVersion: proxyServiceVersion
+              proxyMode: proxyMode
+              proxyVersion: proxyVersion
+              status: status
+            peeringId: peeringId
+            enableRPc: true
+            networkType: networkType
+            internetPort: 9
+            addressStatus: addressStatus
+            intranetAddressSlaveZoneId: intranetAddressSlaveZoneId
+            connectionZones:
+            - connectionZones
+            - connectionZones
+            internetAddressStatus: internetAddressStatus
+            internetRpcPort: 1
+            intranetAddress: intranetAddress
+            userNameFormat: userNameFormat
+            intranetPort: 7
+            proxyClusterId: proxyClusterId
+            addressType: addressType
+            intranetAddressMasterZoneId: intranetAddressMasterZoneId
+            intranetPeeringPort: 3
+            useSSL: true
+            peeringDstVpcId: peeringDstVpcId
+            intranetPeeringDomain: intranetPeeringDomain
+            peeringDstCidrList: peeringDstCidrList
+            tenantId: tenantId
+            internetDomain: internetDomain
+            maxConnectionNum: 2
+            intranetDomain: intranetDomain
+            intranetRpcPort: 1
+          - serviceType: serviceType
+            intranetAddressStatus: intranetAddressStatus
+            userVpcOwnerId: userVpcOwnerId
+            role: role
+            internetAddress: internetAddress
+            intranetPeeringMaxConnectionNum: 7
+            privateLinkList:
+            - privateLinkEndpointId: privateLinkEndpointId
+              intranetAddress: intranetAddress
+              privateLinkStatus: privateLinkStatus
+              privateLinkDomain: privateLinkDomain
+              privateLinkServiceId: privateLinkServiceId
+              intranetDomain: intranetDomain
+              privateLinkServiceAccount: privateLinkServiceAccount
+              privateLinkUserAccount: privateLinkUserAccount
+            - privateLinkEndpointId: privateLinkEndpointId
+              intranetAddress: intranetAddress
+              privateLinkStatus: privateLinkStatus
+              privateLinkDomain: privateLinkDomain
+              privateLinkServiceId: privateLinkServiceId
+              intranetDomain: intranetDomain
+              privateLinkServiceAccount: privateLinkServiceAccount
+              privateLinkUserAccount: privateLinkUserAccount
+            addressId: addressId
+            intranetPeeringAddress: intranetPeeringAddress
+            vswitchId: vswitchId
+            internetMaxConnectionNum: 4
+            intranetPeeringAddressStatus: intranetPeeringAddressStatus
+            vpcId: vpcId
+            proxyClusterInfo:
+              unitSpec: unitSpec
+              expireTime: expireTime
+              proxyClusterId: proxyClusterId
+              zone: zone
+              unitNumLimit: 6
+              createTime: createTime
+              unitNum: 1
+              proxyServiceVersion: proxyServiceVersion
+              proxyMode: proxyMode
+              proxyVersion: proxyVersion
+              status: status
+            peeringId: peeringId
+            enableRPc: true
+            networkType: networkType
+            internetPort: 9
+            addressStatus: addressStatus
+            intranetAddressSlaveZoneId: intranetAddressSlaveZoneId
+            connectionZones:
+            - connectionZones
+            - connectionZones
+            internetAddressStatus: internetAddressStatus
+            internetRpcPort: 1
+            intranetAddress: intranetAddress
+            userNameFormat: userNameFormat
+            intranetPort: 7
+            proxyClusterId: proxyClusterId
+            addressType: addressType
+            intranetAddressMasterZoneId: intranetAddressMasterZoneId
+            intranetPeeringPort: 3
+            useSSL: true
+            peeringDstVpcId: peeringDstVpcId
+            intranetPeeringDomain: intranetPeeringDomain
+            peeringDstCidrList: peeringDstCidrList
+            tenantId: tenantId
+            internetDomain: internetDomain
+            maxConnectionNum: 2
+            intranetDomain: intranetDomain
+            intranetRpcPort: 1
+          tenantZones:
+          - role: role
+            name: name
+            region: region
+            replicaType: replicaType
+          - role: role
+            name: name
+            region: region
+            replicaType: replicaType
+          primaryRegion: primaryRegion
+          readonlyConnectionAddable: readonlyConnectionAddable
+          tenantCompatibilityMode: tenantCompatibilityMode
+          lowerCaseTableNamesParam: 6
+          cpu: 6
+          timeZone: timeZone
+          gmtCreate: gmtCreate
+          tenantMode: tenantMode
+          unitCpu: 5
+          tagList:
+          - tagValue: tagValue
+            tagKey: tagKey
+          - tagValue: tagValue
+            tagKey: tagKey
+          createTime: createTime
+          tenantId: tenantId
+          status: status
+        success: true
+        requestId: requestId
+        extra:
+          key: "{}"
+        errorMessage: errorMessage
+        errorCode: errorCode
+        totalCount: 6
+      properties:
+        success:
+          type: boolean
+        errorCode:
+          type: string
+        errorMessage:
+          type: string
+        data:
+          $ref: '#/components/schemas/TenantDTO'
+        cost:
+          format: int64
+          type: integer
+        server:
+          type: string
+        requestId:
+          type: string
+        totalCount:
+          format: int64
+          type: integer
+        extra:
+          additionalProperties:
+            properties: {}
+            type: object
+          type: object
+      type: object
+    ModifyDatabaseDescriptionRequestV2:
+      example:
+        requestId: requestId
+        description: description
+      properties:
+        requestId:
+          type: string
+        description:
+          maxLength: 256
+          minLength: 0
+          type: string
+      type: object
+    OBCloudPagingDataTenantDTO:
+      example:
+        total: 3
+        dataList:
+        - charset: charset
+          primaryZone: primaryZone
+          dataMergeTime: dataMergeTime
+          enableBinlogService: true
+          managementMode: managementMode
+          unitNum: 2
+          description: description
+          deployType: deployType
+          tenantName: tenantName
+          mem: 1
+          vpcId: vpcId
+          ocpTenantId: 0
+          unitMem: 5
+          enableProxyPublicLink: true
+          tenantResource:
+            disk:
+              totalDiskSize: 6.683562403749608
+              usedDiskSize: 8.762042012749001
+            memory:
+              usedMemory: 9.965781217890562
+              totalMemory: 5.025004791520295
+              unitMemory: 9.369310271410669
+            cpu:
+              totalCpu: 7.457744773683766
+              usedCpu: 1.1730742509559433
+              unitCpu: 4.965218492984954
+            unitNum: 9
+          tenantConnections:
+          - serviceType: serviceType
+            intranetAddressStatus: intranetAddressStatus
+            userVpcOwnerId: userVpcOwnerId
+            role: role
+            internetAddress: internetAddress
+            intranetPeeringMaxConnectionNum: 7
+            privateLinkList:
+            - privateLinkEndpointId: privateLinkEndpointId
+              intranetAddress: intranetAddress
+              privateLinkStatus: privateLinkStatus
+              privateLinkDomain: privateLinkDomain
+              privateLinkServiceId: privateLinkServiceId
+              intranetDomain: intranetDomain
+              privateLinkServiceAccount: privateLinkServiceAccount
+              privateLinkUserAccount: privateLinkUserAccount
+            - privateLinkEndpointId: privateLinkEndpointId
+              intranetAddress: intranetAddress
+              privateLinkStatus: privateLinkStatus
+              privateLinkDomain: privateLinkDomain
+              privateLinkServiceId: privateLinkServiceId
+              intranetDomain: intranetDomain
+              privateLinkServiceAccount: privateLinkServiceAccount
+              privateLinkUserAccount: privateLinkUserAccount
+            addressId: addressId
+            intranetPeeringAddress: intranetPeeringAddress
+            vswitchId: vswitchId
+            internetMaxConnectionNum: 4
+            intranetPeeringAddressStatus: intranetPeeringAddressStatus
+            vpcId: vpcId
+            proxyClusterInfo:
+              unitSpec: unitSpec
+              expireTime: expireTime
+              proxyClusterId: proxyClusterId
+              zone: zone
+              unitNumLimit: 6
+              createTime: createTime
+              unitNum: 1
+              proxyServiceVersion: proxyServiceVersion
+              proxyMode: proxyMode
+              proxyVersion: proxyVersion
+              status: status
+            peeringId: peeringId
+            enableRPc: true
+            networkType: networkType
+            internetPort: 9
+            addressStatus: addressStatus
+            intranetAddressSlaveZoneId: intranetAddressSlaveZoneId
+            connectionZones:
+            - connectionZones
+            - connectionZones
+            internetAddressStatus: internetAddressStatus
+            internetRpcPort: 1
+            intranetAddress: intranetAddress
+            userNameFormat: userNameFormat
+            intranetPort: 7
+            proxyClusterId: proxyClusterId
+            addressType: addressType
+            intranetAddressMasterZoneId: intranetAddressMasterZoneId
+            intranetPeeringPort: 3
+            useSSL: true
+            peeringDstVpcId: peeringDstVpcId
+            intranetPeeringDomain: intranetPeeringDomain
+            peeringDstCidrList: peeringDstCidrList
+            tenantId: tenantId
+            internetDomain: internetDomain
+            maxConnectionNum: 2
+            intranetDomain: intranetDomain
+            intranetRpcPort: 1
+          - serviceType: serviceType
+            intranetAddressStatus: intranetAddressStatus
+            userVpcOwnerId: userVpcOwnerId
+            role: role
+            internetAddress: internetAddress
+            intranetPeeringMaxConnectionNum: 7
+            privateLinkList:
+            - privateLinkEndpointId: privateLinkEndpointId
+              intranetAddress: intranetAddress
+              privateLinkStatus: privateLinkStatus
+              privateLinkDomain: privateLinkDomain
+              privateLinkServiceId: privateLinkServiceId
+              intranetDomain: intranetDomain
+              privateLinkServiceAccount: privateLinkServiceAccount
+              privateLinkUserAccount: privateLinkUserAccount
+            - privateLinkEndpointId: privateLinkEndpointId
+              intranetAddress: intranetAddress
+              privateLinkStatus: privateLinkStatus
+              privateLinkDomain: privateLinkDomain
+              privateLinkServiceId: privateLinkServiceId
+              intranetDomain: intranetDomain
+              privateLinkServiceAccount: privateLinkServiceAccount
+              privateLinkUserAccount: privateLinkUserAccount
+            addressId: addressId
+            intranetPeeringAddress: intranetPeeringAddress
+            vswitchId: vswitchId
+            internetMaxConnectionNum: 4
+            intranetPeeringAddressStatus: intranetPeeringAddressStatus
+            vpcId: vpcId
+            proxyClusterInfo:
+              unitSpec: unitSpec
+              expireTime: expireTime
+              proxyClusterId: proxyClusterId
+              zone: zone
+              unitNumLimit: 6
+              createTime: createTime
+              unitNum: 1
+              proxyServiceVersion: proxyServiceVersion
+              proxyMode: proxyMode
+              proxyVersion: proxyVersion
+              status: status
+            peeringId: peeringId
+            enableRPc: true
+            networkType: networkType
+            internetPort: 9
+            addressStatus: addressStatus
+            intranetAddressSlaveZoneId: intranetAddressSlaveZoneId
+            connectionZones:
+            - connectionZones
+            - connectionZones
+            internetAddressStatus: internetAddressStatus
+            internetRpcPort: 1
+            intranetAddress: intranetAddress
+            userNameFormat: userNameFormat
+            intranetPort: 7
+            proxyClusterId: proxyClusterId
+            addressType: addressType
+            intranetAddressMasterZoneId: intranetAddressMasterZoneId
+            intranetPeeringPort: 3
+            useSSL: true
+            peeringDstVpcId: peeringDstVpcId
+            intranetPeeringDomain: intranetPeeringDomain
+            peeringDstCidrList: peeringDstCidrList
+            tenantId: tenantId
+            internetDomain: internetDomain
+            maxConnectionNum: 2
+            intranetDomain: intranetDomain
+            intranetRpcPort: 1
+          tenantZones:
+          - role: role
+            name: name
+            region: region
+            replicaType: replicaType
+          - role: role
+            name: name
+            region: region
+            replicaType: replicaType
+          primaryRegion: primaryRegion
+          readonlyConnectionAddable: readonlyConnectionAddable
+          tenantCompatibilityMode: tenantCompatibilityMode
+          lowerCaseTableNamesParam: 6
+          cpu: 6
+          timeZone: timeZone
+          gmtCreate: gmtCreate
+          tenantMode: tenantMode
+          unitCpu: 5
+          tagList:
+          - tagValue: tagValue
+            tagKey: tagKey
+          - tagValue: tagValue
+            tagKey: tagKey
+          createTime: createTime
+          tenantId: tenantId
+          status: status
+        - charset: charset
+          primaryZone: primaryZone
+          dataMergeTime: dataMergeTime
+          enableBinlogService: true
+          managementMode: managementMode
+          unitNum: 2
+          description: description
+          deployType: deployType
+          tenantName: tenantName
+          mem: 1
+          vpcId: vpcId
+          ocpTenantId: 0
+          unitMem: 5
+          enableProxyPublicLink: true
+          tenantResource:
+            disk:
+              totalDiskSize: 6.683562403749608
+              usedDiskSize: 8.762042012749001
+            memory:
+              usedMemory: 9.965781217890562
+              totalMemory: 5.025004791520295
+              unitMemory: 9.369310271410669
+            cpu:
+              totalCpu: 7.457744773683766
+              usedCpu: 1.1730742509559433
+              unitCpu: 4.965218492984954
+            unitNum: 9
+          tenantConnections:
+          - serviceType: serviceType
+            intranetAddressStatus: intranetAddressStatus
+            userVpcOwnerId: userVpcOwnerId
+            role: role
+            internetAddress: internetAddress
+            intranetPeeringMaxConnectionNum: 7
+            privateLinkList:
+            - privateLinkEndpointId: privateLinkEndpointId
+              intranetAddress: intranetAddress
+              privateLinkStatus: privateLinkStatus
+              privateLinkDomain: privateLinkDomain
+              privateLinkServiceId: privateLinkServiceId
+              intranetDomain: intranetDomain
+              privateLinkServiceAccount: privateLinkServiceAccount
+              privateLinkUserAccount: privateLinkUserAccount
+            - privateLinkEndpointId: privateLinkEndpointId
+              intranetAddress: intranetAddress
+              privateLinkStatus: privateLinkStatus
+              privateLinkDomain: privateLinkDomain
+              privateLinkServiceId: privateLinkServiceId
+              intranetDomain: intranetDomain
+              privateLinkServiceAccount: privateLinkServiceAccount
+              privateLinkUserAccount: privateLinkUserAccount
+            addressId: addressId
+            intranetPeeringAddress: intranetPeeringAddress
+            vswitchId: vswitchId
+            internetMaxConnectionNum: 4
+            intranetPeeringAddressStatus: intranetPeeringAddressStatus
+            vpcId: vpcId
+            proxyClusterInfo:
+              unitSpec: unitSpec
+              expireTime: expireTime
+              proxyClusterId: proxyClusterId
+              zone: zone
+              unitNumLimit: 6
+              createTime: createTime
+              unitNum: 1
+              proxyServiceVersion: proxyServiceVersion
+              proxyMode: proxyMode
+              proxyVersion: proxyVersion
+              status: status
+            peeringId: peeringId
+            enableRPc: true
+            networkType: networkType
+            internetPort: 9
+            addressStatus: addressStatus
+            intranetAddressSlaveZoneId: intranetAddressSlaveZoneId
+            connectionZones:
+            - connectionZones
+            - connectionZones
+            internetAddressStatus: internetAddressStatus
+            internetRpcPort: 1
+            intranetAddress: intranetAddress
+            userNameFormat: userNameFormat
+            intranetPort: 7
+            proxyClusterId: proxyClusterId
+            addressType: addressType
+            intranetAddressMasterZoneId: intranetAddressMasterZoneId
+            intranetPeeringPort: 3
+            useSSL: true
+            peeringDstVpcId: peeringDstVpcId
+            intranetPeeringDomain: intranetPeeringDomain
+            peeringDstCidrList: peeringDstCidrList
+            tenantId: tenantId
+            internetDomain: internetDomain
+            maxConnectionNum: 2
+            intranetDomain: intranetDomain
+            intranetRpcPort: 1
+          - serviceType: serviceType
+            intranetAddressStatus: intranetAddressStatus
+            userVpcOwnerId: userVpcOwnerId
+            role: role
+            internetAddress: internetAddress
+            intranetPeeringMaxConnectionNum: 7
+            privateLinkList:
+            - privateLinkEndpointId: privateLinkEndpointId
+              intranetAddress: intranetAddress
+              privateLinkStatus: privateLinkStatus
+              privateLinkDomain: privateLinkDomain
+              privateLinkServiceId: privateLinkServiceId
+              intranetDomain: intranetDomain
+              privateLinkServiceAccount: privateLinkServiceAccount
+              privateLinkUserAccount: privateLinkUserAccount
+            - privateLinkEndpointId: privateLinkEndpointId
+              intranetAddress: intranetAddress
+              privateLinkStatus: privateLinkStatus
+              privateLinkDomain: privateLinkDomain
+              privateLinkServiceId: privateLinkServiceId
+              intranetDomain: intranetDomain
+              privateLinkServiceAccount: privateLinkServiceAccount
+              privateLinkUserAccount: privateLinkUserAccount
+            addressId: addressId
+            intranetPeeringAddress: intranetPeeringAddress
+            vswitchId: vswitchId
+            internetMaxConnectionNum: 4
+            intranetPeeringAddressStatus: intranetPeeringAddressStatus
+            vpcId: vpcId
+            proxyClusterInfo:
+              unitSpec: unitSpec
+              expireTime: expireTime
+              proxyClusterId: proxyClusterId
+              zone: zone
+              unitNumLimit: 6
+              createTime: createTime
+              unitNum: 1
+              proxyServiceVersion: proxyServiceVersion
+              proxyMode: proxyMode
+              proxyVersion: proxyVersion
+              status: status
+            peeringId: peeringId
+            enableRPc: true
+            networkType: networkType
+            internetPort: 9
+            addressStatus: addressStatus
+            intranetAddressSlaveZoneId: intranetAddressSlaveZoneId
+            connectionZones:
+            - connectionZones
+            - connectionZones
+            internetAddressStatus: internetAddressStatus
+            internetRpcPort: 1
+            intranetAddress: intranetAddress
+            userNameFormat: userNameFormat
+            intranetPort: 7
+            proxyClusterId: proxyClusterId
+            addressType: addressType
+            intranetAddressMasterZoneId: intranetAddressMasterZoneId
+            intranetPeeringPort: 3
+            useSSL: true
+            peeringDstVpcId: peeringDstVpcId
+            intranetPeeringDomain: intranetPeeringDomain
+            peeringDstCidrList: peeringDstCidrList
+            tenantId: tenantId
+            internetDomain: internetDomain
+            maxConnectionNum: 2
+            intranetDomain: intranetDomain
+            intranetRpcPort: 1
+          tenantZones:
+          - role: role
+            name: name
+            region: region
+            replicaType: replicaType
+          - role: role
+            name: name
+            region: region
+            replicaType: replicaType
+          primaryRegion: primaryRegion
+          readonlyConnectionAddable: readonlyConnectionAddable
+          tenantCompatibilityMode: tenantCompatibilityMode
+          lowerCaseTableNamesParam: 6
+          cpu: 6
+          timeZone: timeZone
+          gmtCreate: gmtCreate
+          tenantMode: tenantMode
+          unitCpu: 5
+          tagList:
+          - tagValue: tagValue
+            tagKey: tagKey
+          - tagValue: tagValue
+            tagKey: tagKey
+          createTime: createTime
+          tenantId: tenantId
+          status: status
+        hasMore: true
+      properties:
+        dataList:
+          items:
+            $ref: '#/components/schemas/TenantDTO'
+          type: array
+        total:
+          format: int64
+          type: integer
+        hasMore:
+          type: boolean
+      type: object
+    OBCloudResultOBCloudPagingDataDescribeDatabasesResponseV2:
+      example:
+        server: server
+        cost: 7
+        data:
+          total: 2
+          dataList:
+          - tables:
+            - zoneList: zoneList
+              databaseName: databaseName
+              tenantId: tenantId
+              tableId: 6
+              tenantOBId: 5
+              tableGroupName: tableGroupName
+              readOnly: 5
+              databaseId: 1
+              tableName: tableName
+            - zoneList: zoneList
+              databaseName: databaseName
+              tenantId: tenantId
+              tableId: 6
+              tenantOBId: 5
+              tableGroupName: tableGroupName
+              readOnly: 5
+              databaseId: 1
+              tableName: tableName
+            databaseName: databaseName
+            tenantId: tenantId
+            description: description
+            dbType: dbType
+            requiredSize: 0.8008281904610115
+            collation: collation
+            gmtCreate: gmtCreate
+            encoding: encoding
+            users:
+            - role: role
+              userType: userType
+              userName: userName
+            - role: role
+              userType: userType
+              userName: userName
+            status: status
+          - tables:
+            - zoneList: zoneList
+              databaseName: databaseName
+              tenantId: tenantId
+              tableId: 6
+              tenantOBId: 5
+              tableGroupName: tableGroupName
+              readOnly: 5
+              databaseId: 1
+              tableName: tableName
+            - zoneList: zoneList
+              databaseName: databaseName
+              tenantId: tenantId
+              tableId: 6
+              tenantOBId: 5
+              tableGroupName: tableGroupName
+              readOnly: 5
+              databaseId: 1
+              tableName: tableName
+            databaseName: databaseName
+            tenantId: tenantId
+            description: description
+            dbType: dbType
+            requiredSize: 0.8008281904610115
+            collation: collation
+            gmtCreate: gmtCreate
+            encoding: encoding
+            users:
+            - role: role
+              userType: userType
+              userName: userName
+            - role: role
+              userType: userType
+              userName: userName
+            status: status
+          hasMore: true
+        success: true
+        requestId: requestId
+        extra:
+          key: "{}"
+        errorMessage: errorMessage
+        errorCode: errorCode
+        totalCount: 9
+      properties:
+        success:
+          type: boolean
+        errorCode:
+          type: string
+        errorMessage:
+          type: string
+        data:
+          $ref: '#/components/schemas/OBCloudPagingDataDescribeDatabasesResponseV2'
+        cost:
+          format: int64
+          type: integer
+        server:
+          type: string
+        requestId:
+          type: string
+        totalCount:
+          format: int64
+          type: integer
+        extra:
+          additionalProperties:
+            properties: {}
+            type: object
+          type: object
+      type: object
+    MemoryDoV2:
+      example:
+        usedMemory: 7.061401241503109
+        totalMemory: 2.3021358869347655
+      properties:
+        totalMemory:
+          format: double
+          type: number
+        usedMemory:
+          format: double
+          type: number
+      type: object
+    OBCloudResultOBCloudPagingDataListDescribeInstancesResponseV2OpenAPI:
+      example:
+        server: server
+        cost: 7
+        data:
+          total: 4
+          dataList:
+          - instanceName: instanceName
+            cpuArchitecture: cpuArchitecture
+            managementMode: managementMode
+            obRpmVersion: obRpmVersion
+            deployType: deployType
+            primaryInstanceId: primaryInstanceId
+            diskSize: 2
+            instanceId: instanceId
+            payType: payType
+            mem: 6
+            vpcId: vpcId
+            cloudProvider: cloudProvider
+            standbyInstanceIds:
+            - standbyInstanceIds
+            - standbyInstanceIds
+            stopTime: stopTime
+            state: state
+            diskType: diskType
+            resource:
+              disk:
+                totalDiskSize: 9.301444243932576
+                usedDiskSize: 3.616076749251911
+              memory:
+                usedMemory: 7.061401241503109
+                totalMemory: 2.3021358869347655
+              cpu:
+                totalCpu: 5.962133916683182
+                usedCpu: 5.637376656633329
+            deployMode: deployMode
+            instanceType: instanceType
+            instanceClass: instanceClass
+            cpu: 0
+            instanceRole: instanceRole
+            version: version
+            tagList:
+            - tagValue: tagValue
+              tagKey: tagKey
+            - tagValue: tagValue
+              tagKey: tagKey
+            usedDiskSize: 1
+            expireTime: expireTime
+            createTime: createTime
+            availableZones:
+            - availableZones
+            - availableZones
+            saleChannel: saleChannel
+            series: series
+            region: region
+            status: status
+          - instanceName: instanceName
+            cpuArchitecture: cpuArchitecture
+            managementMode: managementMode
+            obRpmVersion: obRpmVersion
+            deployType: deployType
+            primaryInstanceId: primaryInstanceId
+            diskSize: 2
+            instanceId: instanceId
+            payType: payType
+            mem: 6
+            vpcId: vpcId
+            cloudProvider: cloudProvider
+            standbyInstanceIds:
+            - standbyInstanceIds
+            - standbyInstanceIds
+            stopTime: stopTime
+            state: state
+            diskType: diskType
+            resource:
+              disk:
+                totalDiskSize: 9.301444243932576
+                usedDiskSize: 3.616076749251911
+              memory:
+                usedMemory: 7.061401241503109
+                totalMemory: 2.3021358869347655
+              cpu:
+                totalCpu: 5.962133916683182
+                usedCpu: 5.637376656633329
+            deployMode: deployMode
+            instanceType: instanceType
+            instanceClass: instanceClass
+            cpu: 0
+            instanceRole: instanceRole
+            version: version
+            tagList:
+            - tagValue: tagValue
+              tagKey: tagKey
+            - tagValue: tagValue
+              tagKey: tagKey
+            usedDiskSize: 1
+            expireTime: expireTime
+            createTime: createTime
+            availableZones:
+            - availableZones
+            - availableZones
+            saleChannel: saleChannel
+            series: series
+            region: region
+            status: status
+          hasMore: true
+        success: true
+        requestId: requestId
+        extra:
+          key: "{}"
+        errorMessage: errorMessage
+        errorCode: errorCode
+        totalCount: 1
+      properties:
+        success:
+          type: boolean
+        errorCode:
+          type: string
+        errorMessage:
+          type: string
+        data:
+          $ref: '#/components/schemas/OBCloudPagingDataListDescribeInstancesResponseV2OpenAPI'
+        cost:
+          format: int64
+          type: integer
+        server:
+          type: string
+        requestId:
+          type: string
+        totalCount:
+          format: int64
+          type: integer
+        extra:
+          additionalProperties:
+            properties: {}
+            type: object
+          type: object
+      type: object
+    MultiCloudModifyInstanceSpecRequest:
+      example:
+        diskSize: 0
+        dryRun: true
+        instanceClass: instanceClass
+      properties:
+        instanceClass:
+          type: string
+        diskSize:
+          format: int32
+          type: integer
+        dryRun:
+          type: boolean
+      type: object
+    OBCloudResultSimpleTenantResponse:
+      example:
+        server: server
+        cost: 0
+        data:
+          tenantId: tenantId
+          jobKey: jobKey
+        success: true
+        requestId: requestId
+        extra:
+          key: "{}"
+        errorMessage: errorMessage
+        errorCode: errorCode
+        totalCount: 6
+      properties:
+        success:
+          type: boolean
+        errorCode:
+          type: string
+        errorMessage:
+          type: string
+        data:
+          $ref: '#/components/schemas/SimpleTenantResponse'
+        cost:
+          format: int64
+          type: integer
+        server:
+          type: string
+        requestId:
+          type: string
+        totalCount:
+          format: int64
+          type: integer
+        extra:
+          additionalProperties:
+            properties: {}
+            type: object
+          type: object
+      type: object
+    TenantZoneDTO:
+      example:
+        role: role
+        name: name
+        region: region
+        replicaType: replicaType
+      properties:
+        name:
+          type: string
+        replicaType:
+          type: string
+        region:
+          type: string
+        role:
+          type: string
+      type: object
+    OBCloudResultBoolean:
+      example:
+        server: server
+        cost: 0
+        data: true
+        success: true
+        requestId: requestId
+        extra:
+          key: "{}"
+        errorMessage: errorMessage
+        errorCode: errorCode
+        totalCount: 6
+      properties:
+        success:
+          type: boolean
+        errorCode:
+          type: string
+        errorMessage:
+          type: string
+        data:
+          type: boolean
+        cost:
+          format: int64
+          type: integer
+        server:
+          type: string
+        requestId:
+          type: string
+        totalCount:
+          format: int64
+          type: integer
+        extra:
+          additionalProperties:
+            properties: {}
+            type: object
+          type: object
+      type: object
+    ModifyInstanceNameRequestV2:
+      example:
+        instanceName: instanceName
+        requestId: requestId
+      properties:
+        requestId:
+          type: string
+        instanceName:
+          maxLength: 64
+          minLength: 0
+          type: string
+      type: object
+    ModifyInstanceNameResponseV2:
+      example:
+        instanceName: instanceName
+      properties:
+        instanceName:
+          type: string
+      type: object
+    OBCloudResultModifyInstanceNameResponseV2:
+      example:
+        server: server
+        cost: 0
+        data:
+          instanceName: instanceName
+        success: true
+        requestId: requestId
+        extra:
+          key: "{}"
+        errorMessage: errorMessage
+        errorCode: errorCode
+        totalCount: 6
+      properties:
+        success:
+          type: boolean
+        errorCode:
+          type: string
+        errorMessage:
+          type: string
+        data:
+          $ref: '#/components/schemas/ModifyInstanceNameResponseV2'
+        cost:
+          format: int64
+          type: integer
+        server:
+          type: string
+        requestId:
+          type: string
+        totalCount:
+          format: int64
+          type: integer
+        extra:
+          additionalProperties:
+            properties: {}
+            type: object
+          type: object
+      type: object
+    MultiCloudModifyInstanceNodeNumRequest:
+      example:
+        nodeNum: 0
+        dryRun: true
+      properties:
+        nodeNum:
+          format: int32
+          type: integer
+        dryRun:
+          type: boolean
+      required:
+      - nodeNum
+      type: object
+    ModifyTenantPrimaryZoneResponse:
+      type: object
+    OBCloudResultOBCloudPagingDataTenantDTO:
+      example:
+        server: server
+        cost: 6
+        data:
+          total: 3
+          dataList:
+          - charset: charset
+            primaryZone: primaryZone
+            dataMergeTime: dataMergeTime
+            enableBinlogService: true
+            managementMode: managementMode
+            unitNum: 2
+            description: description
+            deployType: deployType
+            tenantName: tenantName
+            mem: 1
+            vpcId: vpcId
+            ocpTenantId: 0
+            unitMem: 5
+            enableProxyPublicLink: true
+            tenantResource:
+              disk:
+                totalDiskSize: 6.683562403749608
+                usedDiskSize: 8.762042012749001
+              memory:
+                usedMemory: 9.965781217890562
+                totalMemory: 5.025004791520295
+                unitMemory: 9.369310271410669
+              cpu:
+                totalCpu: 7.457744773683766
+                usedCpu: 1.1730742509559433
+                unitCpu: 4.965218492984954
+              unitNum: 9
+            tenantConnections:
+            - serviceType: serviceType
+              intranetAddressStatus: intranetAddressStatus
+              userVpcOwnerId: userVpcOwnerId
+              role: role
+              internetAddress: internetAddress
+              intranetPeeringMaxConnectionNum: 7
+              privateLinkList:
+              - privateLinkEndpointId: privateLinkEndpointId
+                intranetAddress: intranetAddress
+                privateLinkStatus: privateLinkStatus
+                privateLinkDomain: privateLinkDomain
+                privateLinkServiceId: privateLinkServiceId
+                intranetDomain: intranetDomain
+                privateLinkServiceAccount: privateLinkServiceAccount
+                privateLinkUserAccount: privateLinkUserAccount
+              - privateLinkEndpointId: privateLinkEndpointId
+                intranetAddress: intranetAddress
+                privateLinkStatus: privateLinkStatus
+                privateLinkDomain: privateLinkDomain
+                privateLinkServiceId: privateLinkServiceId
+                intranetDomain: intranetDomain
+                privateLinkServiceAccount: privateLinkServiceAccount
+                privateLinkUserAccount: privateLinkUserAccount
+              addressId: addressId
+              intranetPeeringAddress: intranetPeeringAddress
+              vswitchId: vswitchId
+              internetMaxConnectionNum: 4
+              intranetPeeringAddressStatus: intranetPeeringAddressStatus
+              vpcId: vpcId
+              proxyClusterInfo:
+                unitSpec: unitSpec
+                expireTime: expireTime
+                proxyClusterId: proxyClusterId
+                zone: zone
+                unitNumLimit: 6
+                createTime: createTime
+                unitNum: 1
+                proxyServiceVersion: proxyServiceVersion
+                proxyMode: proxyMode
+                proxyVersion: proxyVersion
+                status: status
+              peeringId: peeringId
+              enableRPc: true
+              networkType: networkType
+              internetPort: 9
+              addressStatus: addressStatus
+              intranetAddressSlaveZoneId: intranetAddressSlaveZoneId
+              connectionZones:
+              - connectionZones
+              - connectionZones
+              internetAddressStatus: internetAddressStatus
+              internetRpcPort: 1
+              intranetAddress: intranetAddress
+              userNameFormat: userNameFormat
+              intranetPort: 7
+              proxyClusterId: proxyClusterId
+              addressType: addressType
+              intranetAddressMasterZoneId: intranetAddressMasterZoneId
+              intranetPeeringPort: 3
+              useSSL: true
+              peeringDstVpcId: peeringDstVpcId
+              intranetPeeringDomain: intranetPeeringDomain
+              peeringDstCidrList: peeringDstCidrList
+              tenantId: tenantId
+              internetDomain: internetDomain
+              maxConnectionNum: 2
+              intranetDomain: intranetDomain
+              intranetRpcPort: 1
+            - serviceType: serviceType
+              intranetAddressStatus: intranetAddressStatus
+              userVpcOwnerId: userVpcOwnerId
+              role: role
+              internetAddress: internetAddress
+              intranetPeeringMaxConnectionNum: 7
+              privateLinkList:
+              - privateLinkEndpointId: privateLinkEndpointId
+                intranetAddress: intranetAddress
+                privateLinkStatus: privateLinkStatus
+                privateLinkDomain: privateLinkDomain
+                privateLinkServiceId: privateLinkServiceId
+                intranetDomain: intranetDomain
+                privateLinkServiceAccount: privateLinkServiceAccount
+                privateLinkUserAccount: privateLinkUserAccount
+              - privateLinkEndpointId: privateLinkEndpointId
+                intranetAddress: intranetAddress
+                privateLinkStatus: privateLinkStatus
+                privateLinkDomain: privateLinkDomain
+                privateLinkServiceId: privateLinkServiceId
+                intranetDomain: intranetDomain
+                privateLinkServiceAccount: privateLinkServiceAccount
+                privateLinkUserAccount: privateLinkUserAccount
+              addressId: addressId
+              intranetPeeringAddress: intranetPeeringAddress
+              vswitchId: vswitchId
+              internetMaxConnectionNum: 4
+              intranetPeeringAddressStatus: intranetPeeringAddressStatus
+              vpcId: vpcId
+              proxyClusterInfo:
+                unitSpec: unitSpec
+                expireTime: expireTime
+                proxyClusterId: proxyClusterId
+                zone: zone
+                unitNumLimit: 6
+                createTime: createTime
+                unitNum: 1
+                proxyServiceVersion: proxyServiceVersion
+                proxyMode: proxyMode
+                proxyVersion: proxyVersion
+                status: status
+              peeringId: peeringId
+              enableRPc: true
+              networkType: networkType
+              internetPort: 9
+              addressStatus: addressStatus
+              intranetAddressSlaveZoneId: intranetAddressSlaveZoneId
+              connectionZones:
+              - connectionZones
+              - connectionZones
+              internetAddressStatus: internetAddressStatus
+              internetRpcPort: 1
+              intranetAddress: intranetAddress
+              userNameFormat: userNameFormat
+              intranetPort: 7
+              proxyClusterId: proxyClusterId
+              addressType: addressType
+              intranetAddressMasterZoneId: intranetAddressMasterZoneId
+              intranetPeeringPort: 3
+              useSSL: true
+              peeringDstVpcId: peeringDstVpcId
+              intranetPeeringDomain: intranetPeeringDomain
+              peeringDstCidrList: peeringDstCidrList
+              tenantId: tenantId
+              internetDomain: internetDomain
+              maxConnectionNum: 2
+              intranetDomain: intranetDomain
+              intranetRpcPort: 1
+            tenantZones:
+            - role: role
+              name: name
+              region: region
+              replicaType: replicaType
+            - role: role
+              name: name
+              region: region
+              replicaType: replicaType
+            primaryRegion: primaryRegion
+            readonlyConnectionAddable: readonlyConnectionAddable
+            tenantCompatibilityMode: tenantCompatibilityMode
+            lowerCaseTableNamesParam: 6
+            cpu: 6
+            timeZone: timeZone
+            gmtCreate: gmtCreate
+            tenantMode: tenantMode
+            unitCpu: 5
+            tagList:
+            - tagValue: tagValue
+              tagKey: tagKey
+            - tagValue: tagValue
+              tagKey: tagKey
+            createTime: createTime
+            tenantId: tenantId
+            status: status
+          - charset: charset
+            primaryZone: primaryZone
+            dataMergeTime: dataMergeTime
+            enableBinlogService: true
+            managementMode: managementMode
+            unitNum: 2
+            description: description
+            deployType: deployType
+            tenantName: tenantName
+            mem: 1
+            vpcId: vpcId
+            ocpTenantId: 0
+            unitMem: 5
+            enableProxyPublicLink: true
+            tenantResource:
+              disk:
+                totalDiskSize: 6.683562403749608
+                usedDiskSize: 8.762042012749001
+              memory:
+                usedMemory: 9.965781217890562
+                totalMemory: 5.025004791520295
+                unitMemory: 9.369310271410669
+              cpu:
+                totalCpu: 7.457744773683766
+                usedCpu: 1.1730742509559433
+                unitCpu: 4.965218492984954
+              unitNum: 9
+            tenantConnections:
+            - serviceType: serviceType
+              intranetAddressStatus: intranetAddressStatus
+              userVpcOwnerId: userVpcOwnerId
+              role: role
+              internetAddress: internetAddress
+              intranetPeeringMaxConnectionNum: 7
+              privateLinkList:
+              - privateLinkEndpointId: privateLinkEndpointId
+                intranetAddress: intranetAddress
+                privateLinkStatus: privateLinkStatus
+                privateLinkDomain: privateLinkDomain
+                privateLinkServiceId: privateLinkServiceId
+                intranetDomain: intranetDomain
+                privateLinkServiceAccount: privateLinkServiceAccount
+                privateLinkUserAccount: privateLinkUserAccount
+              - privateLinkEndpointId: privateLinkEndpointId
+                intranetAddress: intranetAddress
+                privateLinkStatus: privateLinkStatus
+                privateLinkDomain: privateLinkDomain
+                privateLinkServiceId: privateLinkServiceId
+                intranetDomain: intranetDomain
+                privateLinkServiceAccount: privateLinkServiceAccount
+                privateLinkUserAccount: privateLinkUserAccount
+              addressId: addressId
+              intranetPeeringAddress: intranetPeeringAddress
+              vswitchId: vswitchId
+              internetMaxConnectionNum: 4
+              intranetPeeringAddressStatus: intranetPeeringAddressStatus
+              vpcId: vpcId
+              proxyClusterInfo:
+                unitSpec: unitSpec
+                expireTime: expireTime
+                proxyClusterId: proxyClusterId
+                zone: zone
+                unitNumLimit: 6
+                createTime: createTime
+                unitNum: 1
+                proxyServiceVersion: proxyServiceVersion
+                proxyMode: proxyMode
+                proxyVersion: proxyVersion
+                status: status
+              peeringId: peeringId
+              enableRPc: true
+              networkType: networkType
+              internetPort: 9
+              addressStatus: addressStatus
+              intranetAddressSlaveZoneId: intranetAddressSlaveZoneId
+              connectionZones:
+              - connectionZones
+              - connectionZones
+              internetAddressStatus: internetAddressStatus
+              internetRpcPort: 1
+              intranetAddress: intranetAddress
+              userNameFormat: userNameFormat
+              intranetPort: 7
+              proxyClusterId: proxyClusterId
+              addressType: addressType
+              intranetAddressMasterZoneId: intranetAddressMasterZoneId
+              intranetPeeringPort: 3
+              useSSL: true
+              peeringDstVpcId: peeringDstVpcId
+              intranetPeeringDomain: intranetPeeringDomain
+              peeringDstCidrList: peeringDstCidrList
+              tenantId: tenantId
+              internetDomain: internetDomain
+              maxConnectionNum: 2
+              intranetDomain: intranetDomain
+              intranetRpcPort: 1
+            - serviceType: serviceType
+              intranetAddressStatus: intranetAddressStatus
+              userVpcOwnerId: userVpcOwnerId
+              role: role
+              internetAddress: internetAddress
+              intranetPeeringMaxConnectionNum: 7
+              privateLinkList:
+              - privateLinkEndpointId: privateLinkEndpointId
+                intranetAddress: intranetAddress
+                privateLinkStatus: privateLinkStatus
+                privateLinkDomain: privateLinkDomain
+                privateLinkServiceId: privateLinkServiceId
+                intranetDomain: intranetDomain
+                privateLinkServiceAccount: privateLinkServiceAccount
+                privateLinkUserAccount: privateLinkUserAccount
+              - privateLinkEndpointId: privateLinkEndpointId
+                intranetAddress: intranetAddress
+                privateLinkStatus: privateLinkStatus
+                privateLinkDomain: privateLinkDomain
+                privateLinkServiceId: privateLinkServiceId
+                intranetDomain: intranetDomain
+                privateLinkServiceAccount: privateLinkServiceAccount
+                privateLinkUserAccount: privateLinkUserAccount
+              addressId: addressId
+              intranetPeeringAddress: intranetPeeringAddress
+              vswitchId: vswitchId
+              internetMaxConnectionNum: 4
+              intranetPeeringAddressStatus: intranetPeeringAddressStatus
+              vpcId: vpcId
+              proxyClusterInfo:
+                unitSpec: unitSpec
+                expireTime: expireTime
+                proxyClusterId: proxyClusterId
+                zone: zone
+                unitNumLimit: 6
+                createTime: createTime
+                unitNum: 1
+                proxyServiceVersion: proxyServiceVersion
+                proxyMode: proxyMode
+                proxyVersion: proxyVersion
+                status: status
+              peeringId: peeringId
+              enableRPc: true
+              networkType: networkType
+              internetPort: 9
+              addressStatus: addressStatus
+              intranetAddressSlaveZoneId: intranetAddressSlaveZoneId
+              connectionZones:
+              - connectionZones
+              - connectionZones
+              internetAddressStatus: internetAddressStatus
+              internetRpcPort: 1
+              intranetAddress: intranetAddress
+              userNameFormat: userNameFormat
+              intranetPort: 7
+              proxyClusterId: proxyClusterId
+              addressType: addressType
+              intranetAddressMasterZoneId: intranetAddressMasterZoneId
+              intranetPeeringPort: 3
+              useSSL: true
+              peeringDstVpcId: peeringDstVpcId
+              intranetPeeringDomain: intranetPeeringDomain
+              peeringDstCidrList: peeringDstCidrList
+              tenantId: tenantId
+              internetDomain: internetDomain
+              maxConnectionNum: 2
+              intranetDomain: intranetDomain
+              intranetRpcPort: 1
+            tenantZones:
+            - role: role
+              name: name
+              region: region
+              replicaType: replicaType
+            - role: role
+              name: name
+              region: region
+              replicaType: replicaType
+            primaryRegion: primaryRegion
+            readonlyConnectionAddable: readonlyConnectionAddable
+            tenantCompatibilityMode: tenantCompatibilityMode
+            lowerCaseTableNamesParam: 6
+            cpu: 6
+            timeZone: timeZone
+            gmtCreate: gmtCreate
+            tenantMode: tenantMode
+            unitCpu: 5
+            tagList:
+            - tagValue: tagValue
+              tagKey: tagKey
+            - tagValue: tagValue
+              tagKey: tagKey
+            createTime: createTime
+            tenantId: tenantId
+            status: status
+          hasMore: true
+        success: true
+        requestId: requestId
+        extra:
+          key: "{}"
+        errorMessage: errorMessage
+        errorCode: errorCode
+        totalCount: 1
+      properties:
+        success:
+          type: boolean
+        errorCode:
+          type: string
+        errorMessage:
+          type: string
+        data:
+          $ref: '#/components/schemas/OBCloudPagingDataTenantDTO'
+        cost:
+          format: int64
+          type: integer
+        server:
+          type: string
+        requestId:
+          type: string
+        totalCount:
+          format: int64
+          type: integer
+        extra:
+          additionalProperties:
+            properties: {}
+            type: object
+          type: object
+      type: object
+    ModifyTenantNameResponseV2:
+      example:
+        instanceId: instanceId
+        tenantName: tenantName
+        requestId: requestId
+        tenantId: tenantId
+      properties:
+        requestId:
+          type: string
+        instanceId:
+          type: string
+        tenantId:
+          type: string
+        tenantName:
+          type: string
+      type: object
+    OBCloudPagingDataDescribeDatabasesResponseV2:
+      example:
+        total: 2
+        dataList:
+        - tables:
+          - zoneList: zoneList
+            databaseName: databaseName
+            tenantId: tenantId
+            tableId: 6
+            tenantOBId: 5
+            tableGroupName: tableGroupName
+            readOnly: 5
+            databaseId: 1
+            tableName: tableName
+          - zoneList: zoneList
+            databaseName: databaseName
+            tenantId: tenantId
+            tableId: 6
+            tenantOBId: 5
+            tableGroupName: tableGroupName
+            readOnly: 5
+            databaseId: 1
+            tableName: tableName
+          databaseName: databaseName
+          tenantId: tenantId
+          description: description
+          dbType: dbType
+          requiredSize: 0.8008281904610115
+          collation: collation
+          gmtCreate: gmtCreate
+          encoding: encoding
+          users:
+          - role: role
+            userType: userType
+            userName: userName
+          - role: role
+            userType: userType
+            userName: userName
+          status: status
+        - tables:
+          - zoneList: zoneList
+            databaseName: databaseName
+            tenantId: tenantId
+            tableId: 6
+            tenantOBId: 5
+            tableGroupName: tableGroupName
+            readOnly: 5
+            databaseId: 1
+            tableName: tableName
+          - zoneList: zoneList
+            databaseName: databaseName
+            tenantId: tenantId
+            tableId: 6
+            tenantOBId: 5
+            tableGroupName: tableGroupName
+            readOnly: 5
+            databaseId: 1
+            tableName: tableName
+          databaseName: databaseName
+          tenantId: tenantId
+          description: description
+          dbType: dbType
+          requiredSize: 0.8008281904610115
+          collation: collation
+          gmtCreate: gmtCreate
+          encoding: encoding
+          users:
+          - role: role
+            userType: userType
+            userName: userName
+          - role: role
+            userType: userType
+            userName: userName
+          status: status
+        hasMore: true
+      properties:
+        dataList:
+          items:
+            $ref: '#/components/schemas/DescribeDatabasesResponseV2'
+          type: array
+        total:
+          format: int64
+          type: integer
+        hasMore:
+          type: boolean
+      type: object
+    McDeleteTenantSecurityIpGroupResponse:
+      example:
+        instanceId: instanceId
+        tenantId: tenantId
+        securityIpGroupName: securityIpGroupName
+      properties:
+        instanceId:
+          type: string
+        tenantId:
+          type: string
+        securityIpGroupName:
+          type: string
+      type: object
+    OBCloudResultAddTenantPlServiceUserResponse:
+      example:
+        server: server
+        cost: 0
+        data: "{}"
+        success: true
+        requestId: requestId
+        extra:
+          key: "{}"
+        errorMessage: errorMessage
+        errorCode: errorCode
+        totalCount: 6
+      properties:
+        success:
+          type: boolean
+        errorCode:
+          type: string
+        errorMessage:
+          type: string
+        data:
+          type: object
+        cost:
+          format: int64
+          type: integer
+        server:
+          type: string
+        requestId:
+          type: string
+        totalCount:
+          format: int64
+          type: integer
+        extra:
+          additionalProperties:
+            properties: {}
+            type: object
+          type: object
+      type: object
+    DescribeDatabasesResponseV2:
+      example:
+        tables:
+        - zoneList: zoneList
+          databaseName: databaseName
+          tenantId: tenantId
+          tableId: 6
+          tenantOBId: 5
+          tableGroupName: tableGroupName
+          readOnly: 5
+          databaseId: 1
+          tableName: tableName
+        - zoneList: zoneList
+          databaseName: databaseName
+          tenantId: tenantId
+          tableId: 6
+          tenantOBId: 5
+          tableGroupName: tableGroupName
+          readOnly: 5
+          databaseId: 1
+          tableName: tableName
+        databaseName: databaseName
+        tenantId: tenantId
+        description: description
+        dbType: dbType
+        requiredSize: 0.8008281904610115
+        collation: collation
+        gmtCreate: gmtCreate
+        encoding: encoding
+        users:
+        - role: role
+          userType: userType
+          userName: userName
+        - role: role
+          userType: userType
+          userName: userName
+        status: status
+      properties:
+        tenantId:
+          type: string
+        databaseName:
+          type: string
+        gmtCreate:
+          type: string
+        encoding:
+          type: string
+        status:
+          type: string
+        users:
+          items:
+            $ref: '#/components/schemas/OcpUserRoleDo'
+          type: array
+        description:
+          type: string
+        requiredSize:
+          format: double
+          type: number
+        tables:
+          items:
+            $ref: '#/components/schemas/TableInfoDo'
+          type: array
+        collation:
+          type: string
+        dbType:
+          type: string
+      type: object
+    TenantDiskDTO:
+      example:
+        totalDiskSize: 6.683562403749608
+        usedDiskSize: 8.762042012749001
+      properties:
+        totalDiskSize:
+          format: double
+          type: number
+        usedDiskSize:
+          format: double
+          type: number
+      type: object
+    OBCloudResultMcModifyTenantSecurityIpGroupResponse:
+      example:
+        server: server
+        cost: 0
+        data:
+          instanceId: instanceId
+          tenantId: tenantId
+          securityIps: securityIps
+          securityIpGroupName: securityIpGroupName
+        success: true
+        requestId: requestId
+        extra:
+          key: "{}"
+        errorMessage: errorMessage
+        errorCode: errorCode
+        totalCount: 6
+      properties:
+        success:
+          type: boolean
+        errorCode:
+          type: string
+        errorMessage:
+          type: string
+        data:
+          $ref: '#/components/schemas/McModifyTenantSecurityIpGroupResponse'
+        cost:
+          format: int64
+          type: integer
+        server:
+          type: string
+        requestId:
+          type: string
+        totalCount:
+          format: int64
+          type: integer
+        extra:
+          additionalProperties:
+            properties: {}
+            type: object
+          type: object
+      type: object
+    DescribeInstancesResponseV2OpenAPI:
+      example:
+        instanceName: instanceName
+        cpuArchitecture: cpuArchitecture
+        managementMode: managementMode
+        obRpmVersion: obRpmVersion
+        deployType: deployType
+        primaryInstanceId: primaryInstanceId
+        diskSize: 2
+        instanceId: instanceId
+        payType: payType
+        mem: 6
+        vpcId: vpcId
+        cloudProvider: cloudProvider
+        standbyInstanceIds:
+        - standbyInstanceIds
+        - standbyInstanceIds
+        stopTime: stopTime
+        state: state
+        diskType: diskType
+        resource:
+          disk:
+            totalDiskSize: 9.301444243932576
+            usedDiskSize: 3.616076749251911
+          memory:
+            usedMemory: 7.061401241503109
+            totalMemory: 2.3021358869347655
+          cpu:
+            totalCpu: 5.962133916683182
+            usedCpu: 5.637376656633329
+        deployMode: deployMode
+        instanceType: instanceType
+        instanceClass: instanceClass
+        cpu: 0
+        instanceRole: instanceRole
+        version: version
+        tagList:
+        - tagValue: tagValue
+          tagKey: tagKey
+        - tagValue: tagValue
+          tagKey: tagKey
+        usedDiskSize: 1
+        expireTime: expireTime
+        createTime: createTime
+        availableZones:
+        - availableZones
+        - availableZones
+        saleChannel: saleChannel
+        series: series
+        region: region
+        status: status
+      properties:
+        region:
+          type: string
+        instanceId:
+          type: string
+        instanceName:
+          type: string
+        instanceClass:
+          type: string
+        series:
+          type: string
+        createTime:
+          type: string
+        obRpmVersion:
+          type: string
+        version:
+          type: string
+        cpu:
+          format: int32
+          type: integer
+        mem:
+          format: int64
+          type: integer
+        usedDiskSize:
+          format: int64
+          type: integer
+        state:
+          type: string
+        resource:
+          $ref: '#/components/schemas/ResourceDoV2'
+        status:
+          type: string
+        deployMode:
+          type: string
+        vpcId:
+          type: string
+        payType:
+          type: string
+        availableZones:
+          items:
+            type: string
+          type: array
+        deployType:
+          type: string
+        expireTime:
+          type: string
+        cloudProvider:
+          type: string
+        managementMode:
+          type: string
+        instanceType:
+          type: string
+        diskType:
+          type: string
+        diskSize:
+          format: int64
+          type: integer
+        instanceRole:
+          type: string
+        primaryInstanceId:
+          type: string
+        standbyInstanceIds:
+          items:
+            type: string
+          type: array
+        stopTime:
+          type: string
+        saleChannel:
+          type: string
+        tagList:
+          items:
+            $ref: '#/components/schemas/TagKeyValueDo'
+          type: array
+        cpuArchitecture:
+          type: string
+      type: object
+    OBCloudResult:
+      example:
+        server: server
+        cost: 0
+        data: "{}"
+        success: true
+        requestId: requestId
+        extra:
+          key: "{}"
+        errorMessage: errorMessage
+        errorCode: errorCode
+        totalCount: 6
+      properties:
+        success:
+          type: boolean
+        errorCode:
+          type: string
+        errorMessage:
+          type: string
+        data:
+          properties: {}
+          type: object
+        cost:
+          format: int64
+          type: integer
+        server:
+          type: string
+        requestId:
+          type: string
+        totalCount:
+          format: int64
+          type: integer
+        extra:
+          additionalProperties:
+            properties: {}
+            type: object
+          type: object
+      type: object
+    DiskDoV2:
+      example:
+        totalDiskSize: 9.301444243932576
+        usedDiskSize: 3.616076749251911
+      properties:
+        totalDiskSize:
+          format: double
+          type: number
+        usedDiskSize:
+          format: double
+          type: number
+      type: object
+    OBCloudResultMcDeleteTenantSecurityIpGroupResponse:
+      example:
+        server: server
+        cost: 0
+        data:
+          instanceId: instanceId
+          tenantId: tenantId
+          securityIpGroupName: securityIpGroupName
+        success: true
+        requestId: requestId
+        extra:
+          key: "{}"
+        errorMessage: errorMessage
+        errorCode: errorCode
+        totalCount: 6
+      properties:
+        success:
+          type: boolean
+        errorCode:
+          type: string
+        errorMessage:
+          type: string
+        data:
+          $ref: '#/components/schemas/McDeleteTenantSecurityIpGroupResponse'
+        cost:
+          format: int64
+          type: integer
+        server:
+          type: string
+        requestId:
+          type: string
+        totalCount:
+          format: int64
+          type: integer
+        extra:
+          additionalProperties:
+            properties: {}
+            type: object
+          type: object
+      type: object
+    OBCloudPagingDataListDescribeInstancesResponseV2OpenAPI:
+      example:
+        total: 4
+        dataList:
+        - instanceName: instanceName
+          cpuArchitecture: cpuArchitecture
+          managementMode: managementMode
+          obRpmVersion: obRpmVersion
+          deployType: deployType
+          primaryInstanceId: primaryInstanceId
+          diskSize: 2
+          instanceId: instanceId
+          payType: payType
+          mem: 6
+          vpcId: vpcId
+          cloudProvider: cloudProvider
+          standbyInstanceIds:
+          - standbyInstanceIds
+          - standbyInstanceIds
+          stopTime: stopTime
+          state: state
+          diskType: diskType
+          resource:
+            disk:
+              totalDiskSize: 9.301444243932576
+              usedDiskSize: 3.616076749251911
+            memory:
+              usedMemory: 7.061401241503109
+              totalMemory: 2.3021358869347655
+            cpu:
+              totalCpu: 5.962133916683182
+              usedCpu: 5.637376656633329
+          deployMode: deployMode
+          instanceType: instanceType
+          instanceClass: instanceClass
+          cpu: 0
+          instanceRole: instanceRole
+          version: version
+          tagList:
+          - tagValue: tagValue
+            tagKey: tagKey
+          - tagValue: tagValue
+            tagKey: tagKey
+          usedDiskSize: 1
+          expireTime: expireTime
+          createTime: createTime
+          availableZones:
+          - availableZones
+          - availableZones
+          saleChannel: saleChannel
+          series: series
+          region: region
+          status: status
+        - instanceName: instanceName
+          cpuArchitecture: cpuArchitecture
+          managementMode: managementMode
+          obRpmVersion: obRpmVersion
+          deployType: deployType
+          primaryInstanceId: primaryInstanceId
+          diskSize: 2
+          instanceId: instanceId
+          payType: payType
+          mem: 6
+          vpcId: vpcId
+          cloudProvider: cloudProvider
+          standbyInstanceIds:
+          - standbyInstanceIds
+          - standbyInstanceIds
+          stopTime: stopTime
+          state: state
+          diskType: diskType
+          resource:
+            disk:
+              totalDiskSize: 9.301444243932576
+              usedDiskSize: 3.616076749251911
+            memory:
+              usedMemory: 7.061401241503109
+              totalMemory: 2.3021358869347655
+            cpu:
+              totalCpu: 5.962133916683182
+              usedCpu: 5.637376656633329
+          deployMode: deployMode
+          instanceType: instanceType
+          instanceClass: instanceClass
+          cpu: 0
+          instanceRole: instanceRole
+          version: version
+          tagList:
+          - tagValue: tagValue
+            tagKey: tagKey
+          - tagValue: tagValue
+            tagKey: tagKey
+          usedDiskSize: 1
+          expireTime: expireTime
+          createTime: createTime
+          availableZones:
+          - availableZones
+          - availableZones
+          saleChannel: saleChannel
+          series: series
+          region: region
+          status: status
+        hasMore: true
+      properties:
+        dataList:
+          items:
+            $ref: '#/components/schemas/DescribeInstancesResponseV2OpenAPI'
+          type: array
+        total:
+          format: int64
+          type: integer
+        hasMore:
+          type: boolean
+      type: object
+    ModifyInstanceResponseV2OpenApi:
+      example:
+        instanceId: instanceId
+        dryRun: true
+        orderId: orderId
+        dryRunResult: true
+      properties:
+        orderId:
+          type: string
+        instanceId:
+          type: string
+        dryRun:
+          type: boolean
+        dryRunResult:
+          type: boolean
+      type: object
+    CreateMcTenantAddressRequest:
+      example:
+        vpcConnectionInfoId: vpcConnectionInfoId
+        vipServiceType: vipServiceType
+      properties:
+        vipServiceType:
+          type: string
+        vpcConnectionInfoId:
+          type: string
+      type: object
+    TenantDTO:
+      example:
+        charset: charset
+        primaryZone: primaryZone
+        dataMergeTime: dataMergeTime
+        enableBinlogService: true
+        managementMode: managementMode
+        unitNum: 2
+        description: description
+        deployType: deployType
+        tenantName: tenantName
+        mem: 1
+        vpcId: vpcId
+        ocpTenantId: 0
+        unitMem: 5
+        enableProxyPublicLink: true
+        tenantResource:
+          disk:
+            totalDiskSize: 6.683562403749608
+            usedDiskSize: 8.762042012749001
+          memory:
+            usedMemory: 9.965781217890562
+            totalMemory: 5.025004791520295
+            unitMemory: 9.369310271410669
+          cpu:
+            totalCpu: 7.457744773683766
+            usedCpu: 1.1730742509559433
+            unitCpu: 4.965218492984954
+          unitNum: 9
+        tenantConnections:
+        - serviceType: serviceType
+          intranetAddressStatus: intranetAddressStatus
+          userVpcOwnerId: userVpcOwnerId
+          role: role
+          internetAddress: internetAddress
+          intranetPeeringMaxConnectionNum: 7
+          privateLinkList:
+          - privateLinkEndpointId: privateLinkEndpointId
+            intranetAddress: intranetAddress
+            privateLinkStatus: privateLinkStatus
+            privateLinkDomain: privateLinkDomain
+            privateLinkServiceId: privateLinkServiceId
+            intranetDomain: intranetDomain
+            privateLinkServiceAccount: privateLinkServiceAccount
+            privateLinkUserAccount: privateLinkUserAccount
+          - privateLinkEndpointId: privateLinkEndpointId
+            intranetAddress: intranetAddress
+            privateLinkStatus: privateLinkStatus
+            privateLinkDomain: privateLinkDomain
+            privateLinkServiceId: privateLinkServiceId
+            intranetDomain: intranetDomain
+            privateLinkServiceAccount: privateLinkServiceAccount
+            privateLinkUserAccount: privateLinkUserAccount
+          addressId: addressId
+          intranetPeeringAddress: intranetPeeringAddress
+          vswitchId: vswitchId
+          internetMaxConnectionNum: 4
+          intranetPeeringAddressStatus: intranetPeeringAddressStatus
+          vpcId: vpcId
+          proxyClusterInfo:
+            unitSpec: unitSpec
+            expireTime: expireTime
+            proxyClusterId: proxyClusterId
+            zone: zone
+            unitNumLimit: 6
+            createTime: createTime
+            unitNum: 1
+            proxyServiceVersion: proxyServiceVersion
+            proxyMode: proxyMode
+            proxyVersion: proxyVersion
+            status: status
+          peeringId: peeringId
+          enableRPc: true
+          networkType: networkType
+          internetPort: 9
+          addressStatus: addressStatus
+          intranetAddressSlaveZoneId: intranetAddressSlaveZoneId
+          connectionZones:
+          - connectionZones
+          - connectionZones
+          internetAddressStatus: internetAddressStatus
+          internetRpcPort: 1
+          intranetAddress: intranetAddress
+          userNameFormat: userNameFormat
+          intranetPort: 7
+          proxyClusterId: proxyClusterId
+          addressType: addressType
+          intranetAddressMasterZoneId: intranetAddressMasterZoneId
+          intranetPeeringPort: 3
+          useSSL: true
+          peeringDstVpcId: peeringDstVpcId
+          intranetPeeringDomain: intranetPeeringDomain
+          peeringDstCidrList: peeringDstCidrList
+          tenantId: tenantId
+          internetDomain: internetDomain
+          maxConnectionNum: 2
+          intranetDomain: intranetDomain
+          intranetRpcPort: 1
+        - serviceType: serviceType
+          intranetAddressStatus: intranetAddressStatus
+          userVpcOwnerId: userVpcOwnerId
+          role: role
+          internetAddress: internetAddress
+          intranetPeeringMaxConnectionNum: 7
+          privateLinkList:
+          - privateLinkEndpointId: privateLinkEndpointId
+            intranetAddress: intranetAddress
+            privateLinkStatus: privateLinkStatus
+            privateLinkDomain: privateLinkDomain
+            privateLinkServiceId: privateLinkServiceId
+            intranetDomain: intranetDomain
+            privateLinkServiceAccount: privateLinkServiceAccount
+            privateLinkUserAccount: privateLinkUserAccount
+          - privateLinkEndpointId: privateLinkEndpointId
+            intranetAddress: intranetAddress
+            privateLinkStatus: privateLinkStatus
+            privateLinkDomain: privateLinkDomain
+            privateLinkServiceId: privateLinkServiceId
+            intranetDomain: intranetDomain
+            privateLinkServiceAccount: privateLinkServiceAccount
+            privateLinkUserAccount: privateLinkUserAccount
+          addressId: addressId
+          intranetPeeringAddress: intranetPeeringAddress
+          vswitchId: vswitchId
+          internetMaxConnectionNum: 4
+          intranetPeeringAddressStatus: intranetPeeringAddressStatus
+          vpcId: vpcId
+          proxyClusterInfo:
+            unitSpec: unitSpec
+            expireTime: expireTime
+            proxyClusterId: proxyClusterId
+            zone: zone
+            unitNumLimit: 6
+            createTime: createTime
+            unitNum: 1
+            proxyServiceVersion: proxyServiceVersion
+            proxyMode: proxyMode
+            proxyVersion: proxyVersion
+            status: status
+          peeringId: peeringId
+          enableRPc: true
+          networkType: networkType
+          internetPort: 9
+          addressStatus: addressStatus
+          intranetAddressSlaveZoneId: intranetAddressSlaveZoneId
+          connectionZones:
+          - connectionZones
+          - connectionZones
+          internetAddressStatus: internetAddressStatus
+          internetRpcPort: 1
+          intranetAddress: intranetAddress
+          userNameFormat: userNameFormat
+          intranetPort: 7
+          proxyClusterId: proxyClusterId
+          addressType: addressType
+          intranetAddressMasterZoneId: intranetAddressMasterZoneId
+          intranetPeeringPort: 3
+          useSSL: true
+          peeringDstVpcId: peeringDstVpcId
+          intranetPeeringDomain: intranetPeeringDomain
+          peeringDstCidrList: peeringDstCidrList
+          tenantId: tenantId
+          internetDomain: internetDomain
+          maxConnectionNum: 2
+          intranetDomain: intranetDomain
+          intranetRpcPort: 1
+        tenantZones:
+        - role: role
+          name: name
+          region: region
+          replicaType: replicaType
+        - role: role
+          name: name
+          region: region
+          replicaType: replicaType
+        primaryRegion: primaryRegion
+        readonlyConnectionAddable: readonlyConnectionAddable
+        tenantCompatibilityMode: tenantCompatibilityMode
+        lowerCaseTableNamesParam: 6
+        cpu: 6
+        timeZone: timeZone
+        gmtCreate: gmtCreate
+        tenantMode: tenantMode
+        unitCpu: 5
+        tagList:
+        - tagValue: tagValue
+          tagKey: tagKey
+        - tagValue: tagValue
+          tagKey: tagKey
+        createTime: createTime
+        tenantId: tenantId
+        status: status
+      properties:
+        tenantId:
+          type: string
+        ocpTenantId:
+          format: int64
+          type: integer
+        tenantName:
+          type: string
+        managementMode:
+          type: string
+        gmtCreate:
+          type: string
+        createTime:
+          type: string
+        tenantMode:
+          type: string
+        primaryRegion:
+          type: string
+        primaryZone:
+          type: string
+        status:
+          type: string
+        cpu:
+          format: int32
+          type: integer
+        mem:
+          format: int32
+          type: integer
+        unitCpu:
+          format: int32
+          type: integer
+        unitMem:
+          format: int32
+          type: integer
+        unitNum:
+          format: int32
+          type: integer
+        vpcId:
+          type: string
+        deployType:
+          type: string
+        description:
+          type: string
+        tenantConnections:
+          items:
+            $ref: '#/components/schemas/TenantConnectionDTO'
+          type: array
+        tenantZones:
+          items:
+            $ref: '#/components/schemas/TenantZoneDTO'
+          type: array
+        tenantResource:
+          $ref: '#/components/schemas/TenantResourceDTO'
+        enableBinlogService:
+          type: boolean
+        readonlyConnectionAddable:
+          type: string
+        timeZone:
+          type: string
+        charset:
+          type: string
+        lowerCaseTableNamesParam:
+          format: int32
+          type: integer
+        tagList:
+          items:
+            $ref: '#/components/schemas/TagKeyValueDo'
+          type: array
+        tenantCompatibilityMode:
+          type: string
+        dataMergeTime:
+          type: string
+        enableProxyPublicLink:
+          type: boolean
+      type: object
+    ModifyUserStatusParamDo:
+      example:
+        accessKeyId: accessKeyId
+        pageNumber: 0
+        userStatus: userStatus
+        stsTokenCallerBid: stsTokenCallerBid
+        pageSize: 6
+        callerBid: callerBid
+        userName: userName
+        mergedCallerUid: mergedCallerUid
+        securityToken: securityToken
+        uid: uid
+        acceptLanguage: acceptLanguage
+        mergedCallerBid: mergedCallerBid
+        instanceId: instanceId
+        user_ID: user_ID
+        requestId: requestId
+        tenantId: tenantId
+        callerType: callerType
+        clusterGroupName: clusterGroupName
+        callerUid: callerUid
+        stsTokenCallerUid: stsTokenCallerUid
+      properties:
+        requestId:
+          type: string
+        callerType:
+          type: string
+        accessKeyId:
+          type: string
+        securityToken:
+          type: string
+        callerUid:
+          type: string
+        callerBid:
+          type: string
+        stsTokenCallerUid:
+          type: string
+        stsTokenCallerBid:
+          type: string
+        acceptLanguage:
+          type: string
+        pageNumber:
+          format: int32
+          type: integer
+        pageSize:
+          format: int32
+          type: integer
+        mergedCallerBid:
+          type: string
+        instanceId:
+          type: string
+        tenantId:
+          type: string
+        userName:
+          type: string
+        userStatus:
+          type: string
+        clusterGroupName:
+          type: string
+        mergedCallerUid:
+          type: string
+        user_ID:
+          type: string
+        uid:
+          type: string
+      type: object
+    UpdateTenantPrivatelinkInformationResponse:
+      type: object
+    OBCloudResultUpdateTenantPrivatelinkInformationResponse:
+      example:
+        server: server
+        cost: 0
+        data: "{}"
+        success: true
+        requestId: requestId
+        extra:
+          key: "{}"
+        errorMessage: errorMessage
+        errorCode: errorCode
+        totalCount: 6
+      properties:
+        success:
+          type: boolean
+        errorCode:
+          type: string
+        errorMessage:
+          type: string
+        data:
+          type: object
+        cost:
+          format: int64
+          type: integer
+        server:
+          type: string
+        requestId:
+          type: string
+        totalCount:
+          format: int64
+          type: integer
+        extra:
+          additionalProperties:
+            properties: {}
+            type: object
+          type: object
+      type: object
+    CreateTenantRequest:
+      example:
+        charset: charset
+        primaryZone: primaryZone
+        enablePublicLink: true
+        memory: 6
+        description: description
+        timeZone: timeZone
+        cpu: 0
+        unitNum: 5
+        whitelist: whitelist
+        tenantMode: tenantMode
+        tenantCompatibilityModeEnum: MySQL
+        diskSize: 1
+        environment: environment
+        instanceId: instanceId
+        tenantName: tenantName
+        tenantId: tenantId
+        createParams:
+          key: createParams
+      properties:
+        instanceId:
+          type: string
+        tenantName:
+          type: string
+        tenantId:
+          type: string
+        tenantMode:
+          type: string
+        primaryZone:
+          type: string
+        charset:
+          type: string
+        description:
+          type: string
+        whitelist:
+          type: string
+        timeZone:
+          type: string
+        cpu:
+          format: int32
+          type: integer
+        memory:
+          format: int32
+          type: integer
+        diskSize:
+          format: int32
+          type: integer
+        unitNum:
+          format: int32
+          type: integer
+        environment:
+          type: string
+        enablePublicLink:
+          type: boolean
+        createParams:
+          additionalProperties:
+            type: string
+          type: object
+        tenantCompatibilityModeEnum:
+          enum:
+          - MySQL
+          - Oracle
+          - HBase
+          - Table
+          type: string
+      type: object
+    McTenantSecurityIpGroupsResponse:
+      example:
+        tenantId: tenantId
+        securityIps: securityIps
+        securityIpGroupName: securityIpGroupName
+        securityIpGroupType: securityIpGroupType
+      properties:
+        tenantId:
+          type: string
+        securityIpGroupType:
+          type: string
+        securityIpGroupName:
+          type: string
+        securityIps:
+          type: string
+      type: object
+    ModifyDatabaseDescriptionResponseV2:
+      example:
+        requestId: requestId
+        description: description
+      properties:
+        requestId:
+          type: string
+        description:
+          type: string
+      type: object
+    TenantPrivateLinkDTO:
+      example:
+        privateLinkEndpointId: privateLinkEndpointId
+        intranetAddress: intranetAddress
+        privateLinkStatus: privateLinkStatus
+        privateLinkDomain: privateLinkDomain
+        privateLinkServiceId: privateLinkServiceId
+        intranetDomain: intranetDomain
+        privateLinkServiceAccount: privateLinkServiceAccount
+        privateLinkUserAccount: privateLinkUserAccount
+      properties:
+        privateLinkStatus:
+          type: string
+        privateLinkServiceId:
+          type: string
+        privateLinkEndpointId:
+          type: string
+        privateLinkServiceAccount:
+          type: string
+        privateLinkUserAccount:
+          type: string
+        privateLinkDomain:
+          type: string
+        intranetAddress:
+          type: string
+        intranetDomain:
+          type: string
+      type: object
+    OBCloudResultCreateTenantPlServiceResponse:
+      example:
+        server: server
+        cost: 0
+        data:
+          addressId: addressId
+        success: true
+        requestId: requestId
+        extra:
+          key: "{}"
+        errorMessage: errorMessage
+        errorCode: errorCode
+        totalCount: 6
+      properties:
+        success:
+          type: boolean
+        errorCode:
+          type: string
+        errorMessage:
+          type: string
+        data:
+          $ref: '#/components/schemas/CreateTenantPlServiceResponse'
+        cost:
+          format: int64
+          type: integer
+        server:
+          type: string
+        requestId:
+          type: string
+        totalCount:
+          format: int64
+          type: integer
+        extra:
+          additionalProperties:
+            properties: {}
+            type: object
+          type: object
+      type: object
+    CreateUserParamDo:
+      example:
+        accessKeyId: accessKeyId
+        pageNumber: 0
+        roles: roles
+        encryptionType: encryptionType
+        stsTokenCallerBid: stsTokenCallerBid
+        pageSize: 6
+        description: description
+        callerBid: callerBid
+        userName: userName
+        mergedCallerUid: mergedCallerUid
+        securityToken: securityToken
+        uid: uid
+        password: password
+        acceptLanguage: acceptLanguage
+        mergedCallerBid: mergedCallerBid
+        instanceId: instanceId
+        user_ID: user_ID
+        requestId: requestId
+        tenantId: tenantId
+        callerType: callerType
+        userType: userType
+        callerUid: callerUid
+        stsTokenCallerUid: stsTokenCallerUid
+      properties:
+        requestId:
+          type: string
+        callerType:
+          type: string
+        accessKeyId:
+          type: string
+        securityToken:
+          type: string
+        callerUid:
+          type: string
+        callerBid:
+          type: string
+        stsTokenCallerUid:
+          type: string
+        stsTokenCallerBid:
+          type: string
+        acceptLanguage:
+          type: string
+        pageNumber:
+          format: int32
+          type: integer
+        pageSize:
+          format: int32
+          type: integer
+        mergedCallerBid:
+          type: string
+        instanceId:
+          type: string
+        tenantId:
+          type: string
+        userName:
+          type: string
+        password:
+          type: string
+        userType:
+          type: string
+        roles:
+          type: string
+        encryptionType:
+          type: string
+        description:
+          maxLength: 256
+          minLength: 0
+          type: string
+        mergedCallerUid:
+          type: string
+        user_ID:
+          type: string
+        uid:
+          type: string
+      type: object
+    ModifyTenantUserDescriptionParamDo:
+      example:
+        accessKeyId: accessKeyId
+        pageNumber: 0
+        stsTokenCallerBid: stsTokenCallerBid
+        pageSize: 6
+        description: description
+        callerBid: callerBid
+        userName: userName
+        mergedCallerUid: mergedCallerUid
+        securityToken: securityToken
+        uid: uid
+        acceptLanguage: acceptLanguage
+        mergedCallerBid: mergedCallerBid
+        instanceId: instanceId
+        user_ID: user_ID
+        requestId: requestId
+        tenantId: tenantId
+        callerType: callerType
+        callerUid: callerUid
+        stsTokenCallerUid: stsTokenCallerUid
+      properties:
+        requestId:
+          type: string
+        callerType:
+          type: string
+        accessKeyId:
+          type: string
+        securityToken:
+          type: string
+        callerUid:
+          type: string
+        callerBid:
+          type: string
+        stsTokenCallerUid:
+          type: string
+        stsTokenCallerBid:
+          type: string
+        acceptLanguage:
+          type: string
+        pageNumber:
+          format: int32
+          type: integer
+        pageSize:
+          format: int32
+          type: integer
+        mergedCallerBid:
+          type: string
+        instanceId:
+          type: string
+        tenantId:
+          type: string
+        userName:
+          type: string
+        description:
+          maxLength: 256
+          minLength: 0
+          type: string
+        mergedCallerUid:
+          type: string
+        user_ID:
+          type: string
+        uid:
+          type: string
+      type: object
+    CreateReadonlyConnectionResponse:
+      example:
+        addressId: addressId
+      properties:
+        addressId:
+          type: string
+      type: object
+    TenantCpuDTO:
+      example:
+        totalCpu: 7.457744773683766
+        usedCpu: 1.1730742509559433
+        unitCpu: 4.965218492984954
+      properties:
+        totalCpu:
+          format: double
+          type: number
+        usedCpu:
+          format: double
+          type: number
+        unitCpu:
+          format: double
+          type: number
+      type: object
+    CreateTenantPlServiceRequest:
+      example:
+        userAccount: userAccount
+      properties:
+        userAccount:
+          type: string
+      type: object
+    ProxyClusterInfoDTO:
+      example:
+        unitSpec: unitSpec
+        expireTime: expireTime
+        proxyClusterId: proxyClusterId
+        zone: zone
+        unitNumLimit: 6
+        createTime: createTime
+        unitNum: 1
+        proxyServiceVersion: proxyServiceVersion
+        proxyMode: proxyMode
+        proxyVersion: proxyVersion
+        status: status
+      properties:
+        proxyClusterId:
+          type: string
+        proxyMode:
+          type: string
+        zone:
+          type: string
+        unitSpec:
+          type: string
+        unitNum:
+          format: int32
+          type: integer
+        unitNumLimit:
+          format: int32
+          type: integer
+        status:
+          type: string
+        proxyServiceVersion:
+          type: string
+        proxyVersion:
+          type: string
+        createTime:
+          type: string
+        expireTime:
+          type: string
+      type: object
+    ModifyUserPasswordParamDo:
+      example:
+        accessKeyId: accessKeyId
+        userPassword: userPassword
+        pageNumber: 0
+        encryptionType: encryptionType
+        stsTokenCallerBid: stsTokenCallerBid
+        pageSize: 6
+        callerBid: callerBid
+        userName: userName
+        mergedCallerUid: mergedCallerUid
+        securityToken: securityToken
+        uid: uid
+        acceptLanguage: acceptLanguage
+        mergedCallerBid: mergedCallerBid
+        instanceId: instanceId
+        user_ID: user_ID
+        requestId: requestId
+        tenantId: tenantId
+        callerType: callerType
+        clusterGroupName: clusterGroupName
+        callerUid: callerUid
+        stsTokenCallerUid: stsTokenCallerUid
+      properties:
+        requestId:
+          type: string
+        callerType:
+          type: string
+        accessKeyId:
+          type: string
+        securityToken:
+          type: string
+        callerUid:
+          type: string
+        callerBid:
+          type: string
+        stsTokenCallerUid:
+          type: string
+        stsTokenCallerBid:
+          type: string
+        acceptLanguage:
+          type: string
+        pageNumber:
+          format: int32
+          type: integer
+        pageSize:
+          format: int32
+          type: integer
+        mergedCallerBid:
+          type: string
+        instanceId:
+          type: string
+        tenantId:
+          type: string
+        userName:
+          type: string
+        userPassword:
+          type: string
+        encryptionType:
+          type: string
+        clusterGroupName:
+          type: string
+        mergedCallerUid:
+          type: string
+        user_ID:
+          type: string
+        uid:
+          type: string
+      type: object
+    CreateReadonlyConnectionRequest:
+      example:
+        userAccount: userAccount
+        zoneIdList:
+        - zoneIdList
+        - zoneIdList
+      properties:
+        zoneIdList:
+          items:
+            type: string
+          type: array
+        userAccount:
+          type: string
+      type: object
+    McModifyTenantSecurityIpGroupRequest:
+      example:
+        securityIps: securityIps
+        securityIpGroupName: securityIpGroupName
+      properties:
+        securityIps:
+          type: string
+        securityIpGroupName:
+          type: string
+      type: object
+    CpuDoV2:
+      example:
+        totalCpu: 5.962133916683182
+        usedCpu: 5.637376656633329
+      properties:
+        totalCpu:
+          format: double
+          type: number
+        usedCpu:
+          format: double
+          type: number
+      type: object
+    TagKeyValueDo:
+      example:
+        tagValue: tagValue
+        tagKey: tagKey
+      properties:
+        tagKey:
+          type: string
+        tagValue:
+          type: string
+      type: object
+    UpdateTenantPrivatelinkInformationRequest:
+      example:
+        userEndpointAddress: userEndpointAddress
+        endpointId: endpointId
+        addressId: addressId
+      properties:
+        addressId:
+          type: string
+        userEndpointAddress:
+          type: string
+        endpointId:
+          type: string
+      type: object
+    TableInfoDo:
+      example:
+        zoneList: zoneList
+        databaseName: databaseName
+        tenantId: tenantId
+        tableId: 6
+        tenantOBId: 5
+        tableGroupName: tableGroupName
+        readOnly: 5
+        databaseId: 1
+        tableName: tableName
+      properties:
+        tableId:
+          format: int64
+          type: integer
+        tableName:
+          type: string
+        databaseId:
+          format: int64
+          type: integer
+        databaseName:
+          type: string
+        tenantOBId:
+          format: int64
+          type: integer
+        tenantId:
+          type: string
+        tableGroupName:
+          type: string
+        zoneList:
+          type: string
+        readOnly:
+          format: int32
+          type: integer
+      type: object
+    ConfirmTenantPlServiceRequest:
+      example:
+        endpointId: endpointId
+        addressId: addressId
+      properties:
+        addressId:
+          type: string
+        endpointId:
+          type: string
+      type: object
+    ConnectTenantPlServiceResponse:
+      type: object
+    OBCloudPagingDataOcpDbUserDtoV2:
+      example:
+        total: 6
+        dataList:
+        - databases:
+          - privileges: privileges
+            database: database
+            role: role
+            withGrant: 0
+            userName: userName
+            table: table
+            isSuccess: true
+          - privileges: privileges
+            database: database
+            role: role
+            withGrant: 0
+            userName: userName
+            table: table
+            isSuccess: true
+          password: password
+          userStatus: userStatus
+          description: description
+          userType: userType
+          userName: userName
+        - databases:
+          - privileges: privileges
+            database: database
+            role: role
+            withGrant: 0
+            userName: userName
+            table: table
+            isSuccess: true
+          - privileges: privileges
+            database: database
+            role: role
+            withGrant: 0
+            userName: userName
+            table: table
+            isSuccess: true
+          password: password
+          userStatus: userStatus
+          description: description
+          userType: userType
+          userName: userName
+        hasMore: true
+      properties:
+        dataList:
+          items:
+            $ref: '#/components/schemas/OcpDbUserDtoV2'
+          type: array
+        total:
+          format: int64
+          type: integer
+        hasMore:
+          type: boolean
+      type: object
+    ConnectTenantPlServiceRequest:
+      example:
+        userEndpointAddress: userEndpointAddress
+        endpointId: endpointId
+        addressId: addressId
+      properties:
+        endpointId:
+          type: string
+        addressId:
+          type: string
+        userEndpointAddress:
+          type: string
+      type: object
+    OBCloudResultDeleteInstanceResponse:
+      example:
+        server: server
+        cost: 0
+        data: "{}"
+        success: true
+        requestId: requestId
+        extra:
+          key: "{}"
+        errorMessage: errorMessage
+        errorCode: errorCode
+        totalCount: 6
+      properties:
+        success:
+          type: boolean
+        errorCode:
+          type: string
+        errorMessage:
+          type: string
+        data:
+          type: object
+        cost:
+          format: int64
+          type: integer
+        server:
+          type: string
+        requestId:
+          type: string
+        totalCount:
+          format: int64
+          type: integer
+        extra:
+          additionalProperties:
+            properties: {}
+            type: object
+          type: object
+      type: object
+    OBCloudResultConnectTenantPlServiceResponse:
+      example:
+        server: server
+        cost: 0
+        data: "{}"
+        success: true
+        requestId: requestId
+        extra:
+          key: "{}"
+        errorMessage: errorMessage
+        errorCode: errorCode
+        totalCount: 6
+      properties:
+        success:
+          type: boolean
+        errorCode:
+          type: string
+        errorMessage:
+          type: string
+        data:
+          type: object
+        cost:
+          format: int64
+          type: integer
+        server:
+          type: string
+        requestId:
+          type: string
+        totalCount:
+          format: int64
+          type: integer
+        extra:
+          additionalProperties:
+            properties: {}
+            type: object
+          type: object
+      type: object
+    CreateTenantResponse:
+      example:
+        extra:
+          key: "{}"
+        tenantId: tenantId
+      properties:
+        tenantId:
+          type: string
+        extra:
+          additionalProperties:
+            properties: {}
+            type: object
+          type: object
+      type: object
+    OBCloudResultCreateReadonlyConnectionResponse:
+      example:
+        server: server
+        cost: 0
+        data:
+          addressId: addressId
+        success: true
+        requestId: requestId
+        extra:
+          key: "{}"
+        errorMessage: errorMessage
+        errorCode: errorCode
+        totalCount: 6
+      properties:
+        success:
+          type: boolean
+        errorCode:
+          type: string
+        errorMessage:
+          type: string
+        data:
+          $ref: '#/components/schemas/CreateReadonlyConnectionResponse'
+        cost:
+          format: int64
+          type: integer
+        server:
+          type: string
+        requestId:
+          type: string
+        totalCount:
+          format: int64
+          type: integer
+        extra:
+          additionalProperties:
+            properties: {}
+            type: object
+          type: object
+      type: object
+    ModifyDatabaseUserRolesParamDo:
+      example:
+        accessKeyId: accessKeyId
+        pageNumber: 0
+        databaseName: databaseName
+        stsTokenCallerBid: stsTokenCallerBid
+        pageSize: 6
+        callerBid: callerBid
+        mergedCallerUid: mergedCallerUid
+        users: users
+        securityToken: securityToken
+        uid: uid
+        acceptLanguage: acceptLanguage
+        mergedCallerBid: mergedCallerBid
+        instanceId: instanceId
+        user_ID: user_ID
+        requestId: requestId
+        tenantId: tenantId
+        callerType: callerType
+        callerUid: callerUid
+        stsTokenCallerUid: stsTokenCallerUid
+      properties:
+        requestId:
+          type: string
+        callerType:
+          type: string
+        accessKeyId:
+          type: string
+        securityToken:
+          type: string
+        callerUid:
+          type: string
+        callerBid:
+          type: string
+        stsTokenCallerUid:
+          type: string
+        stsTokenCallerBid:
+          type: string
+        acceptLanguage:
+          type: string
+        pageNumber:
+          format: int32
+          type: integer
+        pageSize:
+          format: int32
+          type: integer
+        mergedCallerBid:
+          type: string
+        tenantId:
+          type: string
+        databaseName:
+          maxLength: 64
+          minLength: 2
+          type: string
+        users:
+          type: string
+        instanceId:
+          type: string
+        mergedCallerUid:
+          type: string
+        user_ID:
+          type: string
+        uid:
+          type: string
+      type: object
+    OBCloudResultOBCloudPagingDataMcTenantSecurityIpGroupsResponse:
+      example:
+        server: server
+        cost: 6
+        data:
+          total: 0
+          dataList:
+          - tenantId: tenantId
+            securityIps: securityIps
+            securityIpGroupName: securityIpGroupName
+            securityIpGroupType: securityIpGroupType
+          - tenantId: tenantId
+            securityIps: securityIps
+            securityIpGroupName: securityIpGroupName
+            securityIpGroupType: securityIpGroupType
+          hasMore: true
+        success: true
+        requestId: requestId
+        extra:
+          key: "{}"
+        errorMessage: errorMessage
+        errorCode: errorCode
+        totalCount: 1
+      properties:
+        success:
+          type: boolean
+        errorCode:
+          type: string
+        errorMessage:
+          type: string
+        data:
+          $ref: '#/components/schemas/OBCloudPagingDataMcTenantSecurityIpGroupsResponse'
+        cost:
+          format: int64
+          type: integer
+        server:
+          type: string
+        requestId:
+          type: string
+        totalCount:
+          format: int64
+          type: integer
+        extra:
+          additionalProperties:
+            properties: {}
+            type: object
+          type: object
+      type: object
+    CreateTenantPlServiceResponse:
+      example:
+        addressId: addressId
+      properties:
+        addressId:
+          type: string
+      type: object
+    OBCloudResultCreateMcTenantAddressResponse:
+      example:
+        server: server
+        cost: 0
+        data:
+          addressId: addressId
+        success: true
+        requestId: requestId
+        extra:
+          key: "{}"
+        errorMessage: errorMessage
+        errorCode: errorCode
+        totalCount: 6
+      properties:
+        success:
+          type: boolean
+        errorCode:
+          type: string
+        errorMessage:
+          type: string
+        data:
+          $ref: '#/components/schemas/CreateMcTenantAddressResponse'
+        cost:
+          format: int64
+          type: integer
+        server:
+          type: string
+        requestId:
+          type: string
+        totalCount:
+          format: int64
+          type: integer
+        extra:
+          additionalProperties:
+            properties: {}
+            type: object
+          type: object
+      type: object
+    OBCloudResultDescribeInstanceResponseV2OpenAPI:
+      example:
+        server: server
+        cost: 6
+        data:
+          dataMergeTime: dataMergeTime
+          instanceName: instanceName
+          cpuArchitecture: cpuArchitecture
+          managementMode: managementMode
+          obRpmVersion: obRpmVersion
+          deployType: deployType
+          primaryInstanceId: primaryInstanceId
+          instanceId: instanceId
+          payType: payType
+          vpcId: vpcId
+          cloudProvider: cloudProvider
+          standbyInstanceIds:
+          - standbyInstanceIds
+          - standbyInstanceIds
+          stopTime: stopTime
+          diskType: diskType
+          replicaMode: replicaMode
+          nodeNum: 0
+          resource:
+            disk:
+              totalDiskSize: 9.301444243932576
+              usedDiskSize: 3.616076749251911
+            memory:
+              usedMemory: 7.061401241503109
+              totalMemory: 2.3021358869347655
+            cpu:
+              totalCpu: 5.962133916683182
+              usedCpu: 5.637376656633329
+          deployMode: deployMode
+          instanceType: instanceType
+          instanceClass: instanceClass
+          instanceRole: instanceRole
+          version: version
+          tagList:
+          - tagValue: tagValue
+            tagKey: tagKey
+          - tagValue: tagValue
+            tagKey: tagKey
+          expireTime: expireTime
+          createTime: createTime
+          availableZones:
+          - availableZones
+          - availableZones
+          saleChannel: saleChannel
+          series: series
+          region: region
+          projectId: projectId
+          status: status
+        success: true
+        requestId: requestId
+        extra:
+          key: "{}"
+        errorMessage: errorMessage
+        errorCode: errorCode
+        totalCount: 1
+      properties:
+        success:
+          type: boolean
+        errorCode:
+          type: string
+        errorMessage:
+          type: string
+        data:
+          $ref: '#/components/schemas/DescribeInstanceResponseV2OpenAPI'
+        cost:
+          format: int64
+          type: integer
+        server:
+          type: string
+        requestId:
+          type: string
+        totalCount:
+          format: int64
+          type: integer
+        extra:
+          additionalProperties:
+            properties: {}
+            type: object
+          type: object
+      type: object
+    OBCloudResultModifyTenantNameResponseV2:
+      example:
+        server: server
+        cost: 0
+        data:
+          instanceId: instanceId
+          tenantName: tenantName
+          requestId: requestId
+          tenantId: tenantId
+        success: true
+        requestId: requestId
+        extra:
+          key: "{}"
+        errorMessage: errorMessage
+        errorCode: errorCode
+        totalCount: 6
+      properties:
+        success:
+          type: boolean
+        errorCode:
+          type: string
+        errorMessage:
+          type: string
+        data:
+          $ref: '#/components/schemas/ModifyTenantNameResponseV2'
+        cost:
+          format: int64
+          type: integer
+        server:
+          type: string
+        requestId:
+          type: string
+        totalCount:
+          format: int64
+          type: integer
+        extra:
+          additionalProperties:
+            properties: {}
+            type: object
+          type: object
+      type: object
+    CreateUserResponseDtoV2:
+      example:
+        userStatus: userStatus
+        roles:
+        - "{}"
+        - "{}"
+        description: description
+        userType: userType
+        userName: userName
+      properties:
+        userName:
+          type: string
+        userType:
+          type: string
+        userStatus:
+          type: string
+        description:
+          type: string
+        roles:
+          items:
+            properties: {}
+            type: object
+          type: array
+      type: object
+    DeleteInstanceResponse:
+      type: object
+    OBCloudResultModifyTenantPrimaryZoneResponse:
+      example:
+        server: server
+        cost: 0
+        data: "{}"
+        success: true
+        requestId: requestId
+        extra:
+          key: "{}"
+        errorMessage: errorMessage
+        errorCode: errorCode
+        totalCount: 6
+      properties:
+        success:
+          type: boolean
+        errorCode:
+          type: string
+        errorMessage:
+          type: string
+        data:
+          type: object
+        cost:
+          format: int64
+          type: integer
+        server:
+          type: string
+        requestId:
+          type: string
+        totalCount:
+          format: int64
+          type: integer
+        extra:
+          additionalProperties:
+            properties: {}
+            type: object
+          type: object
+      type: object
+    OBCloudPagingDataMcTenantSecurityIpGroupsResponse:
+      example:
+        total: 0
+        dataList:
+        - tenantId: tenantId
+          securityIps: securityIps
+          securityIpGroupName: securityIpGroupName
+          securityIpGroupType: securityIpGroupType
+        - tenantId: tenantId
+          securityIps: securityIps
+          securityIpGroupName: securityIpGroupName
+          securityIpGroupType: securityIpGroupType
+        hasMore: true
+      properties:
+        dataList:
+          items:
+            $ref: '#/components/schemas/McTenantSecurityIpGroupsResponse'
+          type: array
+        total:
+          format: int64
+          type: integer
+        hasMore:
+          type: boolean
+      type: object
+    DeleteDatabasesParamDo:
+      example:
+        accessKeyId: accessKeyId
+        pageNumber: 0
+        stsTokenCallerBid: stsTokenCallerBid
+        pageSize: 6
+        callerBid: callerBid
+        mergedCallerUid: mergedCallerUid
+        securityToken: securityToken
+        uid: uid
+        acceptLanguage: acceptLanguage
+        mergedCallerBid: mergedCallerBid
+        instanceId: instanceId
+        user_ID: user_ID
+        requestId: requestId
+        tenantId: tenantId
+        callerType: callerType
+        force: true
+        databaseNames: databaseNames
+        callerUid: callerUid
+        stsTokenCallerUid: stsTokenCallerUid
+      properties:
+        requestId:
+          type: string
+        callerType:
+          type: string
+        accessKeyId:
+          type: string
+        securityToken:
+          type: string
+        callerUid:
+          type: string
+        callerBid:
+          type: string
+        stsTokenCallerUid:
+          type: string
+        stsTokenCallerBid:
+          type: string
+        acceptLanguage:
+          type: string
+        pageNumber:
+          format: int32
+          type: integer
+        pageSize:
+          format: int32
+          type: integer
+        mergedCallerBid:
+          type: string
+        instanceId:
+          type: string
+        tenantId:
+          type: string
+        databaseNames:
+          type: string
+        force:
+          type: boolean
+        mergedCallerUid:
+          type: string
+        user_ID:
+          type: string
+        uid:
+          type: string
+      type: object
+    McDeleteTenantSecurityIpGroupRequest:
+      example:
+        securityIpGroupName: securityIpGroupName
+      properties:
+        securityIpGroupName:
+          type: string
+      type: object
+    DeleteInstanceOpenRequest:
+      example:
+        instanceId: instanceId
+        requestId: requestId
+      properties:
+        requestId:
+          type: string
+        instanceId:
+          type: string
+      type: object
+    DeleteTenantUserParamDo:
+      example:
+        accessKeyId: accessKeyId
+        pageNumber: 0
+        InstanceId: InstanceId
+        stsTokenCallerBid: stsTokenCallerBid
+        pageSize: 6
+        callerBid: callerBid
+        Users: Users
+        mergedCallerUid: mergedCallerUid
+        securityToken: securityToken
+        uid: uid
+        TenantId: TenantId
+        acceptLanguage: acceptLanguage
+        mergedCallerBid: mergedCallerBid
+        user_ID: user_ID
+        requestId: requestId
+        callerType: callerType
+        callerUid: callerUid
+        stsTokenCallerUid: stsTokenCallerUid
+      properties:
+        requestId:
+          type: string
+        callerType:
+          type: string
+        accessKeyId:
+          type: string
+        securityToken:
+          type: string
+        callerUid:
+          type: string
+        callerBid:
+          type: string
+        stsTokenCallerUid:
+          type: string
+        stsTokenCallerBid:
+          type: string
+        acceptLanguage:
+          type: string
+        pageNumber:
+          format: int32
+          type: integer
+        pageSize:
+          format: int32
+          type: integer
+        mergedCallerBid:
+          type: string
+        InstanceId:
+          type: string
+        TenantId:
+          type: string
+        Users:
+          type: string
+        mergedCallerUid:
+          type: string
+        user_ID:
+          type: string
+        uid:
+          type: string
+      type: object
+    SimpleTenantResponse:
+      example:
+        tenantId: tenantId
+        jobKey: jobKey
+      properties:
+        tenantId:
+          type: string
+        jobKey:
+          type: string
+      type: object
+    McModifyTenantSecurityIpGroupResponse:
+      example:
+        instanceId: instanceId
+        tenantId: tenantId
+        securityIps: securityIps
+        securityIpGroupName: securityIpGroupName
+      properties:
+        instanceId:
+          type: string
+        tenantId:
+          type: string
+        securityIps:
+          type: string
+        securityIpGroupName:
+          type: string
+      type: object
+    OBCloudResultModifyInstanceResponseV2OpenApi:
+      example:
+        server: server
+        cost: 0
+        data:
+          instanceId: instanceId
+          dryRun: true
+          orderId: orderId
+          dryRunResult: true
+        success: true
+        requestId: requestId
+        extra:
+          key: "{}"
+        errorMessage: errorMessage
+        errorCode: errorCode
+        totalCount: 6
+      properties:
+        success:
+          type: boolean
+        errorCode:
+          type: string
+        errorMessage:
+          type: string
+        data:
+          $ref: '#/components/schemas/ModifyInstanceResponseV2OpenApi'
+        cost:
+          format: int64
+          type: integer
+        server:
+          type: string
+        requestId:
+          type: string
+        totalCount:
+          format: int64
+          type: integer
+        extra:
+          additionalProperties:
+            properties: {}
+            type: object
+          type: object
+      type: object
+    UpdateTenantRequest:
+      example:
+        instanceId: instanceId
+        memory: 6
+        tenantName: tenantName
+        requestId: requestId
+        tenantId: tenantId
+        description: description
+        cpu: 0
+        unitNum: 1
+      properties:
+        instanceId:
+          type: string
+        tenantId:
+          type: string
+        description:
+          type: string
+        tenantName:
+          type: string
+        cpu:
+          format: int32
+          type: integer
+        memory:
+          format: int32
+          type: integer
+        unitNum:
+          format: int32
+          type: integer
+        requestId:
+          type: string
+      type: object
+    TenantConnectionDTO:
+      example:
+        serviceType: serviceType
+        intranetAddressStatus: intranetAddressStatus
+        userVpcOwnerId: userVpcOwnerId
+        role: role
+        internetAddress: internetAddress
+        intranetPeeringMaxConnectionNum: 7
+        privateLinkList:
+        - privateLinkEndpointId: privateLinkEndpointId
+          intranetAddress: intranetAddress
+          privateLinkStatus: privateLinkStatus
+          privateLinkDomain: privateLinkDomain
+          privateLinkServiceId: privateLinkServiceId
+          intranetDomain: intranetDomain
+          privateLinkServiceAccount: privateLinkServiceAccount
+          privateLinkUserAccount: privateLinkUserAccount
+        - privateLinkEndpointId: privateLinkEndpointId
+          intranetAddress: intranetAddress
+          privateLinkStatus: privateLinkStatus
+          privateLinkDomain: privateLinkDomain
+          privateLinkServiceId: privateLinkServiceId
+          intranetDomain: intranetDomain
+          privateLinkServiceAccount: privateLinkServiceAccount
+          privateLinkUserAccount: privateLinkUserAccount
+        addressId: addressId
+        intranetPeeringAddress: intranetPeeringAddress
+        vswitchId: vswitchId
+        internetMaxConnectionNum: 4
+        intranetPeeringAddressStatus: intranetPeeringAddressStatus
+        vpcId: vpcId
+        proxyClusterInfo:
+          unitSpec: unitSpec
+          expireTime: expireTime
+          proxyClusterId: proxyClusterId
+          zone: zone
+          unitNumLimit: 6
+          createTime: createTime
+          unitNum: 1
+          proxyServiceVersion: proxyServiceVersion
+          proxyMode: proxyMode
+          proxyVersion: proxyVersion
+          status: status
+        peeringId: peeringId
+        enableRPc: true
+        networkType: networkType
+        internetPort: 9
+        addressStatus: addressStatus
+        intranetAddressSlaveZoneId: intranetAddressSlaveZoneId
+        connectionZones:
+        - connectionZones
+        - connectionZones
+        internetAddressStatus: internetAddressStatus
+        internetRpcPort: 1
+        intranetAddress: intranetAddress
+        userNameFormat: userNameFormat
+        intranetPort: 7
+        proxyClusterId: proxyClusterId
+        addressType: addressType
+        intranetAddressMasterZoneId: intranetAddressMasterZoneId
+        intranetPeeringPort: 3
+        useSSL: true
+        peeringDstVpcId: peeringDstVpcId
+        intranetPeeringDomain: intranetPeeringDomain
+        peeringDstCidrList: peeringDstCidrList
+        tenantId: tenantId
+        internetDomain: internetDomain
+        maxConnectionNum: 2
+        intranetDomain: intranetDomain
+        intranetRpcPort: 1
+      properties:
+        tenantId:
+          type: string
+        vpcId:
+          type: string
+        userVpcOwnerId:
+          type: string
+        addressId:
+          type: string
+        serviceType:
+          type: string
+        addressType:
+          type: string
+        networkType:
+          type: string
+        role:
+          type: string
+        intranetAddress:
+          type: string
+        intranetPort:
+          format: int32
+          type: integer
+        intranetDomain:
+          type: string
+        intranetAddressStatus:
+          type: string
+        internetAddress:
+          type: string
+        internetPort:
+          format: int32
+          type: integer
+        internetDomain:
+          type: string
+        internetAddressStatus:
+          type: string
+        intranetPeeringAddress:
+          type: string
+        intranetPeeringPort:
+          format: int32
+          type: integer
+        intranetPeeringDomain:
+          type: string
+        intranetPeeringAddressStatus:
+          type: string
+        intranetAddressMasterZoneId:
+          type: string
+        intranetAddressSlaveZoneId:
+          type: string
+        connectionZones:
+          items:
+            type: string
+          type: array
+        addressStatus:
+          type: string
+        userNameFormat:
+          type: string
+        privateLinkList:
+          items:
+            $ref: '#/components/schemas/TenantPrivateLinkDTO'
+          type: array
+        peeringDstVpcId:
+          type: string
+        peeringDstCidrList:
+          type: string
+        peeringId:
+          type: string
+        useSSL:
+          type: boolean
+        proxyClusterId:
+          type: string
+        maxConnectionNum:
+          format: int32
+          type: integer
+        internetMaxConnectionNum:
+          format: int32
+          type: integer
+        intranetPeeringMaxConnectionNum:
+          format: int32
+          type: integer
+        enableRPc:
+          type: boolean
+        intranetRpcPort:
+          format: int32
+          type: integer
+        internetRpcPort:
+          format: int32
+          type: integer
+        proxyClusterInfo:
+          $ref: '#/components/schemas/ProxyClusterInfoDTO'
+        vswitchId:
+          type: string
+      type: object
+    OBCloudResultModifyDatabaseDescriptionResponseV2:
+      example:
+        server: server
+        cost: 0
+        data:
+          requestId: requestId
+          description: description
+        success: true
+        requestId: requestId
+        extra:
+          key: "{}"
+        errorMessage: errorMessage
+        errorCode: errorCode
+        totalCount: 6
+      properties:
+        success:
+          type: boolean
+        errorCode:
+          type: string
+        errorMessage:
+          type: string
+        data:
+          $ref: '#/components/schemas/ModifyDatabaseDescriptionResponseV2'
+        cost:
+          format: int64
+          type: integer
+        server:
+          type: string
+        requestId:
+          type: string
+        totalCount:
+          format: int64
+          type: integer
+        extra:
+          additionalProperties:
+            properties: {}
+            type: object
+          type: object
+      type: object
+    OBCloudResultCreateUserResponseDtoV2:
+      example:
+        server: server
+        cost: 0
+        data:
+          userStatus: userStatus
+          roles:
+          - "{}"
+          - "{}"
+          description: description
+          userType: userType
+          userName: userName
+        success: true
+        requestId: requestId
+        extra:
+          key: "{}"
+        errorMessage: errorMessage
+        errorCode: errorCode
+        totalCount: 6
+      properties:
+        success:
+          type: boolean
+        errorCode:
+          type: string
+        errorMessage:
+          type: string
+        data:
+          $ref: '#/components/schemas/CreateUserResponseDtoV2'
+        cost:
+          format: int64
+          type: integer
+        server:
+          type: string
+        requestId:
+          type: string
+        totalCount:
+          format: int64
+          type: integer
+        extra:
+          additionalProperties:
+            properties: {}
+            type: object
+          type: object
+      type: object
+    OBCloudResultOBCloudPagingDataOcpDbUserDtoV2:
+      example:
+        server: server
+        cost: 1
+        data:
+          total: 6
+          dataList:
+          - databases:
+            - privileges: privileges
+              database: database
+              role: role
+              withGrant: 0
+              userName: userName
+              table: table
+              isSuccess: true
+            - privileges: privileges
+              database: database
+              role: role
+              withGrant: 0
+              userName: userName
+              table: table
+              isSuccess: true
+            password: password
+            userStatus: userStatus
+            description: description
+            userType: userType
+            userName: userName
+          - databases:
+            - privileges: privileges
+              database: database
+              role: role
+              withGrant: 0
+              userName: userName
+              table: table
+              isSuccess: true
+            - privileges: privileges
+              database: database
+              role: role
+              withGrant: 0
+              userName: userName
+              table: table
+              isSuccess: true
+            password: password
+            userStatus: userStatus
+            description: description
+            userType: userType
+            userName: userName
+          hasMore: true
+        success: true
+        requestId: requestId
+        extra:
+          key: "{}"
+        errorMessage: errorMessage
+        errorCode: errorCode
+        totalCount: 5
+      properties:
+        success:
+          type: boolean
+        errorCode:
+          type: string
+        errorMessage:
+          type: string
+        data:
+          $ref: '#/components/schemas/OBCloudPagingDataOcpDbUserDtoV2'
+        cost:
+          format: int64
+          type: integer
+        server:
+          type: string
+        requestId:
+          type: string
+        totalCount:
+          format: int64
+          type: integer
+        extra:
+          additionalProperties:
+            properties: {}
+            type: object
+          type: object
+      type: object
+    OBCloudResultCreateInstanceResponseV2OpenApi:
+      example:
+        server: server
+        cost: 0
+        data:
+          instanceId: instanceId
+          dryRun: true
+          orderId: orderId
+          dryRunResult: true
+        success: true
+        requestId: requestId
+        extra:
+          key: "{}"
+        errorMessage: errorMessage
+        errorCode: errorCode
+        totalCount: 6
+      properties:
+        success:
+          type: boolean
+        errorCode:
+          type: string
+        errorMessage:
+          type: string
+        data:
+          $ref: '#/components/schemas/CreateInstanceResponseV2OpenApi'
+        cost:
+          format: int64
+          type: integer
+        server:
+          type: string
+        requestId:
+          type: string
+        totalCount:
+          format: int64
+          type: integer
+        extra:
+          additionalProperties:
+            properties: {}
+            type: object
+          type: object
+      type: object
+    OcpDbUserDtoV2:
+      example:
+        databases:
+        - privileges: privileges
+          database: database
+          role: role
+          withGrant: 0
+          userName: userName
+          table: table
+          isSuccess: true
+        - privileges: privileges
+          database: database
+          role: role
+          withGrant: 0
+          userName: userName
+          table: table
+          isSuccess: true
+        password: password
+        userStatus: userStatus
+        description: description
+        userType: userType
+        userName: userName
+      properties:
+        userName:
+          type: string
+        userType:
+          type: string
+        userStatus:
+          type: string
+        description:
+          type: string
+        databases:
+          items:
+            $ref: '#/components/schemas/OcpUserPrivilegeV2'
+          type: array
+        password:
+          type: string
+      type: object
+    TenantMemoryDTO:
+      example:
+        usedMemory: 9.965781217890562
+        totalMemory: 5.025004791520295
+        unitMemory: 9.369310271410669
+      properties:
+        totalMemory:
+          format: double
+          type: number
+        usedMemory:
+          format: double
+          type: number
+        unitMemory:
+          format: double
+          type: number
+      type: object
+    TenantResourceDTO:
+      example:
+        disk:
+          totalDiskSize: 6.683562403749608
+          usedDiskSize: 8.762042012749001
+        memory:
+          usedMemory: 9.965781217890562
+          totalMemory: 5.025004791520295
+          unitMemory: 9.369310271410669
+        cpu:
+          totalCpu: 7.457744773683766
+          usedCpu: 1.1730742509559433
+          unitCpu: 4.965218492984954
+        unitNum: 9
+      properties:
+        cpu:
+          $ref: '#/components/schemas/TenantCpuDTO'
+        memory:
+          $ref: '#/components/schemas/TenantMemoryDTO'
+        disk:
+          $ref: '#/components/schemas/TenantDiskDTO'
+        unitNum:
+          format: int32
+          type: integer
+      type: object
+    AddTenantPlServiceUserRequest:
+      example:
+        userAccount: userAccount
+      properties:
+        userAccount:
+          type: string
+      type: object
+    OBCloudResultMapStringString:
+      example:
+        server: server
+        cost: 0
+        data:
+          key: data
+        success: true
+        requestId: requestId
+        extra:
+          key: "{}"
+        errorMessage: errorMessage
+        errorCode: errorCode
+        totalCount: 6
+      properties:
+        success:
+          type: boolean
+        errorCode:
+          type: string
+        errorMessage:
+          type: string
+        data:
+          additionalProperties:
+            type: string
+          type: object
+        cost:
+          format: int64
+          type: integer
+        server:
+          type: string
+        requestId:
+          type: string
+        totalCount:
+          format: int64
+          type: integer
+        extra:
+          additionalProperties:
+            properties: {}
+            type: object
+          type: object
+      type: object
+    OcpUserPrivilegeV2:
+      example:
+        privileges: privileges
+        database: database
+        role: role
+        withGrant: 0
+        userName: userName
+        table: table
+        isSuccess: true
+      properties:
+        userName:
+          type: string
+        database:
+          type: string
+        table:
+          type: string
+        role:
+          type: string
+        privileges:
+          type: string
+        isSuccess:
+          type: boolean
+        withGrant:
+          format: int64
+          type: integer
+      type: object
+    MultiCloudCreateInstanceRequest:
+      example:
+        replicaMode: replicaMode
+        diskSize: 0
+        dryRun: true
+        instanceName: instanceName
+        saleChannel: saleChannel
+        cloudProvider: cloudProvider
+        instanceType: instanceType
+        chargeType: chargeType
+        obVersion: obVersion
+        instanceClass: instanceClass
+        region: region
+        zones: zones
+      properties:
+        chargeType:
+          type: string
+        instanceName:
+          type: string
+        cloudProvider:
+          type: string
+        diskSize:
+          format: int32
+          type: integer
+        region:
+          type: string
+        obVersion:
+          type: string
+        zones:
+          type: string
+        instanceClass:
+          type: string
+        replicaMode:
+          type: string
+        dryRun:
+          type: boolean
+        saleChannel:
+          type: string
+        instanceType:
+          type: string
+      required:
+      - cloudProvider
+      - diskSize
+      - instanceClass
+      - obVersion
+      - region
+      - zones
+      type: object
+    DescribeInstanceResponseV2OpenAPI:
+      example:
+        dataMergeTime: dataMergeTime
+        instanceName: instanceName
+        cpuArchitecture: cpuArchitecture
+        managementMode: managementMode
+        obRpmVersion: obRpmVersion
+        deployType: deployType
+        primaryInstanceId: primaryInstanceId
+        instanceId: instanceId
+        payType: payType
+        vpcId: vpcId
+        cloudProvider: cloudProvider
+        standbyInstanceIds:
+        - standbyInstanceIds
+        - standbyInstanceIds
+        stopTime: stopTime
+        diskType: diskType
+        replicaMode: replicaMode
+        nodeNum: 0
+        resource:
+          disk:
+            totalDiskSize: 9.301444243932576
+            usedDiskSize: 3.616076749251911
+          memory:
+            usedMemory: 7.061401241503109
+            totalMemory: 2.3021358869347655
+          cpu:
+            totalCpu: 5.962133916683182
+            usedCpu: 5.637376656633329
+        deployMode: deployMode
+        instanceType: instanceType
+        instanceClass: instanceClass
+        instanceRole: instanceRole
+        version: version
+        tagList:
+        - tagValue: tagValue
+          tagKey: tagKey
+        - tagValue: tagValue
+          tagKey: tagKey
+        expireTime: expireTime
+        createTime: createTime
+        availableZones:
+        - availableZones
+        - availableZones
+        saleChannel: saleChannel
+        series: series
+        region: region
+        projectId: projectId
+        status: status
+      properties:
+        region:
+          type: string
+        vpcId:
+          type: string
+        instanceId:
+          type: string
+        instanceName:
+          type: string
+        instanceClass:
+          type: string
+        series:
+          type: string
+        payType:
+          type: string
+        createTime:
+          type: string
+        expireTime:
+          type: string
+        availableZones:
+          items:
+            type: string
+          type: array
+        version:
+          type: string
+        obRpmVersion:
+          type: string
+        deployType:
+          type: string
+        diskType:
+          type: string
+        deployMode:
+          type: string
+        replicaMode:
+          type: string
+        dataMergeTime:
+          type: string
+        status:
+          type: string
+        resource:
+          $ref: '#/components/schemas/ResourceDoV2'
+        cloudProvider:
+          type: string
+        instanceType:
+          type: string
+        instanceRole:
+          type: string
+        primaryInstanceId:
+          type: string
+        standbyInstanceIds:
+          items:
+            type: string
+          type: array
+        saleChannel:
+          type: string
+        managementMode:
+          type: string
+        tagList:
+          items:
+            $ref: '#/components/schemas/TagKeyValueDo'
+          type: array
+        nodeNum:
+          format: int32
+          type: integer
+        cpuArchitecture:
+          type: string
+        projectId:
+          type: string
+        stopTime:
+          type: string
+      type: object
+    OBCloudResultCreateTenantResponse:
+      example:
+        server: server
+        cost: 0
+        data:
+          extra:
+            key: "{}"
+          tenantId: tenantId
+        success: true
+        requestId: requestId
+        extra:
+          key: "{}"
+        errorMessage: errorMessage
+        errorCode: errorCode
+        totalCount: 6
+      properties:
+        success:
+          type: boolean
+        errorCode:
+          type: string
+        errorMessage:
+          type: string
+        data:
+          $ref: '#/components/schemas/CreateTenantResponse'
+        cost:
+          format: int64
+          type: integer
+        server:
+          type: string
+        requestId:
+          type: string
+        totalCount:
+          format: int64
+          type: integer
+        extra:
+          additionalProperties:
+            properties: {}
+            type: object
+          type: object
+      type: object
+    ModifyTenantPrimaryZoneRequest:
+      example:
+        primaryZone: primaryZone
+      properties:
+        primaryZone:
+          type: string
+      type: object
+    ModifyUserRolesParamDo:
+      example:
+        accessKeyId: accessKeyId
+        modifyType: modifyType
+        pageNumber: 0
+        stsTokenCallerBid: stsTokenCallerBid
+        pageSize: 6
+        callerBid: callerBid
+        userName: userName
+        mergedCallerUid: mergedCallerUid
+        securityToken: securityToken
+        uid: uid
+        acceptLanguage: acceptLanguage
+        mergedCallerBid: mergedCallerBid
+        instanceId: instanceId
+        user_ID: user_ID
+        requestId: requestId
+        tenantId: tenantId
+        callerType: callerType
+        clusterGroupName: clusterGroupName
+        callerUid: callerUid
+        userRole: userRole
+        stsTokenCallerUid: stsTokenCallerUid
+      properties:
+        requestId:
+          type: string
+        callerType:
+          type: string
+        accessKeyId:
+          type: string
+        securityToken:
+          type: string
+        callerUid:
+          type: string
+        callerBid:
+          type: string
+        stsTokenCallerUid:
+          type: string
+        stsTokenCallerBid:
+          type: string
+        acceptLanguage:
+          type: string
+        pageNumber:
+          format: int32
+          type: integer
+        pageSize:
+          format: int32
+          type: integer
+        mergedCallerBid:
+          type: string
+        instanceId:
+          type: string
+        tenantId:
+          type: string
+        userName:
+          type: string
+        userRole:
+          type: string
+        modifyType:
+          type: string
+        clusterGroupName:
+          type: string
+        mergedCallerUid:
+          type: string
+        user_ID:
+          type: string
+        uid:
+          type: string
+      type: object
+    CreateMcTenantAddressResponse:
+      example:
+        addressId: addressId
+      properties:
+        addressId:
+          type: string
+      type: object
+    ResourceDoV2:
+      example:
+        disk:
+          totalDiskSize: 9.301444243932576
+          usedDiskSize: 3.616076749251911
+        memory:
+          usedMemory: 7.061401241503109
+          totalMemory: 2.3021358869347655
+        cpu:
+          totalCpu: 5.962133916683182
+          usedCpu: 5.637376656633329
+      properties:
+        cpu:
+          $ref: '#/components/schemas/CpuDoV2'
+        memory:
+          $ref: '#/components/schemas/MemoryDoV2'
+        disk:
+          $ref: '#/components/schemas/DiskDoV2'
+      type: object
+    OBCloudResultTenantConnectionDTO:
+      example:
+        server: server
+        cost: 0
+        data:
+          serviceType: serviceType
+          intranetAddressStatus: intranetAddressStatus
+          userVpcOwnerId: userVpcOwnerId
+          role: role
+          internetAddress: internetAddress
+          intranetPeeringMaxConnectionNum: 7
+          privateLinkList:
+          - privateLinkEndpointId: privateLinkEndpointId
+            intranetAddress: intranetAddress
+            privateLinkStatus: privateLinkStatus
+            privateLinkDomain: privateLinkDomain
+            privateLinkServiceId: privateLinkServiceId
+            intranetDomain: intranetDomain
+            privateLinkServiceAccount: privateLinkServiceAccount
+            privateLinkUserAccount: privateLinkUserAccount
+          - privateLinkEndpointId: privateLinkEndpointId
+            intranetAddress: intranetAddress
+            privateLinkStatus: privateLinkStatus
+            privateLinkDomain: privateLinkDomain
+            privateLinkServiceId: privateLinkServiceId
+            intranetDomain: intranetDomain
+            privateLinkServiceAccount: privateLinkServiceAccount
+            privateLinkUserAccount: privateLinkUserAccount
+          addressId: addressId
+          intranetPeeringAddress: intranetPeeringAddress
+          vswitchId: vswitchId
+          internetMaxConnectionNum: 4
+          intranetPeeringAddressStatus: intranetPeeringAddressStatus
+          vpcId: vpcId
+          proxyClusterInfo:
+            unitSpec: unitSpec
+            expireTime: expireTime
+            proxyClusterId: proxyClusterId
+            zone: zone
+            unitNumLimit: 6
+            createTime: createTime
+            unitNum: 1
+            proxyServiceVersion: proxyServiceVersion
+            proxyMode: proxyMode
+            proxyVersion: proxyVersion
+            status: status
+          peeringId: peeringId
+          enableRPc: true
+          networkType: networkType
+          internetPort: 9
+          addressStatus: addressStatus
+          intranetAddressSlaveZoneId: intranetAddressSlaveZoneId
+          connectionZones:
+          - connectionZones
+          - connectionZones
+          internetAddressStatus: internetAddressStatus
+          internetRpcPort: 1
+          intranetAddress: intranetAddress
+          userNameFormat: userNameFormat
+          intranetPort: 7
+          proxyClusterId: proxyClusterId
+          addressType: addressType
+          intranetAddressMasterZoneId: intranetAddressMasterZoneId
+          intranetPeeringPort: 3
+          useSSL: true
+          peeringDstVpcId: peeringDstVpcId
+          intranetPeeringDomain: intranetPeeringDomain
+          peeringDstCidrList: peeringDstCidrList
+          tenantId: tenantId
+          internetDomain: internetDomain
+          maxConnectionNum: 2
+          intranetDomain: intranetDomain
+          intranetRpcPort: 1
+        success: true
+        requestId: requestId
+        extra:
+          key: "{}"
+        errorMessage: errorMessage
+        errorCode: errorCode
+        totalCount: 6
+      properties:
+        success:
+          type: boolean
+        errorCode:
+          type: string
+        errorMessage:
+          type: string
+        data:
+          $ref: '#/components/schemas/TenantConnectionDTO'
+        cost:
+          format: int64
+          type: integer
+        server:
+          type: string
+        requestId:
+          type: string
+        totalCount:
+          format: int64
+          type: integer
+        extra:
+          additionalProperties:
+            properties: {}
+            type: object
+          type: object
+      type: object
+    OBCloudResultListTenantConnectionDTO:
+      example:
+        server: server
+        cost: 0
+        data:
+        - serviceType: serviceType
+          intranetAddressStatus: intranetAddressStatus
+          userVpcOwnerId: userVpcOwnerId
+          role: role
+          internetAddress: internetAddress
+          intranetPeeringMaxConnectionNum: 7
+          privateLinkList:
+          - privateLinkEndpointId: privateLinkEndpointId
+            intranetAddress: intranetAddress
+            privateLinkStatus: privateLinkStatus
+            privateLinkDomain: privateLinkDomain
+            privateLinkServiceId: privateLinkServiceId
+            intranetDomain: intranetDomain
+            privateLinkServiceAccount: privateLinkServiceAccount
+            privateLinkUserAccount: privateLinkUserAccount
+          - privateLinkEndpointId: privateLinkEndpointId
+            intranetAddress: intranetAddress
+            privateLinkStatus: privateLinkStatus
+            privateLinkDomain: privateLinkDomain
+            privateLinkServiceId: privateLinkServiceId
+            intranetDomain: intranetDomain
+            privateLinkServiceAccount: privateLinkServiceAccount
+            privateLinkUserAccount: privateLinkUserAccount
+          addressId: addressId
+          intranetPeeringAddress: intranetPeeringAddress
+          vswitchId: vswitchId
+          internetMaxConnectionNum: 4
+          intranetPeeringAddressStatus: intranetPeeringAddressStatus
+          vpcId: vpcId
+          proxyClusterInfo:
+            unitSpec: unitSpec
+            expireTime: expireTime
+            proxyClusterId: proxyClusterId
+            zone: zone
+            unitNumLimit: 6
+            createTime: createTime
+            unitNum: 1
+            proxyServiceVersion: proxyServiceVersion
+            proxyMode: proxyMode
+            proxyVersion: proxyVersion
+            status: status
+          peeringId: peeringId
+          enableRPc: true
+          networkType: networkType
+          internetPort: 9
+          addressStatus: addressStatus
+          intranetAddressSlaveZoneId: intranetAddressSlaveZoneId
+          connectionZones:
+          - connectionZones
+          - connectionZones
+          internetAddressStatus: internetAddressStatus
+          internetRpcPort: 1
+          intranetAddress: intranetAddress
+          userNameFormat: userNameFormat
+          intranetPort: 7
+          proxyClusterId: proxyClusterId
+          addressType: addressType
+          intranetAddressMasterZoneId: intranetAddressMasterZoneId
+          intranetPeeringPort: 3
+          useSSL: true
+          peeringDstVpcId: peeringDstVpcId
+          intranetPeeringDomain: intranetPeeringDomain
+          peeringDstCidrList: peeringDstCidrList
+          tenantId: tenantId
+          internetDomain: internetDomain
+          maxConnectionNum: 2
+          intranetDomain: intranetDomain
+          intranetRpcPort: 1
+        - serviceType: serviceType
+          intranetAddressStatus: intranetAddressStatus
+          userVpcOwnerId: userVpcOwnerId
+          role: role
+          internetAddress: internetAddress
+          intranetPeeringMaxConnectionNum: 7
+          privateLinkList:
+          - privateLinkEndpointId: privateLinkEndpointId
+            intranetAddress: intranetAddress
+            privateLinkStatus: privateLinkStatus
+            privateLinkDomain: privateLinkDomain
+            privateLinkServiceId: privateLinkServiceId
+            intranetDomain: intranetDomain
+            privateLinkServiceAccount: privateLinkServiceAccount
+            privateLinkUserAccount: privateLinkUserAccount
+          - privateLinkEndpointId: privateLinkEndpointId
+            intranetAddress: intranetAddress
+            privateLinkStatus: privateLinkStatus
+            privateLinkDomain: privateLinkDomain
+            privateLinkServiceId: privateLinkServiceId
+            intranetDomain: intranetDomain
+            privateLinkServiceAccount: privateLinkServiceAccount
+            privateLinkUserAccount: privateLinkUserAccount
+          addressId: addressId
+          intranetPeeringAddress: intranetPeeringAddress
+          vswitchId: vswitchId
+          internetMaxConnectionNum: 4
+          intranetPeeringAddressStatus: intranetPeeringAddressStatus
+          vpcId: vpcId
+          proxyClusterInfo:
+            unitSpec: unitSpec
+            expireTime: expireTime
+            proxyClusterId: proxyClusterId
+            zone: zone
+            unitNumLimit: 6
+            createTime: createTime
+            unitNum: 1
+            proxyServiceVersion: proxyServiceVersion
+            proxyMode: proxyMode
+            proxyVersion: proxyVersion
+            status: status
+          peeringId: peeringId
+          enableRPc: true
+          networkType: networkType
+          internetPort: 9
+          addressStatus: addressStatus
+          intranetAddressSlaveZoneId: intranetAddressSlaveZoneId
+          connectionZones:
+          - connectionZones
+          - connectionZones
+          internetAddressStatus: internetAddressStatus
+          internetRpcPort: 1
+          intranetAddress: intranetAddress
+          userNameFormat: userNameFormat
+          intranetPort: 7
+          proxyClusterId: proxyClusterId
+          addressType: addressType
+          intranetAddressMasterZoneId: intranetAddressMasterZoneId
+          intranetPeeringPort: 3
+          useSSL: true
+          peeringDstVpcId: peeringDstVpcId
+          intranetPeeringDomain: intranetPeeringDomain
+          peeringDstCidrList: peeringDstCidrList
+          tenantId: tenantId
+          internetDomain: internetDomain
+          maxConnectionNum: 2
+          intranetDomain: intranetDomain
+          intranetRpcPort: 1
+        success: true
+        requestId: requestId
+        extra:
+          key: "{}"
+        errorMessage: errorMessage
+        errorCode: errorCode
+        totalCount: 6
+      properties:
+        success:
+          type: boolean
+        errorCode:
+          type: string
+        errorMessage:
+          type: string
+        data:
+          items:
+            $ref: '#/components/schemas/TenantConnectionDTO'
+          type: array
+        cost:
+          format: int64
+          type: integer
+        server:
+          type: string
+        requestId:
+          type: string
+        totalCount:
+          format: int64
+          type: integer
+        extra:
+          additionalProperties:
+            properties: {}
+            type: object
+          type: object
+      type: object
+    AddTenantPlServiceUserResponse:
+      type: object
+    OcpUserRoleDo:
+      example:
+        role: role
+        userType: userType
+        userName: userName
+      properties:
+        userName:
+          type: string
+        role:
+          type: string
+        userType:
+          type: string
+      type: object
+    CreateDatabaseRequestV2:
+      example:
+        instanceId: instanceId
+        databaseName: databaseName
+        requestId: requestId
+        tenantId: tenantId
+        description: description
+        encoding: encoding
+      properties:
+        instanceId:
+          type: string
+        tenantId:
+          type: string
+        databaseName:
+          maxLength: 64
+          minLength: 2
+          type: string
+        encoding:
+          type: string
+        description:
+          maxLength: 256
+          minLength: 0
+          type: string
+        requestId:
+          type: string
+      type: object
+    CreateInstanceResponseV2OpenApi:
+      example:
+        instanceId: instanceId
+        dryRun: true
+        orderId: orderId
+        dryRunResult: true
+      properties:
+        orderId:
+          type: string
+        instanceId:
+          type: string
+        dryRun:
+          type: boolean
+        dryRunResult:
+          type: boolean
+      type: object
+    OBCloudResultString:
+      example:
+        server: server
+        cost: 0
+        data: data
+        success: true
+        requestId: requestId
+        extra:
+          key: "{}"
+        errorMessage: errorMessage
+        errorCode: errorCode
+        totalCount: 6
+      properties:
+        success:
+          type: boolean
+        errorCode:
+          type: string
+        errorMessage:
+          type: string
+        data:
+          type: string
+        cost:
+          format: int64
+          type: integer
+        server:
+          type: string
+        requestId:
+          type: string
+        totalCount:
+          format: int64
+          type: integer
+        extra:
+          additionalProperties:
+            properties: {}
+            type: object
+          type: object
+      type: object
+    ModifyTenantNameRequestV2:
+      example:
+        tenantName: tenantName
+        patternCheck: true
+        requestId: requestId
+      properties:
+        requestId:
+          type: string
+        tenantName:
+          maxLength: 64
+          minLength: 2
+          type: string
+        patternCheck:
+          type: boolean
+      type: object
+x-original-swagger-version: "2.0"
