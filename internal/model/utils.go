@@ -21,8 +21,30 @@ import (
 	"fmt"
 	"reflect"
 
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 )
+
+func sortListByOriginalOrder(originalList []types.String, itemList []types.String) []types.String {
+	pickedIdxList := make(map[int]any)
+	result := make([]types.String, 0, len(itemList))
+	for _, originalItem := range originalList {
+		for idx := range itemList {
+			_, found := pickedIdxList[idx]
+			if !found && originalItem.Equal(itemList[idx]) {
+				pickedIdxList[idx] = nil
+				result = append(result, itemList[idx])
+			}
+		}
+	}
+	for idx := range itemList {
+		_, found := pickedIdxList[idx]
+		if !found {
+			result = append(result, itemList[idx])
+		}
+	}
+	return result
+}
 
 func parseListValue[T any](list basetypes.ListValue, parser func(basetypes.ObjectValue) (*T, error)) ([]T, error) {
 	if list.IsNull() || list.IsUnknown() {
