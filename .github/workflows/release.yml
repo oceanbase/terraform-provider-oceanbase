@@ -1,0 +1,65 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - '[0-9]+.[0-9]+.[0-9]+'
+
+env:
+  GO_VERSION : "1.23"
+  BinaryName: "terraform-provider-oceanbase"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: ${{ env.GO_VERSION }}
+
+    - name: Get the version
+      id: get_version
+      run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+
+    - name: Build amd64 binary
+      run: GOOS=linux GOARCH=amd64 go build -o ${{ env.BinaryName }}-amd64 -v ./main.go
+
+    - name: Build arm64 binary
+      run: GOOS=linux GOARCH=arm64 go build -o ${{ env.BinaryName }}-arm64 -v ./main.go
+
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ env.VERSION }}
+        release_name: Release ${{ env.VERSION }}
+        draft: false
+        prerelease: false
+
+    - name: Upload amd64 binary
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./${{ env.BinaryName }}-amd64
+        asset_name: ${{ env.BinaryName }}-amd64
+        asset_content_type: application/octet-stream
+
+    - name: Upload arm64 binary
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./${{ env.BinaryName }}-arm64
+        asset_name: ${{ env.BinaryName }}-arm64
+        asset_content_type: application/octet-stream
+
