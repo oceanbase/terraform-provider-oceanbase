@@ -105,9 +105,7 @@ func (c *Cluster) RefreshClusterFromInstance(data *obcloudsdk.DescribeInstanceRe
 	c.StopTime = types.StringValue(data.GetStopTime())
 	c.Version = types.StringValue(data.GetVersion())
 	c.Vpc = types.StringValue(data.GetVpcId())
-	zones := convertZoneNames(c.Region.ValueString(), data.GetAvailableZones())
-	// sort zones
-	c.Zones = sortListByOriginalOrder(c.Zones, zones)
+	c.Zones = convertZoneNames(c.Region.ValueString(), data.GetAvailableZones())
 }
 
 func (c *Cluster) RefreshClusterFromInstanceListItem(data *obcloudsdk.DescribeInstancesResponseV2OpenAPI) {
@@ -135,7 +133,5 @@ func (c *Cluster) RefreshClusterFromInstanceListItem(data *obcloudsdk.DescribeIn
 	c.Version = types.StringValue(data.GetVersion())
 	c.Vpc = types.StringValue(data.GetVpcId())
 	c.Vpc = types.StringValue(data.GetVpcId())
-	zones := convertZoneNames(c.Region.ValueString(), data.GetAvailableZones())
-	// sort zones
-	c.Zones = sortListByOriginalOrder(c.Zones, zones)
+	c.Zones = convertZoneNames(c.Region.ValueString(), data.GetAvailableZones())
 }
