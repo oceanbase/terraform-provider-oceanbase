@@ -33,8 +33,10 @@ const (
 	EnvNameSiteURL                  string = "OCEANBASE_SITE_URL"
 	EnvClusterCreateTimeoutSeconds  string = "TF_OCEANBASE_CLUSTER_CREATE_TIMEOUT_SECONDS"
 	EnvClusterModifyTimeoutSeconds  string = "TF_OCEANBASE_CLUSTER_MODIFY_TIMEOUT_SECONDS"
+	EnvClusterDeleteTimeoutSeconds  string = "TF_OCEANBASE_CLUSTER_DELETE_TIMEOUT_SECONDS"
 	EnvResourceCreateTimeoutSeconds string = "TF_OCEANBASE_RESOURCE_CREATE_TIMEOUT_SECONDS"
 	EnvResourceModifyTimeoutSeconds string = "TF_OCEANBASE_RESOURCE_MODIFY_TIMEOUT_SECONDS"
+	EnvResourceDeleteTimeoutSeconds string = "TF_OCEANBASE_RESOURCE_DELETE_TIMEOUT_SECONDS"
 )
 
 const (

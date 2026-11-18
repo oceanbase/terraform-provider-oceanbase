@@ -8,6 +8,8 @@ Name | Type | Description | Notes
 **InstanceName** | Pointer to **string** |  | [optional] 
 **CloudProvider** | **string** |  | 
 **DiskSize** | **int32** |  | 
+**DiskType** | Pointer to **string** |  | [optional]
+**StorageArchitecture** | Pointer to **string** |  | [optional]
 **Region** | **string** |  | 
 **ObVersion** | **string** |  | 
 **Zones** | **string** |  | 
@@ -18,6 +20,10 @@ Name | Type | Description | Notes
 **InstanceType** | Pointer to **string** |  | [optional] 
 
 ## Methods
+
+`GetDiskType`, `GetDiskTypeOk`, `SetDiskType`, and `HasDiskType` access the optional disk type.
+
+`GetStorageArchitecture`, `GetStorageArchitectureOk`, `SetStorageArchitecture`, and `HasStorageArchitecture` access the optional storage architecture.
 
 ### NewMultiCloudCreateInstanceRequest
 

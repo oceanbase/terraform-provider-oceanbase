@@ -25,6 +25,7 @@ type MultiCloudCreateInstanceRequest struct {
 	InstanceName *string `json:"instanceName,omitempty"`
 	CloudProvider string `json:"cloudProvider"`
 	DiskSize int32 `json:"diskSize"`
+	DiskType *string `json:"diskType,omitempty"`
 	Region string `json:"region"`
 	ObVersion string `json:"obVersion"`
 	Zones string `json:"zones"`
@@ -33,6 +34,7 @@ type MultiCloudCreateInstanceRequest struct {
 	DryRun *bool `json:"dryRun,omitempty"`
 	SaleChannel *string `json:"saleChannel,omitempty"`
 	InstanceType *string `json:"instanceType,omitempty"`
+	StorageArchitecture *string `json:"storageArchitecture,omitempty"`
 }
 
 type _MultiCloudCreateInstanceRequest MultiCloudCreateInstanceRequest
@@ -396,6 +398,58 @@ func (o *MultiCloudCreateInstanceRequest) SetInstanceType(v string) {
 	o.InstanceType = &v
 }
 
+// GetDiskType returns the DiskType field value if set, zero value otherwise.
+func (o *MultiCloudCreateInstanceRequest) GetDiskType() string {
+	if o == nil || IsNil(o.DiskType) {
+		return ""
+	}
+	return *o.DiskType
+}
+
+// GetDiskTypeOk returns the DiskType field and whether it is set.
+func (o *MultiCloudCreateInstanceRequest) GetDiskTypeOk() (*string, bool) {
+	if o == nil || IsNil(o.DiskType) {
+		return nil, false
+	}
+	return o.DiskType, true
+}
+
+// HasDiskType returns whether DiskType is set.
+func (o *MultiCloudCreateInstanceRequest) HasDiskType() bool {
+	return o != nil && !IsNil(o.DiskType)
+}
+
+// SetDiskType assigns DiskType.
+func (o *MultiCloudCreateInstanceRequest) SetDiskType(v string) {
+	o.DiskType = &v
+}
+
+// GetStorageArchitecture returns the StorageArchitecture field value if set, zero value otherwise.
+func (o *MultiCloudCreateInstanceRequest) GetStorageArchitecture() string {
+	if o == nil || IsNil(o.StorageArchitecture) {
+		return ""
+	}
+	return *o.StorageArchitecture
+}
+
+// GetStorageArchitectureOk returns the StorageArchitecture field and whether it is set.
+func (o *MultiCloudCreateInstanceRequest) GetStorageArchitectureOk() (*string, bool) {
+	if o == nil || IsNil(o.StorageArchitecture) {
+		return nil, false
+	}
+	return o.StorageArchitecture, true
+}
+
+// HasStorageArchitecture returns whether StorageArchitecture is set.
+func (o *MultiCloudCreateInstanceRequest) HasStorageArchitecture() bool {
+	return o != nil && !IsNil(o.StorageArchitecture)
+}
+
+// SetStorageArchitecture assigns StorageArchitecture.
+func (o *MultiCloudCreateInstanceRequest) SetStorageArchitecture(v string) {
+	o.StorageArchitecture = &v
+}
+
 func (o MultiCloudCreateInstanceRequest) MarshalJSON() ([]byte, error) {
 	toSerialize,err := o.ToMap()
 	if err != nil {
@@ -414,6 +468,9 @@ func (o MultiCloudCreateInstanceRequest) ToMap() (map[string]interface{}, error)
 	}
 	toSerialize["cloudProvider"] = o.CloudProvider
 	toSerialize["diskSize"] = o.DiskSize
+	if !IsNil(o.DiskType) {
+		toSerialize["diskType"] = o.DiskType
+	}
 	toSerialize["region"] = o.Region
 	toSerialize["obVersion"] = o.ObVersion
 	toSerialize["zones"] = o.Zones
@@ -429,6 +486,9 @@ func (o MultiCloudCreateInstanceRequest) ToMap() (map[string]interface{}, error)
 	}
 	if !IsNil(o.InstanceType) {
 		toSerialize["instanceType"] = o.InstanceType
+	}
+	if !IsNil(o.StorageArchitecture) {
+		toSerialize["storageArchitecture"] = o.StorageArchitecture
 	}
 	return toSerialize, nil
 }

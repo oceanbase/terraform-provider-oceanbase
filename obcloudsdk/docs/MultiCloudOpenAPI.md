@@ -1682,7 +1682,7 @@ No authorization required
 
 ## DescribeTenantAddress
 
-> OBCloudResultTenantConnectionDTO DescribeTenantAddress(ctx, instanceId, tenantId).RequestId(requestId).AddressId(addressId).Execute()
+> OBCloudResultListTenantConnectionDTO DescribeTenantAddress(ctx, instanceId, tenantId).RequestId(requestId).AddressId(addressId).Execute()
 
 查询租户地址
 
@@ -1711,7 +1711,7 @@ func main() {
 		fmt.Fprintf(os.Stderr, "Error when calling `MultiCloudOpenAPI.DescribeTenantAddress``: %v\n", err)
 		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
 	}
-	// response from `DescribeTenantAddress`: OBCloudResultTenantConnectionDTO
+	// response from `DescribeTenantAddress`: OBCloudResultListTenantConnectionDTO
 	fmt.Fprintf(os.Stdout, "Response from `MultiCloudOpenAPI.DescribeTenantAddress`: %v\n", resp)
 }
 ```
@@ -1739,7 +1739,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**OBCloudResultTenantConnectionDTO**](OBCloudResultTenantConnectionDTO.md)
+[**OBCloudResultListTenantConnectionDTO**](OBCloudResultListTenantConnectionDTO.md)
 
 ### Authorization
 

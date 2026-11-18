@@ -28,6 +28,7 @@ Name | Type | Description | Notes
 **ManagementMode** | Pointer to **string** |  | [optional] 
 **InstanceType** | Pointer to **string** |  | [optional] 
 **DiskType** | Pointer to **string** |  | [optional] 
+**StorageArchitecture** | Pointer to **string** |  | [optional]
 **DiskSize** | Pointer to **int64** |  | [optional] 
 **InstanceRole** | Pointer to **string** |  | [optional] 
 **PrimaryInstanceId** | Pointer to **string** |  | [optional] 
@@ -38,6 +39,8 @@ Name | Type | Description | Notes
 **CpuArchitecture** | Pointer to **string** |  | [optional] 
 
 ## Methods
+
+`GetStorageArchitecture`, `GetStorageArchitectureOk`, `SetStorageArchitecture`, and `HasStorageArchitecture` access the optional storage architecture.
 
 ### NewDescribeInstancesResponseV2OpenAPI
 

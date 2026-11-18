@@ -2781,7 +2781,7 @@ func (r ApiDescribeTenantAddressRequest) AddressId(addressId string) ApiDescribe
 	return r
 }
 
-func (r ApiDescribeTenantAddressRequest) Execute() (*OBCloudResultTenantConnectionDTO, *http.Response, error) {
+func (r ApiDescribeTenantAddressRequest) Execute() (*OBCloudResultListTenantConnectionDTO, *http.Response, error) {
 	return r.ApiService.DescribeTenantAddressExecute(r)
 }
 
@@ -2803,13 +2803,13 @@ func (a *MultiCloudOpenAPIService) DescribeTenantAddress(ctx context.Context, in
 }
 
 // Execute executes the request
-//  @return OBCloudResultTenantConnectionDTO
-func (a *MultiCloudOpenAPIService) DescribeTenantAddressExecute(r ApiDescribeTenantAddressRequest) (*OBCloudResultTenantConnectionDTO, *http.Response, error) {
+//  @return OBCloudResultListTenantConnectionDTO
+func (a *MultiCloudOpenAPIService) DescribeTenantAddressExecute(r ApiDescribeTenantAddressRequest) (*OBCloudResultListTenantConnectionDTO, *http.Response, error) {
 	var (
 		localVarHTTPMethod   = http.MethodGet
 		localVarPostBody     interface{}
 		formFiles            []formFile
-		localVarReturnValue  *OBCloudResultTenantConnectionDTO
+		localVarReturnValue  *OBCloudResultListTenantConnectionDTO
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "MultiCloudOpenAPIService.DescribeTenantAddress")

@@ -287,7 +287,7 @@ func (d *tenantDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 	}
 
 	client := d.provider.clientGenerator.GetClient()
-	err := refreshTenant(ctx, &tenant, client)
+	err := readTenant(ctx, &tenant, client)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Refresh tenant info failed",

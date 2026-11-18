@@ -42,3 +42,12 @@ provider "oceanbase" {
 }
 ```
 For OceanBase related resources configurations, please refer to the files under example directory.
+
+## Cluster and tenant configuration
+
+| Resource | Configuration |
+| --- | --- |
+| `oceanbase_cluster` | Set `payment_type`, `disk_type`, and `storage_architecture` when creating the cluster. Omit `node_num` on the initial apply. To scale an existing cluster, set `node_num` and apply again. |
+| `oceanbase_tenant` | `enable_public_address` and `whitelist` are creation settings. Use `oceanbase_tenant_connection` and `oceanbase_tenant_security_group` to manage individual addresses and IP groups after creation. |
+| `oceanbase_tenant_connection` | To create a public address, set `type = "INTERNET"`. Omit `private_link`, `enable_ssl`, and `enable_rpc`. The provider reads SSL and RPC settings from the service. |
+| `oceanbase_tenant_security_group` | A single IPv4 address can be written as either `192.0.2.1` or `192.0.2.1/32`. Terraform preserves the configured spelling on refresh. |

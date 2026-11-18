@@ -27,20 +27,22 @@ import (
 )
 
 type ClusterSpec struct {
-	CloudProvider types.String   `tfsdk:"cloud_provider"`
-	DiskSize      types.Int32    `tfsdk:"disk_size"`
-	Region        types.String   `tfsdk:"region"`
-	Zones         []types.String `tfsdk:"zones"`
-	InstanceClass types.String   `tfsdk:"instance_class"`
-	Version       types.String   `tfsdk:"version"`
-	ReplicaMode   types.String   `tfsdk:"replica_mode"`
-	InstanceType  types.String   `tfsdk:"instance_type"`
-	SaleChannel   types.String   `tfsdk:"sale_channel"`
-	ProjectId     types.String   `tfsdk:"project_id"`
-	IsStopped     types.Bool     `tfsdk:"is_stopped"`
-	Series        types.String   `tfsdk:"series"`
-	CpuArch       types.String   `tfsdk:"cpu_arch"`
-	PaymentType   types.String   `tfsdk:"payment_type"`
+	CloudProvider       types.String   `tfsdk:"cloud_provider"`
+	DiskSize            types.Int32    `tfsdk:"disk_size"`
+	DiskType            types.String   `tfsdk:"disk_type"`
+	Region              types.String   `tfsdk:"region"`
+	Zones               []types.String `tfsdk:"zones"`
+	InstanceClass       types.String   `tfsdk:"instance_class"`
+	Version             types.String   `tfsdk:"version"`
+	ReplicaMode         types.String   `tfsdk:"replica_mode"`
+	InstanceType        types.String   `tfsdk:"instance_type"`
+	StorageArchitecture types.String   `tfsdk:"storage_architecture"`
+	SaleChannel         types.String   `tfsdk:"sale_channel"`
+	ProjectId           types.String   `tfsdk:"project_id"`
+	IsStopped           types.Bool     `tfsdk:"is_stopped"`
+	Series              types.String   `tfsdk:"series"`
+	CpuArch             types.String   `tfsdk:"cpu_arch"`
+	PaymentType         types.String   `tfsdk:"payment_type"`
 }
 
 type ClusterInfo struct {
@@ -83,19 +85,37 @@ func convertZoneNames(region string, zones []string) []types.String {
 	return zoneList
 }
 
+func clusterStringIgnoreCase(current types.String, remote *string) types.String {
+	if remote == nil || *remote == "" {
+		return current
+	}
+	if !current.IsNull() && !current.IsUnknown() && strings.EqualFold(current.ValueString(), *remote) {
+		return current
+	}
+	return types.StringValue(*remote)
+}
+
 func (c *Cluster) RefreshClusterFromInstance(data *obcloudsdk.DescribeInstanceResponseV2OpenAPI) {
 	c.CloudProvider = types.StringValue(data.GetCloudProvider())
 	c.CpuArch = types.StringValue(data.GetCpuArchitecture())
 	c.CreateTime = types.StringValue(data.GetCreateTime())
 	c.DeployMode = types.StringValue(data.GetDeployMode())
 	c.DeployType = types.StringValue(data.GetDeployType())
+	if data.HasDiskType() {
+		c.DiskType = clusterStringIgnoreCase(c.DiskType, data.DiskType)
+	}
+	if data.HasStorageArchitecture() {
+		c.StorageArchitecture = clusterStringIgnoreCase(c.StorageArchitecture, data.StorageArchitecture)
+	}
 	c.InstanceClass = types.StringValue(data.GetInstanceClass())
 	c.InstanceType = types.StringValue(strings.ToUpper(data.GetInstanceType()))
 	c.IsStopped = types.BoolValue(data.GetStatus() == InstanceStatusStopped)
 	c.Name = types.StringValue(data.GetInstanceName())
 	c.NodeNum = types.Int32Value(data.GetNodeNum())
-	c.PaymentType = types.StringValue(data.GetPayType())
-	c.ProjectId = types.StringValue(data.GetProjectId())
+	c.PaymentType = clusterStringIgnoreCase(c.PaymentType, data.PayType)
+	if data.HasProjectId() && data.GetProjectId() != "" {
+		c.ProjectId = types.StringValue(data.GetProjectId())
+	}
 	c.Region = types.StringValue(data.GetRegion())
 	c.ReplicaMode = types.StringValue(data.GetReplicaMode())
 	c.Resource = newResourceObject(data.GetResource())
@@ -114,6 +134,12 @@ func (c *Cluster) RefreshClusterFromInstanceListItem(data *obcloudsdk.DescribeIn
 	c.CreateTime = types.StringValue(data.GetCreateTime())
 	c.DeployMode = types.StringValue(data.GetDeployMode())
 	c.DeployType = types.StringValue(data.GetDeployType())
+	if data.HasDiskType() {
+		c.DiskType = clusterStringIgnoreCase(c.DiskType, data.DiskType)
+	}
+	if data.HasStorageArchitecture() {
+		c.StorageArchitecture = clusterStringIgnoreCase(c.StorageArchitecture, data.StorageArchitecture)
+	}
 	c.DiskSize = types.Int32Value(int32(data.GetDiskSize()))
 	// terraform's disk_size means disk size of each observer, it need to keep unchanged after adding server
 	if !c.NodeNum.IsNull() && !c.NodeNum.IsUnknown() && c.NodeNum.ValueInt32() != 0 {
@@ -123,7 +149,7 @@ func (c *Cluster) RefreshClusterFromInstanceListItem(data *obcloudsdk.DescribeIn
 	c.InstanceClass = types.StringValue(data.GetInstanceClass())
 	c.IsStopped = types.BoolValue(data.GetStatus() == InstanceStatusStopped)
 	c.Name = types.StringValue(data.GetInstanceName())
-	c.PaymentType = types.StringValue(data.GetPayType())
+	c.PaymentType = clusterStringIgnoreCase(c.PaymentType, data.PayType)
 	c.Region = types.StringValue(data.GetRegion())
 	c.Resource = newResourceObject(data.GetResource())
 	c.SaleChannel = types.StringValue(data.GetSaleChannel())

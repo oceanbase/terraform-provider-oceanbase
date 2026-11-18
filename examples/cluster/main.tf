@@ -21,7 +21,6 @@ resource "oceanbase_cluster" "obins" {
   instance_type = "CLUSTER"
   disk_size = 100
   replica_mode = 3
-  node_num = 3
 }
 
 output "cluster_output" {

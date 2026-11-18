@@ -21,10 +21,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"os"
-	"strconv"
 	"strings"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -35,7 +32,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 
 	"github.com/oceanbasecloud/terraform-provider-oceanbase/internal/api"
 	"github.com/oceanbasecloud/terraform-provider-oceanbase/internal/model"
@@ -44,9 +40,11 @@ import (
 
 // Ensure the implementation satisfies the expected interfaces.
 var (
-	_ resource.Resource                = &tenantResource{}
-	_ resource.ResourceWithConfigure   = &tenantResource{}
-	_ resource.ResourceWithImportState = &tenantResource{}
+	_ resource.Resource                 = &tenantResource{}
+	_ resource.ResourceWithConfigure    = &tenantResource{}
+	_ resource.ResourceWithImportState  = &tenantResource{}
+	_ resource.ResourceWithModifyPlan   = &tenantResource{}
+	_ resource.ResourceWithUpgradeState = &tenantResource{}
 )
 
 type tenantResource struct {
@@ -57,8 +55,9 @@ func NewTenantResource() resource.Resource {
 	return &tenantResource{}
 }
 
-func (r *tenantResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
-	resp.Schema = schema.Schema{
+// Version 0 is retained for decoding state written by older provider versions.
+func tenantSchemaV0() schema.Schema {
+	return schema.Schema{
 		MarkdownDescription: "Tenant Resource",
 		Attributes: map[string]schema.Attribute{
 			// required fields to create tenant
@@ -105,7 +104,7 @@ func (r *tenantResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 				},
 			},
 			"enable_public_address": schema.BoolAttribute{
-				MarkdownDescription: "Whether create a public address for the tenant",
+				MarkdownDescription: "Whether to create a public address with the tenant. This is a creation-only setting; manage later address changes with oceanbase_tenant_connection. Imported resources initially reflect the existing address.",
 				Optional:            true,
 				Computed:            true,
 			},
@@ -115,7 +114,7 @@ func (r *tenantResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 				Computed:            true,
 			},
 			"whitelist": schema.StringAttribute{
-				MarkdownDescription: "Whitelist of the tenant",
+				MarkdownDescription: "Whitelist passed when creating the tenant. This setting cannot be updated; manage additional IP groups with oceanbase_tenant_security_group.",
 				Optional:            true,
 				Computed:            true,
 			},
@@ -310,6 +309,26 @@ func (r *tenantResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 	}
 }
 
+func (r *tenantResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+	resp.Schema = tenantSchemaV0()
+	resp.Schema.Version = 1
+}
+
+func (r *tenantResource) UpgradeState(_ context.Context) map[int64]resource.StateUpgrader {
+	prior := tenantSchemaV0()
+	return map[int64]resource.StateUpgrader{
+		0: {
+			PriorSchema: &prior,
+			StateUpgrader: func(ctx context.Context, req resource.UpgradeStateRequest, resp *resource.UpgradeStateResponse) {
+				// Version 0 stored a capability flag here, not address presence.
+				// Preserve all other state and let Read discover the real value.
+				resp.State.Raw = req.State.Raw
+				resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("enable_public_address"), types.BoolNull())...)
+			},
+		},
+	}
+}
+
 func (r *tenantResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_tenant"
 }
@@ -323,6 +342,31 @@ func (r *tenantResource) Configure(_ context.Context, req resource.ConfigureRequ
 		resp.Diagnostics.AddError("Internal provider error",
 			fmt.Sprintf("Error in Configure: expected %T but got %T", oceanbaseProvider{}, req.ProviderData))
 	}
+}
+
+func (r *tenantResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	if req.State.Raw.IsNull() || req.Plan.Raw.IsNull() {
+		return
+	}
+	var state, plan model.Tenant
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	if err := validateTenantCreationInputs(&state, &plan); err != nil {
+		resp.Diagnostics.AddError("Tenant creation-only setting cannot be updated", err.Error())
+	}
+}
+
+func validateTenantCreationInputs(state, plan *model.Tenant) error {
+	if !plan.EnablePublicAddress.IsNull() && !plan.EnablePublicAddress.IsUnknown() && !plan.EnablePublicAddress.Equal(state.EnablePublicAddress) {
+		return errors.New("enable_public_address is used only when creating a tenant. Manage subsequent public addresses with oceanbase_tenant_connection")
+	}
+	if !plan.Whitelist.IsNull() && !plan.Whitelist.IsUnknown() && !plan.Whitelist.Equal(state.Whitelist) {
+		return errors.New("whitelist is used only when creating a tenant and cannot be updated through this resource. Use oceanbase_tenant_security_group to manage a separate IP group")
+	}
+	return nil
 }
 
 func (r *tenantResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -373,7 +417,7 @@ func (r *tenantResource) Create(ctx context.Context, req resource.CreateRequest,
 	result, response, err := client.MultiCloudOpenAPI.CreateTenant(ctx, plan.ClusterId.ValueString()).RequestId("").Body(*createTenantBody).Execute()
 	api.LogAPIResult(ctx, result, response, err)
 
-	if err != nil || response.StatusCode != http.StatusOK || !(result.GetSuccess()) {
+	if err != nil || response == nil || response.StatusCode != http.StatusOK || result == nil || !result.GetSuccess() || !result.HasData() {
 		resp.Diagnostics.AddError(
 			"Error creating tenant",
 			fmt.Sprintf("Could not create tenant err: %v, response: %v", err, response),
@@ -383,36 +427,28 @@ func (r *tenantResource) Create(ctx context.Context, req resource.CreateRequest,
 
 	state := plan
 	createdTenant := result.GetData()
+	if createdTenant.GetTenantId() == "" {
+		resp.Diagnostics.AddError("Error creating tenant", "The create response did not contain a tenant id.")
+		return
+	}
 	state.Id = types.StringValue(createdTenant.GetTenantId())
-	diags = resp.State.Set(ctx, state)
+	if state.EnablePublicAddress.IsNull() || state.EnablePublicAddress.IsUnknown() {
+		state.EnablePublicAddress = types.BoolValue(false)
+	}
+	resp.Diagnostics.Append(resp.State.Set(ctx, state)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
 	ctx = tflog.SetField(ctx, "instance_id", state.ClusterId)
 	ctx = tflog.SetField(ctx, "tenant_id", state.Id)
 	tflog.Info(ctx, "Successfully created oceanbase tenant")
 
-	timeoutDuration := DefaultResourceCreateTimeout
-	envTimeoutSeconds := os.Getenv(EnvResourceCreateTimeoutSeconds)
-	if envTimeoutSeconds != "" {
-		timeoutSeconds, err := strconv.ParseInt(envTimeoutSeconds, 10, 64)
-		if err == nil {
-			timeoutDuration = time.Duration(timeoutSeconds) * time.Second
-		}
-	}
-	err = retry.RetryContext(ctx, timeoutDuration,
-		waitForTenantReadyFunc(ctx, &state, client, isTenantOnline))
-	// Just add an error log here but consider the resource is created successfully
-	// state is already refreshed while waiting, no need to refresh again here
+	timeoutDuration := operationTimeout(EnvResourceCreateTimeoutSeconds, DefaultResourceCreateTimeout)
+	err = waitForTenantCreation(ctx, &state, client, plan.EnablePublicAddress, timeoutDuration)
+	resp.Diagnostics.Append(resp.State.Set(ctx, state)...)
 	if err != nil {
-		tflog.Error(ctx, "Wait for tenant online timed out, just save current state")
-	}
-
-	tflog.Debug(ctx, "Save tenant to state")
-	diags = resp.State.Set(ctx, state)
-
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		resp.Diagnostics.AddWarning("Error after create the tenant", "Set the state error")
-		return
+		resp.Diagnostics.AddError("Tenant creation did not complete", fmt.Sprintf("Tenant %s was created, but its readiness could not be confirmed: %v", state.Id.ValueString(), err))
 	}
 }
 
@@ -430,7 +466,11 @@ func (r *tenantResource) Read(ctx context.Context, req resource.ReadRequest, res
 		return
 	}
 	client := r.provider.clientGenerator.GetClient()
-	err := refreshTenant(ctx, &tenant, client)
+	err := readTenant(ctx, &tenant, client)
+	if errors.Is(err, errResourceNotFound) {
+		resp.State.RemoveResource(ctx)
+		return
+	}
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Refresh tenant info failed",
@@ -448,6 +488,9 @@ func (r *tenantResource) Read(ctx context.Context, req resource.ReadRequest, res
 }
 
 func getTenantOperation(ctx context.Context, state, plan *model.Tenant) (string, error) {
+	if err := validateTenantCreationInputs(state, plan); err != nil {
+		return OperationUnsupported, err
+	}
 	// TODO: Is it necessary to check cluster status is ONLINE to perform operations
 	modifiedSpecs := make([]string, 0)
 	// modify tenant unit config, including cpu, memory and unit num
@@ -482,6 +525,10 @@ func getTenantOperation(ctx context.Context, state, plan *model.Tenant) (string,
 
 func (r *tenantResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	tflog.Debug(ctx, "Update tenant is called")
+	if r.provider == nil || !r.provider.configured {
+		addConfigureProviderErr(&resp.Diagnostics)
+		return
+	}
 
 	var plan model.Tenant
 	diags := req.Plan.Get(ctx, &plan)
@@ -526,7 +573,7 @@ func (r *tenantResource) Update(ctx context.Context, req resource.UpdateRequest,
 		body.SetMemory(unitConfig.Memory.ValueInt32())
 		result, response, err := client.MultiCloudOpenAPI.UpdateTenant(ctx, plan.ClusterId.ValueString(), plan.Id.ValueString()).Body(*body).RequestId("").Execute()
 		api.LogAPIResult(ctx, result, response, err)
-		if err != nil || response.StatusCode != http.StatusOK || !(*result.Success) {
+		if err != nil || response == nil || response.StatusCode != http.StatusOK || result == nil || !result.GetSuccess() {
 			tflog.Error(ctx, "Modify tenant unit failed")
 			resp.Diagnostics.AddError(
 				"Modify tenant unit failed",
@@ -539,7 +586,7 @@ func (r *tenantResource) Update(ctx context.Context, req resource.UpdateRequest,
 		body.SetTenantName(plan.Name.ValueString())
 		result, response, err := client.MultiCloudOpenAPI.ModifyTenantName(ctx, plan.ClusterId.ValueString(), plan.Id.ValueString()).Body(*body).RequestId("").Execute()
 		api.LogAPIResult(ctx, result, response, err)
-		if err != nil || response.StatusCode != http.StatusOK || !(*result.Success) {
+		if err != nil || response == nil || response.StatusCode != http.StatusOK || result == nil || !result.GetSuccess() {
 			tflog.Error(ctx, "Modify tenant name failed")
 			resp.Diagnostics.AddError(
 				"Modify tenant name failed",
@@ -553,7 +600,7 @@ func (r *tenantResource) Update(ctx context.Context, req resource.UpdateRequest,
 		body.SetPrimaryZone(plan.PrimaryZone.ValueString())
 		result, response, err := client.MultiCloudOpenAPI.ModifyTenantPrimaryZone(ctx, plan.ClusterId.ValueString(), plan.Id.ValueString()).Body(*body).RequestId("").Execute()
 		api.LogAPIResult(ctx, result, response, err)
-		if err != nil || response.StatusCode != http.StatusOK || !(*result.Success) {
+		if err != nil || response == nil || response.StatusCode != http.StatusOK || result == nil || !result.GetSuccess() {
 			tflog.Error(ctx, "Modify tenant primary zone failed")
 			resp.Diagnostics.AddError(
 				"Modify tenant primary zone failed",
@@ -567,31 +614,12 @@ func (r *tenantResource) Update(ctx context.Context, req resource.UpdateRequest,
 	}
 
 	if needWaitTask {
-		timeoutDuration := DefaultResourceCreateTimeout
-		envTimeoutSeconds := os.Getenv(EnvResourceCreateTimeoutSeconds)
-		if envTimeoutSeconds != "" {
-			timeoutSeconds, err := strconv.ParseInt(envTimeoutSeconds, 10, 64)
-			if err == nil {
-				timeoutDuration = time.Duration(timeoutSeconds) * time.Second
-			}
-		}
-
-		tflog.Info(ctx, "Wait tenant turned into operating")
-		err = retry.RetryContext(ctx, timeoutDuration,
-			waitForTenantReadyFunc(ctx, &state, client, isTenantNotOnline))
+		timeoutDuration := operationTimeout(EnvResourceModifyTimeoutSeconds, DefaultResourceModifyTimeout)
+		err = waitForTenantUpdate(ctx, &state, &plan, operation, client, timeoutDuration)
 		if err != nil {
-			resp.Diagnostics.AddError(
-				"Tenant operation failed after timeout",
-				fmt.Sprintf("Tenant is not turned into operating after timed out: %v", err),
-			)
+			resp.Diagnostics.Append(resp.State.Set(ctx, state)...)
+			resp.Diagnostics.AddError("Tenant update did not complete", fmt.Sprintf("Tenant %s did not reach the requested state: %v", state.Id.ValueString(), err))
 			return
-		}
-		tflog.Info(ctx, "Tenant already turned into operating")
-
-		err = retry.RetryContext(ctx, timeoutDuration,
-			waitForTenantReadyFunc(ctx, &state, client, isTenantOnline))
-		if err != nil {
-			tflog.Error(ctx, "Wait for tenant online timed out, just save current state")
 		}
 	}
 
@@ -609,6 +637,10 @@ func (r *tenantResource) Update(ctx context.Context, req resource.UpdateRequest,
 
 func (r *tenantResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	tflog.Debug(ctx, "Delete tenant is called")
+	if r.provider == nil || !r.provider.configured {
+		addConfigureProviderErr(&resp.Diagnostics)
+		return
+	}
 	var tenant model.Tenant
 	diags := req.State.Get(ctx, &tenant)
 	resp.Diagnostics.Append(diags...)
@@ -633,16 +665,35 @@ func (r *tenantResource) Delete(ctx context.Context, req resource.DeleteRequest,
 	}
 
 	client := r.provider.clientGenerator.GetClient()
-
-	result, response, err := client.MultiCloudOpenAPI.DeleteTenant(ctx, tenant.ClusterId.ValueString(), tenant.Id.ValueString()).RequestId("").Execute()
-	api.LogAPIResult(ctx, result, response, err)
-	if err != nil || response.StatusCode != http.StatusOK || !(*result.Success) {
-		resp.Diagnostics.AddError(
-			"Failed to delete tenant",
-			fmt.Sprintf("Unexpected error while delete tenant: %v, response: %v", err, response))
+	status, err := tenantListStatus(ctx, &tenant, client)
+	if errors.Is(err, errResourceNotFound) {
+		resp.State.RemoveResource(ctx)
+		return
+	}
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to confirm tenant existence", err.Error())
 		return
 	}
 
+	// OCP uses PENDING_OFFLINE while the accepted tenant deletion is running.
+	if !strings.EqualFold(status, "PENDING_OFFLINE") {
+		result, response, err := client.MultiCloudOpenAPI.DeleteTenant(ctx, tenant.ClusterId.ValueString(), tenant.Id.ValueString()).RequestId("").Execute()
+		api.LogAPIResult(ctx, result, response, err)
+		if err != nil || response == nil || response.StatusCode != http.StatusOK || result == nil || !result.GetSuccess() {
+			resp.Diagnostics.AddError(
+				"Failed to delete tenant",
+				fmt.Sprintf("Unexpected error while delete tenant: %v, response: %v", err, response))
+			return
+		}
+	}
+
+	timeout := operationTimeout(EnvResourceDeleteTimeoutSeconds, DefaultResourceModifyTimeout)
+	if err := waitForRemoval(ctx, timeout, func(ctx context.Context) error {
+		return findTenant(ctx, &tenant, client)
+	}); err != nil {
+		resp.Diagnostics.AddError("Tenant deletion did not complete", fmt.Sprintf("Tenant %s has not been confirmed deleted: %v", tenant.Id.ValueString(), err))
+		return
+	}
 	resp.State.RemoveResource(ctx)
 }
 
@@ -659,24 +710,7 @@ func (r *tenantResource) ImportState(ctx context.Context, req resource.ImportSta
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), parts[1])...)
 }
 
-func isTenantNotOnline(tenant *model.Tenant) bool {
-	return !isTenantOnline(tenant)
-}
-
 func isTenantOnline(tenant *model.Tenant) bool {
 	tflog.Debug(context.Background(), fmt.Sprintf("Tenant status when validate: %s", tenant.Status.ValueString()))
 	return tenant.Status.ValueString() == model.TenantStatusOnline
-}
-
-func waitForTenantReadyFunc(ctx context.Context, tenant *model.Tenant, client *obcloudsdk.APIClient, statusValidationFunction func(*model.Tenant) bool) retry.RetryFunc {
-	return func() *retry.RetryError {
-		err := refreshTenant(ctx, tenant, client)
-		if err != nil {
-			return retry.RetryableError(fmt.Errorf("Failed to refresh tenant info, err: %v", err))
-		}
-		if !statusValidationFunction(tenant) {
-			return retry.RetryableError(fmt.Errorf("Tenant is still not ready, current status: %s", tenant.Status))
-		}
-		return nil
-	}
 }
