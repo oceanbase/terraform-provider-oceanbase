@@ -48,6 +48,9 @@ func findTenant(ctx context.Context, tenant *model.Tenant, client *obcloudsdk.AP
 	return err
 }
 
+// This detail error also occurs for a deleted tenant; a list must distinguish it.
+type tenantDetailResourceStateError struct{ error }
+
 func tenantListStatus(ctx context.Context, tenant *model.Tenant, client *obcloudsdk.APIClient) (string, error) {
 	if tenant.ClusterId.IsNull() || tenant.ClusterId.IsUnknown() || tenant.ClusterId.ValueString() == "" ||
 		tenant.Id.IsNull() || tenant.Id.IsUnknown() || tenant.Id.ValueString() == "" {
@@ -63,6 +66,9 @@ func tenantListStatus(ctx context.Context, tenant *model.Tenant, client *obcloud
 			return "", fmt.Errorf("failed to list tenants: %v", err)
 		}
 		data := result.GetData()
+		if !data.HasDataList() {
+			return "", errors.New("tenant list omitted its data list")
+		}
 		for _, item := range data.GetDataList() {
 			if item.GetTenantId() == "" {
 				return "", errors.New("tenant list returned an item without an id")
@@ -80,7 +86,7 @@ func tenantListStatus(ctx context.Context, tenant *model.Tenant, client *obcloud
 			more = seen < data.GetTotal()
 		}
 		if !more {
-			if data.HasTotal() && seen < data.GetTotal() {
+			if data.HasTotal() && seen != data.GetTotal() {
 				return "", errors.New("tenant list pagination is incomplete")
 			}
 			return "", fmt.Errorf("tenant %s: %w", tenant.Id.ValueString(), errResourceNotFound)
@@ -93,7 +99,8 @@ func tenantListStatus(ctx context.Context, tenant *model.Tenant, client *obcloud
 
 func readTenant(ctx context.Context, tenant *model.Tenant, client *obcloudsdk.APIClient) error {
 	if err := refreshTenant(ctx, tenant, client); err != nil {
-		if !errors.Is(err, errResourceNotFound) {
+		var resourceStateErr *tenantDetailResourceStateError
+		if !errors.Is(err, errResourceNotFound) && !errors.As(err, &resourceStateErr) {
 			return err
 		}
 		listErr := findTenant(ctx, tenant, client)
@@ -102,6 +109,9 @@ func readTenant(ctx context.Context, tenant *model.Tenant, client *obcloudsdk.AP
 		}
 		if listErr != nil {
 			return fmt.Errorf("%v; could not confirm tenant existence: %w", err, listErr)
+		}
+		if resourceStateErr != nil {
+			return err
 		}
 		return errors.New("tenant detail reported it missing, but it is still present in the tenant list")
 	}
@@ -155,6 +165,37 @@ func waitForTenantCreation(ctx context.Context, tenant *model.Tenant, client *ob
 	return err
 }
 
+// Update reconciliation needs actual values for every supported operation. The
+// SDK's getters return zero values for omitted fields, which are not evidence
+// that a requested value has been reached.
+func refreshTenantForUpdate(ctx context.Context, tenant *model.Tenant, client *obcloudsdk.APIClient) error {
+	if tenant.Id.IsNull() || tenant.Id.IsUnknown() || tenant.Id.ValueString() == "" ||
+		tenant.ClusterId.IsNull() || tenant.ClusterId.IsUnknown() || tenant.ClusterId.ValueString() == "" {
+		return errors.New("tenant cluster id and id are required")
+	}
+	result, response, err := client.MultiCloudOpenAPI.DescribeTenant(ctx, tenant.ClusterId.ValueString(), tenant.Id.ValueString()).RequestId("").Execute()
+	api.LogAPIResult(ctx, result, response, err)
+	if err != nil || response == nil || response.StatusCode != http.StatusOK || result == nil || !result.GetSuccess() || !result.HasData() {
+		return fmt.Errorf("failed to describe tenant: %v", err)
+	}
+	data := result.Data
+	if data.GetTenantId() != tenant.Id.ValueString() {
+		return errors.New("describe tenant returned a different or missing tenant id")
+	}
+	if !data.HasStatus() || !data.HasTenantName() || !data.HasPrimaryZone() || !data.HasUnitNum() || !data.HasUnitCpu() || !data.HasUnitMem() {
+		return errors.New("describe tenant omitted fields needed to reconcile its update")
+	}
+	tenant.RefreshTenant(data)
+	if tenant.EnablePublicAddress.IsNull() || tenant.EnablePublicAddress.IsUnknown() {
+		enabled, err := tenantHasPublicAddress(ctx, tenant, client)
+		if err != nil {
+			return err
+		}
+		tenant.EnablePublicAddress = types.BoolValue(enabled)
+	}
+	return nil
+}
+
 func waitForTenantUpdate(ctx context.Context, tenant *model.Tenant, plan *model.Tenant, operation string, client *obcloudsdk.APIClient, timeout time.Duration) error {
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
@@ -164,7 +205,7 @@ func waitForTenantUpdate(ctx context.Context, tenant *model.Tenant, plan *model.
 		mu.Lock()
 		candidate := current
 		mu.Unlock()
-		if err := refreshTenant(ctx, &candidate, client); err != nil {
+		if err := refreshTenantForUpdate(ctx, &candidate, client); err != nil {
 			return retry.RetryableError(fmt.Errorf("failed to refresh tenant: %w", err))
 		}
 		mu.Lock()
@@ -174,6 +215,8 @@ func waitForTenantUpdate(ctx context.Context, tenant *model.Tenant, plan *model.
 		switch operation {
 		case OperationModifyTenantUnit:
 			matched = matched && candidate.UnitNum.Equal(plan.UnitNum) && candidate.Unit.Equal(plan.Unit)
+		case OperationModifyTenantName:
+			matched = matched && candidate.Name.Equal(plan.Name)
 		case OperationModifyTenantPrimaryZone:
 			matched = matched && candidate.PrimaryZone.Equal(plan.PrimaryZone)
 		}

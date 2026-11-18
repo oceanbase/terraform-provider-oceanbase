@@ -21,8 +21,11 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"sync"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/oceanbasecloud/terraform-provider-oceanbase/internal/api"
 	"github.com/oceanbasecloud/terraform-provider-oceanbase/internal/model"
 	"github.com/oceanbasecloud/terraform-provider-oceanbase/obcloudsdk"
@@ -32,8 +35,8 @@ func clusterCreateRequest(plan *model.Cluster) (*obcloudsdk.MultiCloudCreateInst
 	if len(plan.Zones) == 0 || plan.Region.IsNull() || plan.Region.IsUnknown() {
 		return nil, fmt.Errorf("region and at least one zone are required")
 	}
-	if !plan.NodeNum.IsNull() && !plan.NodeNum.IsUnknown() {
-		return nil, fmt.Errorf("node_num cannot be specified during creation; set it in a subsequent update")
+	if err := validateClusterNodeNum(plan.NodeNum, plan.InstanceType); err != nil {
+		return nil, err
 	}
 	if !plan.Series.IsNull() && !plan.Series.IsUnknown() {
 		return nil, fmt.Errorf("series cannot be specified during creation")
@@ -76,6 +79,22 @@ func clusterCreateRequest(plan *model.Cluster) (*obcloudsdk.MultiCloudCreateInst
 	return body, nil
 }
 
+func validateClusterNodeNum(nodeNum types.Int32, instanceType types.String) error {
+	if nodeNum.IsNull() || nodeNum.IsUnknown() {
+		return nil
+	}
+	if n := nodeNum.ValueInt32(); n < 3 || n > 60 || n%3 != 0 {
+		return fmt.Errorf("node_num must be a multiple of 3 between 3 and 60")
+	}
+	if !instanceType.IsNull() && !instanceType.IsUnknown() {
+		switch strings.ToUpper(instanceType.ValueString()) {
+		case "PRIMARY_STANDBY_CLUSTER", "SHARED_STORAGE_CLUSTER", "K8S_CLUSTER", "K8S_KV_CLUSTER":
+			return fmt.Errorf("node_num cannot be modified for instance type %s", instanceType.ValueString())
+		}
+	}
+	return nil
+}
+
 func sameClusterZones(old, next []types.String) bool {
 	if len(old) != len(next) {
 		return false
@@ -95,6 +114,24 @@ func sameClusterZones(old, next []types.String) bool {
 	return true
 }
 
+func clusterOperationNeeded(operation string, current, plan *model.Cluster) bool {
+	switch operation {
+	case OperationStartCluster, OperationStopCluster:
+		return !plan.IsStopped.IsNull() && !plan.IsStopped.IsUnknown() &&
+			!plan.IsStopped.Equal(current.IsStopped) &&
+			plan.IsStopped.ValueBool() == (operation == OperationStopCluster)
+	case OperationModifyInstanceSpec:
+		return !plan.InstanceClass.IsNull() && !plan.InstanceClass.IsUnknown() && !plan.InstanceClass.Equal(current.InstanceClass) ||
+			!plan.DiskSize.IsNull() && !plan.DiskSize.IsUnknown() && !plan.DiskSize.Equal(current.DiskSize)
+	case OperationModifyNodeNum:
+		return !plan.NodeNum.IsNull() && !plan.NodeNum.IsUnknown() && !plan.NodeNum.Equal(current.NodeNum)
+	case OperationModifyInstanceName:
+		return !plan.Name.IsNull() && !plan.Name.IsUnknown() && !plan.Name.Equal(current.Name)
+	default:
+		return false
+	}
+}
+
 func clusterUpdateComplete(operation string, current, plan *model.Cluster) bool {
 	switch operation {
 	case OperationStopCluster:
@@ -105,9 +142,72 @@ func clusterUpdateComplete(operation string, current, plan *model.Cluster) bool 
 		return isClusterOnline(current) && current.NodeNum.Equal(plan.NodeNum)
 	case OperationModifyInstanceSpec:
 		return isClusterOnline(current) && current.InstanceClass.Equal(plan.InstanceClass) && current.DiskSize.Equal(plan.DiskSize)
+	case OperationModifyInstanceName:
+		return current.Name.Equal(plan.Name)
 	default:
 		return false
 	}
+}
+
+func applyClusterOperation(ctx context.Context, client *obcloudsdk.APIClient, id string, plan *model.Cluster, operation string) error {
+	var result api.OBCloudResult
+	var response *http.Response
+	var err error
+	switch operation {
+	case OperationStartCluster:
+		result, response, err = client.MultiCloudOpenAPI.StartCluster(ctx, id).RequestId("").Execute()
+	case OperationModifyInstanceSpec:
+		result, response, err = client.MultiCloudOpenAPI.ModifyInstanceSpec(ctx, id).Body(obcloudsdk.MultiCloudModifyInstanceSpecRequest{
+			InstanceClass: plan.InstanceClass.ValueStringPointer(),
+			DiskSize:      plan.DiskSize.ValueInt32Pointer(),
+		}).RequestId("").Execute()
+	case OperationModifyNodeNum:
+		result, response, err = client.MultiCloudOpenAPI.ModifyInstanceNodeNum(ctx, id).Body(obcloudsdk.MultiCloudModifyInstanceNodeNumRequest{
+			NodeNum: plan.NodeNum.ValueInt32(),
+		}).RequestId("").Execute()
+	case OperationModifyInstanceName:
+		result, response, err = client.MultiCloudOpenAPI.ModifyInstanceName(ctx, id).Body(obcloudsdk.ModifyInstanceNameRequestV2{
+			InstanceName: plan.Name.ValueStringPointer(),
+		}).RequestId("").Execute()
+	case OperationStopCluster:
+		result, response, err = client.MultiCloudOpenAPI.StopCluster(ctx, id).RequestId("").Execute()
+	default:
+		return fmt.Errorf("unsupported cluster operation %s", operation)
+	}
+	if err != nil || response != nil {
+		api.LogAPIResult(ctx, result, response, err)
+	}
+	if err != nil || response == nil || response.StatusCode != http.StatusOK || result == nil || !result.GetSuccess() {
+		return fmt.Errorf("error %v, response %v, result %v", err, response, result)
+	}
+	return nil
+}
+
+func waitForClusterUpdate(ctx context.Context, state, plan *model.Cluster, operation string, client *obcloudsdk.APIClient, timeout time.Duration) error {
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+	initial := *state
+	var mu sync.Mutex
+	var confirmed *model.Cluster
+	err := retry.RetryContext(ctx, timeout, func() *retry.RetryError {
+		current := initial
+		if err := refreshCluster(ctx, &current, client); err != nil {
+			return retry.RetryableError(fmt.Errorf("failed to refresh cluster: %w", err))
+		}
+		if !clusterUpdateComplete(operation, &current, plan) {
+			return retry.RetryableError(fmt.Errorf("cluster has not reached the requested state, current status: %s", current.Status.ValueString()))
+		}
+		mu.Lock()
+		confirmed = &current
+		mu.Unlock()
+		return nil
+	})
+	mu.Lock()
+	if confirmed != nil {
+		*state = *confirmed
+	}
+	mu.Unlock()
+	return err
 }
 
 // findClusterInProject enumerates the authorized project inventory without the

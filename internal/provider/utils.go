@@ -82,8 +82,15 @@ func refreshCluster(ctx context.Context, cluster *model.Cluster, client *obcloud
 	if !detailOK {
 		return errors.New("cluster is present in project inventory but detail reports it missing")
 	}
-	if !strings.HasSuffix(strings.ToUpper(describeInstanceResult.Data.GetInstanceType()), InstanceTypeCluster) ||
-		!strings.HasSuffix(strings.ToUpper(item.GetInstanceType()), InstanceTypeCluster) {
+	isClusterType := func(instanceType string) bool {
+		switch strings.ToUpper(instanceType) {
+		case "CLUSTER", "PRIMARY_STANDBY_CLUSTER", "ANALYTICAL_CLUSTER", "KV_CLUSTER", "SHARED_STORAGE_CLUSTER", "K8S_CLUSTER", "K8S_KV_CLUSTER", "FLAG_SHIP":
+			return true
+		default:
+			return false
+		}
+	}
+	if !isClusterType(describeInstanceResult.Data.GetInstanceType()) || !isClusterType(item.GetInstanceType()) {
 		return errors.New("Instance type mismatch")
 	}
 	cluster.RefreshClusterFromInstance(describeInstanceResult.Data)
@@ -107,7 +114,11 @@ func refreshTenant(ctx context.Context, tenant *model.Tenant, client *obcloudsdk
 	}
 	if err != nil || response == nil || response.StatusCode != http.StatusOK || result == nil || !result.GetSuccess() || !result.HasData() {
 		if result != nil {
-			return fmt.Errorf("failed to describe tenant: %v, code: %s, message: %s", err, result.GetErrorCode(), result.GetErrorMessage())
+			detailErr := fmt.Errorf("failed to describe tenant: %v, code: %s, message: %s", err, result.GetErrorCode(), result.GetErrorMessage())
+			if err == nil && response != nil && response.StatusCode == http.StatusOK && !result.GetSuccess() && result.GetErrorCode() == "IllegalOperation.Resource" {
+				return &tenantDetailResourceStateError{detailErr}
+			}
+			return detailErr
 		}
 		return fmt.Errorf("failed to describe tenant: %v", err)
 	}
@@ -274,6 +285,18 @@ func refreshTenantConnection(ctx context.Context, tenantConnection *model.Tenant
 	}
 	if len(connections) == 0 {
 		return fmt.Errorf("tenant connection %q: %w", tenantConnection.Id.ValueString(), errResourceNotFound)
+	}
+	if len(connections) == 1 && connections[0].GetAddressId() == "" && strings.EqualFold(tenantConnection.Type.ValueString(), model.ConnectionTypeInternet) {
+		isNull, err := connectionResponseHasNullEntry(response)
+		if err != nil {
+			return err
+		}
+		if isNull {
+			if err := confirmPublicConnectionAbsent(ctx, tenantConnection, client); err != nil {
+				return err
+			}
+			return fmt.Errorf("tenant connection %q: %w", tenantConnection.Id.ValueString(), errResourceNotFound)
+		}
 	}
 	if len(connections) != 1 || connections[0].GetAddressId() != tenantConnection.Id.ValueString() {
 		return fmt.Errorf("tenant connection query did not return exactly address %q", tenantConnection.Id.ValueString())

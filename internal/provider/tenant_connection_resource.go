@@ -342,11 +342,16 @@ func (r *tenantConnectionResource) Create(ctx context.Context, req resource.Crea
 	defer cancel()
 	err = retry.RetryContext(waitCtx, timeoutDuration,
 		waitConnectionOnline(waitCtx, &state, client, isTenantConnectioOnline))
+	waitingFor := "did not become online"
+	if err == nil && strings.EqualFold(state.Type.ValueString(), model.ConnectionTypeInternet) {
+		waitingFor = "is online but its tenant did not finish allocating the public address"
+		err = waitForTenantConnectionStatus(waitCtx, &state, client, timeoutDuration, tenantAllocatingInternetAddress)
+	}
 
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 	if err != nil {
-		resp.Diagnostics.AddError("Waiting for tenant connection failed", fmt.Sprintf("Connection %q was created but did not become online: %v. If necessary, import it using %s.%s.%s.%s.", state.Id.ValueString(), err, state.ClusterId.ValueString(), state.TenantId.ValueString(), state.Type.ValueString(), state.Id.ValueString()))
+		resp.Diagnostics.AddError("Waiting for tenant connection failed", fmt.Sprintf("Connection %q was created but %s: %v. If necessary, import it using %s.%s.%s.%s.", state.Id.ValueString(), waitingFor, err, state.ClusterId.ValueString(), state.TenantId.ValueString(), state.Type.ValueString(), state.Id.ValueString()))
 	}
 }
 
@@ -366,14 +371,33 @@ func (r *tenantConnectionResource) Read(ctx context.Context, req resource.ReadRe
 	}
 	client := r.provider.clientGenerator.GetClient()
 	err := refreshTenantConnection(ctx, &tenantConnection, client)
+	if err != nil && !errors.Is(err, errResourceNotFound) {
+		resp.Diagnostics.AddError(
+			"Refresh tenant connection info failed",
+			fmt.Sprintf("Failed to refresh tenant connection info, err: %v", err))
+		return
+	}
+	if strings.EqualFold(tenantConnection.Type.ValueString(), model.ConnectionTypeInternet) &&
+		(errors.Is(err, errResourceNotFound) || strings.EqualFold(tenantConnection.Status.ValueString(), "PENDING_DELETE")) {
+		pending, statusErr := tenantConnectionReleasePending(ctx, &tenantConnection, client)
+		if statusErr == nil && pending {
+			timeout := operationTimeout(EnvResourceDeleteTimeoutSeconds, DefaultResourceModifyTimeout)
+			statusErr = waitForTenantConnectionStatus(ctx, &tenantConnection, client, timeout, tenantPendingOfflineInternetAddress)
+			if statusErr == nil {
+				err = refreshTenantConnection(ctx, &tenantConnection, client)
+			}
+		}
+		if statusErr != nil {
+			resp.Diagnostics.AddError("Failed to reconcile tenant connection release", statusErr.Error())
+			return
+		}
+	}
 	if errors.Is(err, errResourceNotFound) {
 		resp.State.RemoveResource(ctx)
 		return
 	}
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Refresh tenant connection info failed",
-			fmt.Sprintf("Failed to refresh tenant connection info, err: %v", err))
+		resp.Diagnostics.AddError("Refresh tenant connection info failed", err.Error())
 		return
 	}
 	diags = resp.State.Set(ctx, tenantConnection)
@@ -425,16 +449,26 @@ func (r *tenantConnectionResource) Delete(ctx context.Context, req resource.Dele
 	}
 
 	client := r.provider.clientGenerator.GetClient()
-	if err := refreshTenantConnection(ctx, &tenantConnection, client); err != nil {
-		if errors.Is(err, errResourceNotFound) {
-			resp.State.RemoveResource(ctx)
-			return
-		}
+	err := refreshTenantConnection(ctx, &tenantConnection, client)
+	if err != nil && !errors.Is(err, errResourceNotFound) {
 		resp.Diagnostics.AddError("Failed to read tenant connection before deletion", err.Error())
 		return
 	}
+	missing := errors.Is(err, errResourceNotFound)
+	pending := false
+	if strings.EqualFold(tenantConnection.Type.ValueString(), model.ConnectionTypeInternet) {
+		pending, err = tenantConnectionReleasePending(ctx, &tenantConnection, client)
+		if err != nil {
+			resp.Diagnostics.AddError("Failed to check tenant connection release", err.Error())
+			return
+		}
+	}
+	if missing && !pending {
+		resp.State.RemoveResource(ctx)
+		return
+	}
 
-	if !strings.EqualFold(tenantConnection.Status.ValueString(), "PENDING_DELETE") {
+	if !missing && !pending && !strings.EqualFold(tenantConnection.Status.ValueString(), "PENDING_DELETE") {
 		result, response, err := client.MultiCloudOpenAPI.DeleteTenantAddress(ctx, tenantConnection.ClusterId.ValueString(), tenantConnection.TenantId.ValueString()).AddressId(tenantConnection.Id.ValueString()).RequestId("").Execute()
 		if err != nil || response != nil {
 			api.LogAPIResult(ctx, result, response, err)
@@ -449,7 +483,7 @@ func (r *tenantConnectionResource) Delete(ctx context.Context, req resource.Dele
 
 	timeout := operationTimeout(EnvResourceDeleteTimeoutSeconds, DefaultResourceModifyTimeout)
 	if err := waitForRemoval(ctx, timeout, func(ctx context.Context) error {
-		return refreshTenantConnection(ctx, &tenantConnection, client)
+		return readTenantConnectionRemoval(ctx, &tenantConnection, client)
 	}); err != nil {
 		resp.Diagnostics.AddError("Waiting for tenant connection deletion failed", fmt.Sprintf("Connection %q could not be confirmed deleted: %v", tenantConnection.Id.ValueString(), err))
 		return

@@ -354,17 +354,42 @@ func (r *tenantResource) ModifyPlan(ctx context.Context, req resource.ModifyPlan
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if err := validateTenantCreationInputs(&state, &plan); err != nil {
-		resp.Diagnostics.AddError("Tenant creation-only setting cannot be updated", err.Error())
+	if err := validateTenantUpdate(&state, &plan); err != nil {
+		resp.Diagnostics.AddError("Tenant setting cannot be updated", err.Error())
 	}
 }
 
 func validateTenantCreationInputs(state, plan *model.Tenant) error {
-	if !plan.EnablePublicAddress.IsNull() && !plan.EnablePublicAddress.IsUnknown() && !plan.EnablePublicAddress.Equal(state.EnablePublicAddress) {
+	if !plan.EnablePublicAddress.IsUnknown() && !plan.EnablePublicAddress.Equal(state.EnablePublicAddress) {
 		return errors.New("enable_public_address is used only when creating a tenant. Manage subsequent public addresses with oceanbase_tenant_connection")
 	}
-	if !plan.Whitelist.IsNull() && !plan.Whitelist.IsUnknown() && !plan.Whitelist.Equal(state.Whitelist) {
+	if !plan.Whitelist.IsUnknown() && !plan.Whitelist.Equal(state.Whitelist) {
 		return errors.New("whitelist is used only when creating a tenant and cannot be updated through this resource. Use oceanbase_tenant_security_group to manage a separate IP group")
+	}
+	return nil
+}
+
+func validateTenantUpdate(state, plan *model.Tenant) error {
+	if err := validateTenantCreationInputs(state, plan); err != nil {
+		return err
+	}
+	for _, field := range []struct {
+		name        string
+		state, plan types.String
+	}{
+		{"cluster_id", state.ClusterId, plan.ClusterId},
+		{"mode", state.Mode, plan.Mode},
+		{"charset", state.Charset, plan.Charset},
+		{"timezone", state.Timezone, plan.Timezone},
+		{"compatible_mode", state.CompatibleMode, plan.CompatibleMode},
+		{"description", state.Description, plan.Description},
+	} {
+		if !field.plan.IsUnknown() && !field.plan.Equal(field.state) {
+			return fmt.Errorf("%s cannot be updated through this resource", field.name)
+		}
+	}
+	if !plan.LowerCaseTableNames.IsUnknown() && !plan.LowerCaseTableNames.Equal(state.LowerCaseTableNames) {
+		return errors.New("lower_case_table_names cannot be updated through this resource")
 	}
 	return nil
 }
@@ -487,40 +512,29 @@ func (r *tenantResource) Read(ctx context.Context, req resource.ReadRequest, res
 	}
 }
 
-func getTenantOperation(ctx context.Context, state, plan *model.Tenant) (string, error) {
-	if err := validateTenantCreationInputs(state, plan); err != nil {
-		return OperationUnsupported, err
+func getTenantOperations(state, plan *model.Tenant) ([]string, error) {
+	if err := validateTenantUpdate(state, plan); err != nil {
+		return nil, err
 	}
-	// TODO: Is it necessary to check cluster status is ONLINE to perform operations
-	modifiedSpecs := make([]string, 0)
-	// modify tenant unit config, including cpu, memory and unit num
-	if (!(plan.UnitNum.IsUnknown() || plan.UnitNum.IsNull()) && !plan.UnitNum.Equal(state.UnitNum)) || (!(plan.Unit.IsUnknown() || plan.Unit.IsNull()) && !plan.Unit.Equal(state.Unit)) {
-		modifiedSpecs = append(modifiedSpecs, SpecTenantUnit)
+	if plan.Name.IsNull() || plan.Name.IsUnknown() || plan.PrimaryZone.IsNull() || plan.PrimaryZone.IsUnknown() ||
+		plan.UnitNum.IsNull() || plan.UnitNum.IsUnknown() || plan.Unit.IsNull() || plan.Unit.IsUnknown() {
+		return nil, errors.New("name, primary_zone, unit_num and unit must be known before updating a tenant")
 	}
-	// modify tenant name
-	if !(plan.Name.IsUnknown() || plan.Name.IsNull()) && (!plan.Name.Equal(state.Name)) {
-		modifiedSpecs = append(modifiedSpecs, SpecTenantName)
+	unit, err := plan.GetUnitConfig()
+	if err != nil || unit.Cpu.IsNull() || unit.Cpu.IsUnknown() || unit.Memory.IsNull() || unit.Memory.IsUnknown() {
+		return nil, errors.New("unit cpu and memory must be known before updating a tenant")
 	}
-	// modify tenant primary zone
-	if !(plan.PrimaryZone.IsUnknown() || plan.PrimaryZone.IsNull()) && (!plan.PrimaryZone.Equal(state.PrimaryZone)) {
-		modifiedSpecs = append(modifiedSpecs, SpecTenantPrimaryZone)
+	var operations []string
+	if !plan.UnitNum.Equal(state.UnitNum) || !plan.Unit.Equal(state.Unit) {
+		operations = append(operations, OperationModifyTenantUnit)
 	}
-	if len(modifiedSpecs) > 1 {
-		return OperationUnsupported, errors.New(fmt.Sprintf("Modify %s at once is not supported", strings.Join(modifiedSpecs, ", ")))
+	if !plan.Name.Equal(state.Name) {
+		operations = append(operations, OperationModifyTenantName)
 	}
-	if len(modifiedSpecs) == 1 {
-		switch modifiedSpecs[0] {
-		case SpecTenantUnit:
-			return OperationModifyTenantUnit, nil
-		case SpecTenantName:
-			return OperationModifyTenantName, nil
-		case SpecTenantPrimaryZone:
-			return OperationModifyTenantPrimaryZone, nil
-		default:
-			return OperationUnsupported, errors.New("Unsupported operation")
-		}
+	if !plan.PrimaryZone.Equal(state.PrimaryZone) {
+		operations = append(operations, OperationModifyTenantPrimaryZone)
 	}
-	return OperationNothing, nil
+	return operations, nil
 }
 
 func (r *tenantResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -544,92 +558,79 @@ func (r *tenantResource) Update(ctx context.Context, req resource.UpdateRequest,
 		return
 	}
 
-	operation, err := getTenantOperation(ctx, &state, &plan)
+	_, err := getTenantOperations(&state, &plan)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Update is not supported",
-			fmt.Sprintf("Got error when get operation err: %v", err))
+			err.Error())
 		return
 	}
 
-	tflog.Debug(ctx, fmt.Sprintf("Got operation: %s", operation))
-
-	needWaitTask := false
 	client := r.provider.clientGenerator.GetClient()
-	switch operation {
-	case OperationModifyTenantUnit:
-		tflog.Info(ctx, "Modify tenant unit")
-		needWaitTask = true
-		body := obcloudsdk.NewUpdateTenantRequestWithDefaults()
-		unitConfig, err := plan.GetUnitConfig()
-		if err != nil {
-			resp.Diagnostics.AddError(
-				"Unit config is invalid",
-				fmt.Sprintf("Failed to parse unit config err: %v", err))
-			return
-		}
-		body.SetUnitNum(plan.UnitNum.ValueInt32())
-		body.SetCpu(unitConfig.Cpu.ValueInt32())
-		body.SetMemory(unitConfig.Memory.ValueInt32())
-		result, response, err := client.MultiCloudOpenAPI.UpdateTenant(ctx, plan.ClusterId.ValueString(), plan.Id.ValueString()).Body(*body).RequestId("").Execute()
-		api.LogAPIResult(ctx, result, response, err)
-		if err != nil || response == nil || response.StatusCode != http.StatusOK || result == nil || !result.GetSuccess() {
-			tflog.Error(ctx, "Modify tenant unit failed")
-			resp.Diagnostics.AddError(
-				"Modify tenant unit failed",
-				fmt.Sprintf("Got error when update tenant unit err: %v, response: %v", err, response))
-			return
-		}
-	case OperationModifyTenantName:
-		tflog.Info(ctx, "Modify tenant name")
-		body := obcloudsdk.NewModifyTenantNameRequestV2WithDefaults()
-		body.SetTenantName(plan.Name.ValueString())
-		result, response, err := client.MultiCloudOpenAPI.ModifyTenantName(ctx, plan.ClusterId.ValueString(), plan.Id.ValueString()).Body(*body).RequestId("").Execute()
-		api.LogAPIResult(ctx, result, response, err)
-		if err != nil || response == nil || response.StatusCode != http.StatusOK || result == nil || !result.GetSuccess() {
-			tflog.Error(ctx, "Modify tenant name failed")
-			resp.Diagnostics.AddError(
-				"Modify tenant name failed",
-				fmt.Sprintf("Got error when update tenant name err: %v, response: %v", err, response))
-			return
-		}
-	case OperationModifyTenantPrimaryZone:
-		tflog.Info(ctx, "Modify tenant primary zone")
-		needWaitTask = true
-		body := obcloudsdk.NewModifyTenantPrimaryZoneRequestWithDefaults()
-		body.SetPrimaryZone(plan.PrimaryZone.ValueString())
-		result, response, err := client.MultiCloudOpenAPI.ModifyTenantPrimaryZone(ctx, plan.ClusterId.ValueString(), plan.Id.ValueString()).Body(*body).RequestId("").Execute()
-		api.LogAPIResult(ctx, result, response, err)
-		if err != nil || response == nil || response.StatusCode != http.StatusOK || result == nil || !result.GetSuccess() {
-			tflog.Error(ctx, "Modify tenant primary zone failed")
-			resp.Diagnostics.AddError(
-				"Modify tenant primary zone failed",
-				fmt.Sprintf("Got error when update tenant primary zone err: %v, response: %v", err, response))
-			return
-		}
-	case OperationNothing:
-		tflog.Info(ctx, "Nothing to do")
-	default:
-		tflog.Info(ctx, "Unsupported operation")
+	timeoutDuration := operationTimeout(EnvResourceModifyTimeoutSeconds, DefaultResourceModifyTimeout)
+	// A previous apply may have stopped while an accepted operation was running.
+	// Observe the tenant before deciding which operations are still necessary.
+	if err := waitForTenantUpdate(ctx, &state, nil, OperationNothing, client, timeoutDuration); err != nil {
+		resp.Diagnostics.Append(resp.State.Set(ctx, state)...)
+		resp.Diagnostics.AddError("Tenant is not ready for update", fmt.Sprintf("Tenant %s could not be reconciled: %v", state.Id.ValueString(), err))
+		return
 	}
-
-	if needWaitTask {
-		timeoutDuration := operationTimeout(EnvResourceModifyTimeoutSeconds, DefaultResourceModifyTimeout)
-		err = waitForTenantUpdate(ctx, &state, &plan, operation, client, timeoutDuration)
-		if err != nil {
+	operations, err := getTenantOperations(&state, &plan)
+	if err != nil {
+		resp.Diagnostics.Append(resp.State.Set(ctx, state)...)
+		resp.Diagnostics.AddError("Update is not supported", err.Error())
+		return
+	}
+	for _, operation := range operations {
+		tflog.Debug(ctx, fmt.Sprintf("Executing operation: %s", operation))
+		var operationErr error
+		switch operation {
+		case OperationModifyTenantUnit:
+			tflog.Info(ctx, "Modify tenant unit")
+			body := obcloudsdk.NewUpdateTenantRequestWithDefaults()
+			unitConfig, _ := plan.GetUnitConfig() // validated before any operation
+			body.SetUnitNum(plan.UnitNum.ValueInt32())
+			body.SetCpu(unitConfig.Cpu.ValueInt32())
+			body.SetMemory(unitConfig.Memory.ValueInt32())
+			result, response, err := client.MultiCloudOpenAPI.UpdateTenant(ctx, state.ClusterId.ValueString(), state.Id.ValueString()).Body(*body).RequestId("").Execute()
+			api.LogAPIResult(ctx, result, response, err)
+			if err != nil || response == nil || response.StatusCode != http.StatusOK || result == nil || !result.GetSuccess() {
+				operationErr = fmt.Errorf("modify tenant unit failed: %v, response: %v", err, response)
+			}
+		case OperationModifyTenantName:
+			tflog.Info(ctx, "Modify tenant name")
+			body := obcloudsdk.NewModifyTenantNameRequestV2WithDefaults()
+			body.SetTenantName(plan.Name.ValueString())
+			result, response, err := client.MultiCloudOpenAPI.ModifyTenantName(ctx, state.ClusterId.ValueString(), state.Id.ValueString()).Body(*body).RequestId("").Execute()
+			api.LogAPIResult(ctx, result, response, err)
+			if err != nil || response == nil || response.StatusCode != http.StatusOK || result == nil || !result.GetSuccess() {
+				operationErr = fmt.Errorf("modify tenant name failed: %v, response: %v", err, response)
+			}
+		case OperationModifyTenantPrimaryZone:
+			tflog.Info(ctx, "Modify tenant primary zone")
+			body := obcloudsdk.NewModifyTenantPrimaryZoneRequestWithDefaults()
+			body.SetPrimaryZone(plan.PrimaryZone.ValueString())
+			result, response, err := client.MultiCloudOpenAPI.ModifyTenantPrimaryZone(ctx, state.ClusterId.ValueString(), state.Id.ValueString()).Body(*body).RequestId("").Execute()
+			api.LogAPIResult(ctx, result, response, err)
+			if err != nil || response == nil || response.StatusCode != http.StatusOK || result == nil || !result.GetSuccess() {
+				operationErr = fmt.Errorf("modify tenant primary zone failed: %v, response: %v", err, response)
+			}
+		}
+		if operationErr != nil {
+			// The response may be ambiguous; preserve a fresh observation if available.
+			candidate := state
+			if err := refreshTenantForUpdate(ctx, &candidate, client); err == nil {
+				state = candidate
+			}
+			resp.Diagnostics.Append(resp.State.Set(ctx, state)...)
+			resp.Diagnostics.AddError("Tenant update failed", operationErr.Error())
+			return
+		}
+		if err := waitForTenantUpdate(ctx, &state, &plan, operation, client, timeoutDuration); err != nil {
 			resp.Diagnostics.Append(resp.State.Set(ctx, state)...)
 			resp.Diagnostics.AddError("Tenant update did not complete", fmt.Sprintf("Tenant %s did not reach the requested state: %v", state.Id.ValueString(), err))
 			return
 		}
-	}
-
-	err = refreshTenant(ctx, &state, client)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Refresh tenant info error",
-			"Failed to refresh tenant info after update",
-		)
-		return
 	}
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
