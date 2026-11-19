@@ -2,8 +2,9 @@
 
 Creates the primary PrivateLink service for a tenant using the OceanBase
 OpenAPI. The cloud account in `user_account` is allowed to connect to the
-service. Use `service_name` to create an endpoint with the appropriate cloud
-provider, and pass this resource's `id` as the connection's `address_id`.
+service. Use `service_name` and, where needed, `service_account` to create an
+endpoint with the appropriate cloud provider. Pass this resource's `id` as the
+connection's `address_id`.
 
 See [the Alibaba Cloud example](../../examples/private_link/main.tf). Cloud
 provider, region, account permissions and availability are subject to the

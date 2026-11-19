@@ -55,7 +55,7 @@ func serviceTestModel() privateLinkServiceModel {
 	return privateLinkServiceModel{
 		ID: types.StringNull(), ClusterID: types.StringValue("cluster"), TenantID: types.StringValue("tenant"),
 		ProjectID: types.StringValue("project"), UserAccount: types.StringValue("account"),
-		ServiceName: types.StringNull(), Status: types.StringNull(),
+		ServiceName: types.StringNull(), ServiceAccount: types.StringNull(), Status: types.StringNull(),
 	}
 }
 
@@ -87,7 +87,7 @@ func TestPrivateLinkLifecycleUsesOpenAPI(t *testing.T) {
 				_, _ = fmt.Fprint(w, `{"success":true,"data":[{"addressId":"address","privateLinkList":[{"privateLinkStatus":"UNCREATED"}]}]}`)
 				return
 			}
-			_, _ = fmt.Fprintf(w, `{"success":true,"data":[{"addressId":"address","privateLinkList":[{"privateLinkStatus":%q,"privateLinkServiceId":"service-name","privateLinkUserAccount":"account","privateLinkEndpointId":%q,"privateLinkDomain":"private.example"}]}]}`, status, endpoint)
+			_, _ = fmt.Fprintf(w, `{"success":true,"data":[{"addressId":"address","privateLinkList":[{"privateLinkStatus":%q,"privateLinkServiceId":"service-name","privateLinkServiceAccount":"service-owner","privateLinkUserAccount":"account","privateLinkEndpointId":%q,"privateLinkDomain":"private.example"}]}]}`, status, endpoint)
 		case req.Method == http.MethodPost && req.URL.Path == base+"/service":
 			var body map[string]string
 			_ = json.NewDecoder(req.Body).Decode(&body)
@@ -124,7 +124,7 @@ func TestPrivateLinkLifecycleUsesOpenAPI(t *testing.T) {
 	svcCreate := resource.CreateResponse{State: svcState}
 	svc.Create(context.Background(), resource.CreateRequest{Plan: tfsdk.Plan{Raw: svcState.Raw, Schema: svcState.Schema}}, &svcCreate)
 	var service privateLinkServiceModel
-	if svcCreate.Diagnostics.HasError() || svcCreate.State.Get(context.Background(), &service).HasError() || service.ID.ValueString() != "address" || service.ServiceName.ValueString() != "service-name" {
+	if svcCreate.Diagnostics.HasError() || svcCreate.State.Get(context.Background(), &service).HasError() || service.ID.ValueString() != "address" || service.ServiceName.ValueString() != "service-name" || service.ServiceAccount.ValueString() != "service-owner" {
 		t.Fatalf("service creation failed: state=%+v diagnostics=%v", service, svcCreate.Diagnostics)
 	}
 
@@ -364,7 +364,7 @@ func TestPrivateLinkTerraformLifecycle(t *testing.T) {
 				_, _ = fmt.Fprint(w, `{"success":true,"data":[{"addressId":"address","privateLinkList":[{"privateLinkStatus":"UNCREATED"}]}]}`)
 				return
 			}
-			_, _ = fmt.Fprintf(w, `{"success":true,"data":[{"addressId":"address","privateLinkList":[{"privateLinkStatus":%q,"privateLinkServiceId":"service-name","privateLinkUserAccount":"account","privateLinkEndpointId":%q}]}]}`, status, endpoint)
+			_, _ = fmt.Fprintf(w, `{"success":true,"data":[{"addressId":"address","privateLinkList":[{"privateLinkStatus":%q,"privateLinkServiceId":"service-name","privateLinkServiceAccount":"service-owner","privateLinkUserAccount":"account","privateLinkEndpointId":%q}]}]}`, status, endpoint)
 		case req.Method == http.MethodPost && req.URL.Path == base+"/service":
 			status = "SERVICE_CREATED"
 			_, _ = fmt.Fprint(w, `{"success":true,"data":{"addressId":"address"}}`)
@@ -399,6 +399,7 @@ resource "oceanbase_tenant_private_link_connection" "test" {
 		Steps: []tfresource.TestStep{
 			{Config: config, Check: tfresource.ComposeAggregateTestCheckFunc(
 				tfresource.TestCheckResourceAttr("oceanbase_tenant_private_link_service.test", "service_name", "service-name"),
+				tfresource.TestCheckResourceAttr("oceanbase_tenant_private_link_service.test", "service_account", "service-owner"),
 				tfresource.TestCheckResourceAttr("oceanbase_tenant_private_link_connection.test", "status", "CONNECTED"),
 			)},
 			{Config: config, PlanOnly: true},

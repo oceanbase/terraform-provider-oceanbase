@@ -25,13 +25,14 @@ var (
 type privateLinkServiceResource struct{ provider *oceanbaseProvider }
 
 type privateLinkServiceModel struct {
-	ID          types.String `tfsdk:"id"`
-	ClusterID   types.String `tfsdk:"cluster_id"`
-	TenantID    types.String `tfsdk:"tenant_id"`
-	ProjectID   types.String `tfsdk:"project_id"`
-	UserAccount types.String `tfsdk:"user_account"`
-	ServiceName types.String `tfsdk:"service_name"`
-	Status      types.String `tfsdk:"status"`
+	ID             types.String `tfsdk:"id"`
+	ClusterID      types.String `tfsdk:"cluster_id"`
+	TenantID       types.String `tfsdk:"tenant_id"`
+	ProjectID      types.String `tfsdk:"project_id"`
+	UserAccount    types.String `tfsdk:"user_account"`
+	ServiceName    types.String `tfsdk:"service_name"`
+	ServiceAccount types.String `tfsdk:"service_account"`
+	Status         types.String `tfsdk:"status"`
 }
 
 func NewPrivateLinkServiceResource() resource.Resource { return &privateLinkServiceResource{} }
@@ -45,13 +46,14 @@ func (r *privateLinkServiceResource) Schema(_ context.Context, _ resource.Schema
 	resp.Schema = schema.Schema{
 		MarkdownDescription: "Manages a tenant's primary PrivateLink service. The cloud endpoint is managed separately.",
 		Attributes: map[string]schema.Attribute{
-			"id":           schema.StringAttribute{Computed: true, MarkdownDescription: "OceanBase address ID."},
-			"cluster_id":   schema.StringAttribute{Required: true, PlanModifiers: replace},
-			"tenant_id":    schema.StringAttribute{Required: true, PlanModifiers: replace},
-			"project_id":   schema.StringAttribute{Optional: true, PlanModifiers: replace},
-			"user_account": schema.StringAttribute{Required: true, PlanModifiers: replace, MarkdownDescription: "Cloud account allowed to connect to the service."},
-			"service_name": schema.StringAttribute{Computed: true, MarkdownDescription: "Cloud-facing service name or identifier."},
-			"status":       schema.StringAttribute{Computed: true},
+			"id":              schema.StringAttribute{Computed: true, MarkdownDescription: "OceanBase address ID."},
+			"cluster_id":      schema.StringAttribute{Required: true, PlanModifiers: replace},
+			"tenant_id":       schema.StringAttribute{Required: true, PlanModifiers: replace},
+			"project_id":      schema.StringAttribute{Optional: true, PlanModifiers: replace},
+			"user_account":    schema.StringAttribute{Required: true, PlanModifiers: replace, MarkdownDescription: "Cloud account allowed to connect to the service."},
+			"service_name":    schema.StringAttribute{Computed: true, MarkdownDescription: "Cloud-facing service name or identifier."},
+			"service_account": schema.StringAttribute{Computed: true, MarkdownDescription: "Cloud account that owns the service, when returned by the API."},
+			"status":          schema.StringAttribute{Computed: true},
 		},
 	}
 }
@@ -70,19 +72,19 @@ func (m *privateLinkServiceModel) target() privateLinkTarget {
 	return privateLinkTarget{clusterID: m.ClusterID.ValueString(), tenantID: m.TenantID.ValueString(), projectID: m.ProjectID.ValueString(), addressID: m.ID.ValueString()}
 }
 
-func observePrivateLinkService(entries []obcloudsdk.TenantPrivateLinkDTO, account string) (bool, string, string, error) {
+func observePrivateLinkService(entries []obcloudsdk.TenantPrivateLinkDTO, account string) (bool, string, string, string, error) {
 	var found bool
-	var status, serviceName string
+	var status, serviceName, serviceAccount string
 	for _, entry := range entries {
 		entryStatus := entry.GetPrivateLinkStatus()
 		if entryStatus == "" {
-			return false, "", "", errors.New("the PrivateLink service response omitted its status")
+			return false, "", "", "", errors.New("the PrivateLink service response omitted its status")
 		}
 		if !privateLinkActive(entryStatus) {
 			continue
 		}
 		if entry.GetPrivateLinkUserAccount() == "" {
-			return false, "", "", errors.New("the PrivateLink service response omitted its cloud account")
+			return false, "", "", "", errors.New("the PrivateLink service response omitted its cloud account")
 		}
 		if !strings.EqualFold(entry.GetPrivateLinkUserAccount(), account) {
 			continue
@@ -90,7 +92,14 @@ func observePrivateLinkService(entries []obcloudsdk.TenantPrivateLinkDTO, accoun
 		found = true
 		name := entry.GetPrivateLinkServiceId()
 		if serviceName != "" && name != "" && serviceName != name {
-			return false, "", "", errors.New("the account has multiple different PrivateLink services for this address")
+			return false, "", "", "", errors.New("the account has multiple different PrivateLink services for this address")
+		}
+		owner := entry.GetPrivateLinkServiceAccount()
+		if serviceAccount != "" && owner != "" && serviceAccount != owner {
+			return false, "", "", "", errors.New("the PrivateLink service has multiple different cloud accounts")
+		}
+		if owner != "" {
+			serviceAccount = owner
 		}
 		if name != "" {
 			serviceName = name
@@ -99,7 +108,7 @@ func observePrivateLinkService(entries []obcloudsdk.TenantPrivateLinkDTO, accoun
 			status = entryStatus
 		}
 	}
-	return found, status, serviceName, nil
+	return found, status, serviceName, serviceAccount, nil
 }
 
 func (r *privateLinkServiceResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -140,6 +149,7 @@ func (r *privateLinkServiceResource) Create(ctx context.Context, req resource.Cr
 	plan.ID = types.StringValue(addressID)
 	plan.Status = types.StringValue("SERVICE_CREATING")
 	plan.ServiceName = types.StringNull()
+	plan.ServiceAccount = types.StringNull()
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -154,7 +164,7 @@ func (r *privateLinkServiceResource) Create(ctx context.Context, req resource.Cr
 		if err != nil {
 			return false, err
 		}
-		found, status, serviceName, err := observePrivateLinkService(privateLinkEntries(addresses), plan.UserAccount.ValueString())
+		found, status, serviceName, serviceAccount, err := observePrivateLinkService(privateLinkEntries(addresses), plan.UserAccount.ValueString())
 		if err != nil || !found {
 			return false, err
 		}
@@ -168,6 +178,9 @@ func (r *privateLinkServiceResource) Create(ctx context.Context, req resource.Cr
 			return false, fmt.Errorf("unexpected PrivateLink service status %q", status)
 		}
 		plan.ServiceName = types.StringValue(serviceName)
+		if serviceAccount != "" {
+			plan.ServiceAccount = types.StringValue(serviceAccount)
+		}
 		return true, nil
 	})
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
@@ -195,7 +208,7 @@ func (r *privateLinkServiceResource) Read(ctx context.Context, req resource.Read
 		resp.Diagnostics.AddError("Could not read PrivateLink service", err.Error())
 		return
 	}
-	found, status, serviceName, err := observePrivateLinkService(privateLinkEntries(addresses), state.UserAccount.ValueString())
+	found, status, serviceName, serviceAccount, err := observePrivateLinkService(privateLinkEntries(addresses), state.UserAccount.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("Could not read PrivateLink service", err.Error())
 		return
@@ -213,6 +226,11 @@ func (r *privateLinkServiceResource) Read(ctx context.Context, req resource.Read
 		state.ServiceName = types.StringValue(serviceName)
 	} else {
 		state.ServiceName = types.StringNull()
+	}
+	if serviceAccount != "" {
+		state.ServiceAccount = types.StringValue(serviceAccount)
+	} else {
+		state.ServiceAccount = types.StringNull()
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
@@ -250,7 +268,7 @@ func (r *privateLinkServiceResource) Delete(ctx context.Context, req resource.De
 			return false, err
 		}
 		entries := privateLinkEntries(addresses)
-		found, status, _, err := observePrivateLinkService(entries, state.UserAccount.ValueString())
+		found, status, _, _, err := observePrivateLinkService(entries, state.UserAccount.ValueString())
 		if err != nil {
 			return false, err
 		}
@@ -292,7 +310,7 @@ func (r *privateLinkServiceResource) Delete(ctx context.Context, req resource.De
 				if err != nil {
 					return false, err
 				}
-				found, _, _, err := observePrivateLinkService(privateLinkEntries(addresses), state.UserAccount.ValueString())
+				found, _, _, _, err := observePrivateLinkService(privateLinkEntries(addresses), state.UserAccount.ValueString())
 				return !found, err
 			})
 		}
