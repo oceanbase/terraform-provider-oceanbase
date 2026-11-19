@@ -1,7 +1,8 @@
-cluster_id = "<existing cluster ID>"
-tenant_id  = "<existing tenant ID>"
+site       = "CHINA"
+cluster_id = "<目标环境中已有的实例 ID>"
+tenant_id  = "<该实例下已有的租户 ID>"
 
-# Fill only the optional objects that exist and should be queried.
+# 只填写需要查询且已经存在的对象；留空表示跳过。
 database_name       = ""
 database_user       = ""
 security_group_name = ""

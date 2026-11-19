@@ -3,8 +3,8 @@ resource "oceanbase_database" "demo" {
 
   cluster_id  = oceanbase_cluster.demo.id
   tenant_id   = oceanbase_tenant.demo.id
-  name        = "tf_demo_db"
-  charset     = "utf8mb4"
+  name        = var.database_name
+  charset     = var.database_charset
   description = "Terraform demo database"
 }
 
@@ -13,12 +13,12 @@ resource "oceanbase_tenant_user" "demo" {
 
   cluster_id = oceanbase_cluster.demo.id
   tenant_id  = oceanbase_tenant.demo.id
-  name       = "tf_demo_user"
+  name       = var.database_user_name
   password   = var.database_user_password
   type       = "Normal"
 
   privileges = [{
     database = oceanbase_database.demo[0].name
-    role     = "readwrite"
+    role     = var.database_user_role
   }]
 }

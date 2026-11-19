@@ -3,7 +3,7 @@ resource "oceanbase_tenant_security_group" "demo" {
 
   cluster_id = oceanbase_cluster.demo.id
   tenant_id  = oceanbase_tenant.demo.id
-  name       = "tf_demo_ips"
+  name       = var.security_group_name
   cidrs      = var.allowed_ips
 }
 
