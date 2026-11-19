@@ -380,7 +380,7 @@ paths:
       summary: 查询租户的公网主地址
       tags:
       - MultiCloudOpen
-  api/v2/instances/{instanceId}/tenants/{tenantId}/privatelink:
+  api/v2/instances/{instanceId}/tenants/{tenantId}/privatelink/endpoint:
     delete:
       operationId: deletePrivatelinkEndpoint
       parameters:
@@ -421,6 +421,7 @@ paths:
       summary: 删除privatelink地址
       tags:
       - MultiCloudOpen
+  api/v2/instances/{instanceId}/tenants/{tenantId}/privatelink:
     get:
       operationId: describeTenantPrivateLink
       parameters:

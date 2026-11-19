@@ -17,7 +17,7 @@ Method | HTTP request | Description
 [**CreateTenantUser**](MultiCloudOpenAPI.md#CreateTenantUser) | **Post** /api/v2/instances/{instanceId}/tenants/{tenantId}/tenantUsers | 创建租户内的用户
 [**DeleteDatabase**](MultiCloudOpenAPI.md#DeleteDatabase) | **Delete** /api/v2/instances/{instanceId}/tenants/{tenantId}/databases | 
 [**DeleteInstance**](MultiCloudOpenAPI.md#DeleteInstance) | **Delete** /api/v2/instances | DeleteInstance
-[**DeletePrivatelinkEndpoint**](MultiCloudOpenAPI.md#DeletePrivatelinkEndpoint) | **Delete** /api/v2/instances/{instanceId}/tenants/{tenantId}/privatelink | 删除privatelink地址
+[**DeletePrivatelinkEndpoint**](MultiCloudOpenAPI.md#DeletePrivatelinkEndpoint) | **Delete** /api/v2/instances/{instanceId}/tenants/{tenantId}/privatelink/endpoint | 删除privatelink地址
 [**DeleteTenant**](MultiCloudOpenAPI.md#DeleteTenant) | **Delete** /api/v2/instances/{instanceId}/tenants/{tenantId} | 删除租户
 [**DeleteTenantAddress**](MultiCloudOpenAPI.md#DeleteTenantAddress) | **Delete** /api/v2/instances/{instanceId}/tenants/{tenantId}/address | 删除租户地址
 [**DeleteTenantSecurityIpGroup**](MultiCloudOpenAPI.md#DeleteTenantSecurityIpGroup) | **Delete** /api/v2/instances/{instanceId}/tenants/{tenantId}/securityIpGroups | DeleteTenantSecurityIpGroup

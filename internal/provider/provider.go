@@ -134,6 +134,8 @@ func (p *oceanbaseProvider) Resources(_ context.Context) []func() resource.Resou
 		NewTenantUserResource,
 		NewDatabaseResource,
 		NewTenantConnectionResource,
+		NewPrivateLinkServiceResource,
+		NewPrivateLinkConnectionResource,
 	}
 }
 

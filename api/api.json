@@ -539,7 +539,9 @@
             }
           }
         }
-      },
+      }
+    },
+    "api/v2/instances/{instanceId}/tenants/{tenantId}/privatelink/endpoint": {
       "delete": {
         "tags": [
           "MultiCloudOpen"

@@ -1667,7 +1667,7 @@ func (a *MultiCloudOpenAPIService) DeletePrivatelinkEndpointExecute(r ApiDeleteP
 		return localVarReturnValue, nil, &GenericOpenAPIError{error: err.Error()}
 	}
 
-	localVarPath := localBasePath + "/api/v2/instances/{instanceId}/tenants/{tenantId}/privatelink"
+	localVarPath := localBasePath + "/api/v2/instances/{instanceId}/tenants/{tenantId}/privatelink/endpoint"
 	localVarPath = strings.Replace(localVarPath, "{"+"instanceId"+"}", url.PathEscape(parameterValueToString(r.instanceId, "instanceId")), -1)
 	localVarPath = strings.Replace(localVarPath, "{"+"tenantId"+"}", url.PathEscape(parameterValueToString(r.tenantId, "tenantId")), -1)
 
