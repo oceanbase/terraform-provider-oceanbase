@@ -206,3 +206,21 @@ variable "database_user_password" {
   sensitive   = true
   default     = null
 }
+
+variable "enable_private_link" {
+  description = "是否创建租户的 OceanBase PrivateLink 服务。"
+  type        = bool
+  default     = false
+}
+
+variable "private_link_user_account" {
+  description = "允许创建 Endpoint 的云厂商主账号 ID。"
+  type        = string
+  default     = ""
+}
+
+variable "private_link_endpoint_id" {
+  description = "云厂商侧已创建的 Endpoint ID；留空时只创建 OceanBase 服务。"
+  type        = string
+  default     = ""
+}

@@ -37,3 +37,8 @@ database_name        = "tf_demo_db"
 database_charset     = "utf8mb4"
 database_user_name   = "tf_demo_user"
 database_user_role   = "readwrite"
+
+# PrivateLink 默认关闭；云厂商主账号 ID 必填，Endpoint ID 可在服务创建后补充。
+enable_private_link        = false
+private_link_user_account  = ""
+private_link_endpoint_id   = ""

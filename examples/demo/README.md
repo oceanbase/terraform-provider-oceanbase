@@ -29,7 +29,7 @@
 
 这套目录用于演示 OceanBase Cloud OpenAPI 对应的 Terraform Provider。**默认值是国内生产的阿里云杭州配置**：当前本机的 `create/terraform.tfvars` 还预填了本次生产测试项目，`read/terraform.tfvars` 预填了本次生产测试实例。演示其他环境前，必须切换 OpenAPI 地址、凭证、项目 ID、实例/租户 ID 以及对应的地域和规格。
 
-本手册针对本地分支 `codex/terraform-cn-prod-validation-20261118`。截至 2026-11-19，GitHub `main` 为 `85f5ec6`，该分支的修复和演示目录尚未推送；操作时通过 `setup.sh` 构建本地 Provider。本手册暂不覆盖 PrivateLink，也不演示包年包月实例创建。
+本手册针对本地分支 `codex/terraform-cn-prod-validation-20261118`。截至 2026-11-19，GitHub `main` 为 `85f5ec6`，该分支的修复和演示目录尚未推送；操作时通过 `setup.sh` 构建本地 Provider。本手册不演示包年包月实例创建。
 
 默认创建计划只有一个按量实例和一个 MySQL 租户。公网、IP 白名单组、数据库和账号由开关控制，默认都不创建。实际 `terraform apply` 会创建云资源并可能产生费用；本手册中的环境示例不是对其他环境规格可售或接口可用的保证。
 
@@ -181,7 +181,55 @@ export TF_VAR_oceanbase_access_key TF_VAR_oceanbase_secret_key
 
 - **数据库和账号**：在 `cn-pre.tfvars` 中设置 `enable_database_user = true`，按后文修改数据库名、账号名和角色。在终端运行 `printf 'Database password: '; read -rs TF_VAR_database_user_password; printf '\n'; export TF_VAR_database_user_password`，再用相同的 `-var-file` 执行 `plan` 和 `apply`。这两个 Terraform 资源本轮未做生产生命周期验证。
 - **公网和 IP 白名单组**：设置 `enable_internet = true`，并把 `allowed_ips` 改成演示客户端的真实出口 IP 列表，例如 `allowed_ips = ["你的公网 IP"]`。先检查计划再执行；创建和释放公网地址可能需要几分钟。
+- **PrivateLink 私网连接**：OceanBase 侧先创建服务，云厂商侧创建 Endpoint 后再关联，具体步骤见下方“第 7 步”。
 - **清理本次新建资源**：先确认仍在 `create` 目录、目标环境和正确 workspace，执行 `terraform plan -destroy -var-file=cn-pre.tfvars`。确认后才由操作者决定是否执行 `terraform destroy -var-file=cn-pre.tfvars`。这会删除该 workspace 中的实例、租户和受管子资源，数据库数据也会被删除；不会删除 `read` 目录只是查询的资源。
+
+### 第 7 步：按两阶段演示 PrivateLink
+
+PrivateLink 把云厂商 VPC 中的客户端与 OceanBase 租户连接起来。第一阶段由 OceanBase Provider 创建**服务**；第二阶段由云厂商账号创建 **Endpoint（终端节点）**，再将 Endpoint ID 提供给 OceanBase Provider 完成关联。仅完成第一阶段时，还不能证明网络或数据库已经连通。云厂商资源可能产生费用，地域和可用区支持情况以实际服务为准。
+
+以下命令假设前面已在国内 PRE 的 `create` 目录创建实例与租户，当前 workspace 是 `cn-pre-demo`，终端仍配置了 PRE 地址、凭证和本地 Provider。其他环境要一并切换环境、凭证、变量文件和 workspace。
+
+1. 运行 `nano cn-pre-pvl.tfvars`，打开或新建 PrivateLink 变量文件。写入下面的内容，将账号 ID 换成**创建云厂商 Endpoint 的主账号 ID**，保留引号；先将 Endpoint ID 留空：
+
+   ```hcl
+   enable_private_link        = true
+   private_link_user_account  = "<云厂商主账号 ID>"
+   private_link_endpoint_id   = ""
+   ```
+
+   按 **Control+O** 保存、回车确认，再按 **Control+X** 退出。`enable_private_link` 控制是否创建服务；`private_link_user_account` 是获准接入服务的云厂商账号，不是 OceanBase 项目 ID；`private_link_endpoint_id` 在第二阶段填写。服务创建后更改 `private_link_user_account` 会使 Terraform 计划替换服务；需要允许其他账号时，先确认服务端的加白方式，不要直接改成另一个账号并执行。
+2. 查看工作区和计划。两个变量文件都要带上，后面的文件覆盖前面同名的值：
+
+   ```bash
+   terraform workspace show
+   terraform plan -var-file=cn-pre.tfvars -var-file=cn-pre-pvl.tfvars
+   ```
+
+   确认工作区为 `cn-pre-demo`，计划只新增 `oceanbase_tenant_private_link_service.demo[0]`，没有修改或删除实例、租户。如果服务已经在云端存在，应先核对并按[资源文档](../../docs/resources/tenant_private_link_service.md)导入，不能再创建一份。
+3. 确认计划后执行，并查看服务信息：
+
+   ```bash
+   terraform apply -var-file=cn-pre.tfvars -var-file=cn-pre-pvl.tfvars
+   terraform output private_link_service_name
+   terraform output private_link_service_account
+   terraform output private_link_service_status
+   terraform output private_link_address_id
+   ```
+
+   Terraform 提示时输入 `yes`。把服务名称、地域、获准接入的账号以及按需返回的服务所属账号交给负责云网络的同事；地址 ID 用于 OceanBase 侧关联，不是云厂商 Endpoint ID。服务状态和名称以实际输出为准；服务所属账号仅在接口返回时才有输出。
+4. 云网络同事在相应地域、获准账号下，使用服务名称和已有 VPC / 交换机创建云厂商 Endpoint。取得 Endpoint ID 后，把 `cn-pre-pvl.tfvars` 的 `private_link_endpoint_id` 改为该 ID，再执行：
+
+   ```bash
+   terraform plan -var-file=cn-pre.tfvars -var-file=cn-pre-pvl.tfvars
+   terraform apply -var-file=cn-pre.tfvars -var-file=cn-pre-pvl.tfvars
+   terraform output private_link_connection_status
+   terraform output private_link_domain
+   ```
+
+   执行前确认计划只新增 `oceanbase_tenant_private_link_connection.demo[0]`，没有替换服务或修改现有资源。关联完成后仍需从 VPC 内检查 DNS、网络访问和数据库连接。
+
+启用 PrivateLink 后，后续对这个工作区执行 `plan` 或 `apply` 时都要带两个 `-var-file`；漏掉 `cn-pre-pvl.tfvars` 会使 Terraform 认为应删除 PrivateLink。删除最后一个 Endpoint 关联时，OceanBase 也可能删除对应服务，详见[资源文档](../../docs/resources/tenant_private_link_connection.md)。
 
 ### 遇到问题先看这里
 
@@ -212,6 +260,7 @@ export TF_VAR_oceanbase_access_key TF_VAR_oceanbase_secret_key
 | `create/cluster.tf` | 定义实例资源，并引用 `.tfvars` 中的实例参数 | 常用参数已变量化；演示只使用 `PostPay` |
 | `create/tenant.tf` | 定义租户，关联上面的实例 | 常用租户参数已变量化；创建时公网开关固定为 `false` |
 | `create/network.tf` | 可选的租户 IP 白名单组和 `INTERNET` 公网地址 | 修改 `enable_internet`、`security_group_name`、`allowed_ips`，通常不改文件 |
+| `create/private_link.tf` | 可选的 OceanBase PrivateLink 服务及 Endpoint 关联 | 按第 7 步填写三个 PrivateLink 参数；云厂商 Endpoint 单独创建 |
 | `create/database.tf` | 可选的数据库、普通账号及数据库权限 | 修改数据库相关变量，账号密码通过终端环境变量提供 |
 | `create/outputs.tf` | 输出新建实例、租户、数据库和公网地址的标识 | 需要新增演示输出时编辑；不参与目标环境选择 |
 | `read/versions.tf`、`read/variables.tf` | 声明只读查询使用的 Provider 和输入变量 | 通常不改；输入放在 `read` 自己的 `.tfvars` |
@@ -353,7 +402,7 @@ cp terraform.tfvars.example cn-pre.tfvars
 | `security_group_name` | `"tf_demo_ips"` | 新建 IP 白名单组名称。 |
 | `allowed_ips` | `[]` | 客户端出口 IP 或 CIDR 列表。开启公网时填写目标环境允许的真实地址，例如 `["203.0.113.10"]`；这个地址只是文档示例。 |
 
-`network.tf` 使用 `type = "INTERNET"`。当前资源不支持在创建时设置 SSL、RPC 或 PrivateLink 配置，也不支持通过该资源更新它们。Terraform 会先创建 IP 组，再创建公网地址；具体地址和端口通过 `terraform output` 查看。
+`network.tf` 使用 `type = "INTERNET"`。当前公网地址资源不支持在创建时设置 SSL、RPC 或 PrivateLink 配置，也不支持通过该资源更新它们。Terraform 会先创建 IP 组，再创建公网地址；具体地址和端口通过 `terraform output` 查看。PrivateLink 使用单独的资源，见第 7 步。
 
 ### 3.4 可选数据库和账号
 
@@ -390,6 +439,7 @@ cp terraform.tfvars.example cn-pre.tfvars
 | 租户 | `oceanbase_tenant` / 同名 `data` | 创建、查询、名称/主区/Unit 变更、删除、导入。MySQL 创建、名称与主区组合修改、查询和删除已在国内生产验证；Unit 变更未做本轮生产实测。 |
 | IP 白名单组 | `oceanbase_tenant_security_group` / 同名 `data` | 创建、查询、修改、删除、导入；创建、更新、外部删除后重建及删除已在国内生产验证。 |
 | 公网地址 | `oceanbase_tenant_connection` / 同名 `data` | `INTERNET` 地址创建、查询、删除、导入；创建、回读、删除及临时账号 `SELECT 1` 已在国内生产验证。 |
+| PrivateLink | `oceanbase_tenant_private_link_service`、`oceanbase_tenant_private_link_connection` | 管理 OceanBase 侧服务及 Endpoint 关联；云厂商 Endpoint 由云厂商侧另行创建。具体环境是否可用以及端到端连通性需要实际验证。 |
 | 数据库 | `oceanbase_database` / 同名 `data` | 创建、查询、修改描述、删除、导入；本轮未做 Terraform 资源生产生命周期验证。 |
 | 数据库账号 | `oceanbase_tenant_user` / 同名 `data` | 创建、查询、修改描述/密码/权限/锁定状态、删除、导入；本轮未做 Terraform 资源生产生命周期验证。 |
 
