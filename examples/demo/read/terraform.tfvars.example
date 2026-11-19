@@ -1,0 +1,8 @@
+cluster_id = "<existing cluster ID>"
+tenant_id  = "<existing tenant ID>"
+
+# Fill only the optional objects that exist and should be queried.
+database_name       = ""
+database_user       = ""
+security_group_name = ""
+internet_address_id = ""

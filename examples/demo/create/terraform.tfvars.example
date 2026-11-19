@@ -1,0 +1,10 @@
+project_id    = "<OceanBase project ID>"
+instance_name = "tf_demo_cluster"
+tenant_name   = "tf_demo_tenant"
+
+# To demonstrate public access, enable this and supply your actual client IP.
+enable_internet = false
+allowed_ips     = []
+
+# To create the demo database and user, also set TF_VAR_database_user_password.
+enable_database_user = false
