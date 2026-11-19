@@ -1,5 +1,43 @@
-# The OceanBase and cloud providers must be configured separately. The VPC and
-# vSwitch below belong to the cloud account identified by user_account.
+terraform {
+  required_providers {
+    oceanbase = {
+      source = "oceanbase.github.io/oceanbase/oceanbase"
+    }
+    alicloud = {
+      source  = "aliyun/alicloud"
+      version = ">= 1.111.0"
+    }
+  }
+}
+
+variable "oceanbase_access_key" {
+  type      = string
+  sensitive = true
+}
+
+variable "oceanbase_secret_key" {
+  type      = string
+  sensitive = true
+}
+
+variable "oceanbase_site" {
+  type    = string
+  default = "CHINA"
+}
+
+variable "region" { type = string }
+
+provider "oceanbase" {
+  access_key = var.oceanbase_access_key
+  secret_key = var.oceanbase_secret_key
+  site       = var.oceanbase_site
+}
+
+provider "alicloud" {
+  region = var.region
+}
+
+# The VPC and vSwitch belong to the cloud account identified by user_account.
 variable "project_id" { type = string }
 variable "cluster_id" { type = string }
 variable "tenant_id" { type = string }
@@ -34,4 +72,12 @@ resource "oceanbase_tenant_private_link_connection" "primary" {
   endpoint_id = alicloud_privatelink_vpc_endpoint.primary.id
 
   depends_on = [alicloud_privatelink_vpc_endpoint_zone.primary]
+}
+
+output "endpoint_id" {
+  value = alicloud_privatelink_vpc_endpoint.primary.id
+}
+
+output "private_link_domain" {
+  value = oceanbase_tenant_private_link_connection.primary.domain
 }
