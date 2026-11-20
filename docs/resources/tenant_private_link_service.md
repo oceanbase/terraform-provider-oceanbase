@@ -14,6 +14,14 @@ requires an eligible account and compatible network load balancer.
 Arguments: `cluster_id`, `tenant_id` and `user_account` are required;
 `project_id` is optional. Changing an input replaces the resource.
 
+`proxy_setting` is optional and is used when OceanBase must create a
+commercialized ODP and NLB along with the service. It contains `mode`,
+`deployment_architecture`, `zone` (a list of primary zone IDs), and `node_cpu`;
+`slave_zone` is an optional list and defaults to an empty list in the request.
+Use a mode, architecture, zones and CPU size supported by the target environment;
+OceanBase validates availability, quota and billing. Changing this create-time
+setting replaces the service. Import does not recover the original setting.
+
 The provider does not adopt an existing service during creation. Import an
 existing service with `cluster_id/tenant_id/address_id/user_account`; escape
 each component as a URL path segment. If connections still exist, delete them

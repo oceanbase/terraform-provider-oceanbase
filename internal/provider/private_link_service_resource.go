@@ -10,9 +10,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/oceanbasecloud/terraform-provider-oceanbase/obcloudsdk"
 )
 
@@ -30,9 +32,18 @@ type privateLinkServiceModel struct {
 	TenantID       types.String `tfsdk:"tenant_id"`
 	ProjectID      types.String `tfsdk:"project_id"`
 	UserAccount    types.String `tfsdk:"user_account"`
+	ProxySetting   types.Object `tfsdk:"proxy_setting"`
 	ServiceName    types.String `tfsdk:"service_name"`
 	ServiceAccount types.String `tfsdk:"service_account"`
 	Status         types.String `tfsdk:"status"`
+}
+
+type privateLinkProxySettingModel struct {
+	Mode                   types.String  `tfsdk:"mode"`
+	DeploymentArchitecture types.String  `tfsdk:"deployment_architecture"`
+	Zone                   types.List    `tfsdk:"zone"`
+	SlaveZone              types.List    `tfsdk:"slave_zone"`
+	NodeCPU                types.Float64 `tfsdk:"node_cpu"`
 }
 
 func NewPrivateLinkServiceResource() resource.Resource { return &privateLinkServiceResource{} }
@@ -46,11 +57,23 @@ func (r *privateLinkServiceResource) Schema(_ context.Context, _ resource.Schema
 	resp.Schema = schema.Schema{
 		MarkdownDescription: "Manages a tenant's primary PrivateLink service. The cloud endpoint is managed separately.",
 		Attributes: map[string]schema.Attribute{
-			"id":              schema.StringAttribute{Computed: true, MarkdownDescription: "OceanBase address ID."},
-			"cluster_id":      schema.StringAttribute{Required: true, PlanModifiers: replace},
-			"tenant_id":       schema.StringAttribute{Required: true, PlanModifiers: replace},
-			"project_id":      schema.StringAttribute{Optional: true, PlanModifiers: replace},
-			"user_account":    schema.StringAttribute{Required: true, PlanModifiers: replace, MarkdownDescription: "Cloud account allowed to connect to the service."},
+			"id":           schema.StringAttribute{Computed: true, MarkdownDescription: "OceanBase address ID."},
+			"cluster_id":   schema.StringAttribute{Required: true, PlanModifiers: replace},
+			"tenant_id":    schema.StringAttribute{Required: true, PlanModifiers: replace},
+			"project_id":   schema.StringAttribute{Optional: true, PlanModifiers: replace},
+			"user_account": schema.StringAttribute{Required: true, PlanModifiers: replace, MarkdownDescription: "Cloud account allowed to connect to the service."},
+			"proxy_setting": schema.SingleNestedAttribute{
+				Optional:            true,
+				MarkdownDescription: "ODP configuration when service creation must also create a commercialized ODP and NLB.",
+				PlanModifiers:       []planmodifier.Object{objectplanmodifier.RequiresReplace()},
+				Attributes: map[string]schema.Attribute{
+					"mode":                    schema.StringAttribute{Required: true},
+					"deployment_architecture": schema.StringAttribute{Required: true},
+					"zone":                    schema.ListAttribute{Required: true, ElementType: types.StringType},
+					"slave_zone":              schema.ListAttribute{Optional: true, ElementType: types.StringType},
+					"node_cpu":                schema.Float64Attribute{Required: true},
+				},
+			},
 			"service_name":    schema.StringAttribute{Computed: true, MarkdownDescription: "Cloud-facing service name or identifier."},
 			"service_account": schema.StringAttribute{Computed: true, MarkdownDescription: "Cloud account that owns the service, when returned by the API."},
 			"status":          schema.StringAttribute{Computed: true},
@@ -141,7 +164,27 @@ func (r *privateLinkServiceResource) Create(ctx context.Context, req resource.Cr
 			return
 		}
 	}
-	addressID, err := createPrivateLinkService(ctx, r.provider, target, plan.UserAccount.ValueString())
+	var proxySetting *obcloudsdk.PrivateLinkProxySetting
+	if !plan.ProxySetting.IsNull() {
+		var setting privateLinkProxySettingModel
+		resp.Diagnostics.Append(plan.ProxySetting.As(ctx, &setting, basetypes.ObjectAsOptions{})...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+		zones, slaveZones := []string{}, []string{}
+		resp.Diagnostics.Append(setting.Zone.ElementsAs(ctx, &zones, false)...)
+		if !setting.SlaveZone.IsNull() {
+			resp.Diagnostics.Append(setting.SlaveZone.ElementsAs(ctx, &slaveZones, false)...)
+		}
+		if resp.Diagnostics.HasError() {
+			return
+		}
+		proxySetting = &obcloudsdk.PrivateLinkProxySetting{
+			Mode: setting.Mode.ValueString(), DeploymentArchitecture: setting.DeploymentArchitecture.ValueString(),
+			Zone: zones, SlaveZone: slaveZones, NodeCPU: setting.NodeCPU.ValueFloat64(),
+		}
+	}
+	addressID, err := createPrivateLinkService(ctx, r.provider, target, plan.UserAccount.ValueString(), proxySetting)
 	if err != nil {
 		resp.Diagnostics.AddError("Could not create PrivateLink service", fmt.Sprintf("%v. Inspect the tenant before retrying; the request may have been accepted.", err))
 		return

@@ -2,10 +2,11 @@
 resource "oceanbase_tenant_private_link_service" "demo" {
   count = var.enable_private_link ? 1 : 0
 
-  project_id   = var.project_id
-  cluster_id   = oceanbase_cluster.demo.id
-  tenant_id    = oceanbase_tenant.demo.id
-  user_account = var.private_link_user_account
+  project_id    = var.project_id
+  cluster_id    = oceanbase_cluster.demo.id
+  tenant_id     = oceanbase_tenant.demo.id
+  user_account  = var.private_link_user_account
+  proxy_setting = var.private_link_proxy_setting
 
   lifecycle {
     precondition {

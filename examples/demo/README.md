@@ -196,9 +196,24 @@ PrivateLink 把云厂商 VPC 中的客户端与 OceanBase 租户连接起来。�
    enable_private_link        = true
    private_link_user_account  = "<云厂商主账号 ID>"
    private_link_endpoint_id   = ""
+   private_link_proxy_setting = null
    ```
 
    按 **Control+O** 保存、回车确认，再按 **Control+X** 退出。`enable_private_link` 控制是否创建服务；`private_link_user_account` 是获准接入服务的云厂商账号，不是 OceanBase 项目 ID；`private_link_endpoint_id` 在第二阶段填写。服务创建后更改 `private_link_user_account` 会使 Terraform 计划替换服务；需要允许其他账号时，先确认服务端的加白方式，不要直接改成另一个账号并执行。
+
+   `private_link_proxy_setting = null` 表示不提供代理配置。如果租户尚无私网主地址，且目标环境启用了 ODP 商业化，OceanBase 可能要求在创建服务时同时创建 ODP 和 NLB；此时将该行替换为下面的结构，并按目标环境可用规格填写：
+
+   ```hcl
+   private_link_proxy_setting = {
+     mode                    = "k8s_shared"
+     deployment_architecture = "dual_az_active_active_deployment"
+     zone                    = ["<主可用区 1>", "<主可用区 2>"]
+     slave_zone              = []
+     node_cpu                = 1
+   }
+   ```
+
+   `mode` 是代理模式；`deployment_architecture` 是部署方案；`zone` 和 `slave_zone` 分别是主、备节点可用区列表；`node_cpu` 是每个代理节点的 CPU 核数。示例值不保证在所有环境可用，规格、额度和费用由目标环境决定。设置变更会使服务被替换，导入已有服务时无法自动恢复该设置。
 2. 查看工作区和计划。两个变量文件都要带上，后面的文件覆盖前面同名的值：
 
    ```bash
@@ -211,13 +226,12 @@ PrivateLink 把云厂商 VPC 中的客户端与 OceanBase 租户连接起来。�
 
    ```bash
    terraform apply -var-file=cn-pre.tfvars -var-file=cn-pre-pvl.tfvars
-   terraform output private_link_service_name
-   terraform output private_link_service_account
-   terraform output private_link_service_status
-   terraform output private_link_address_id
+   terraform output
    ```
 
-   Terraform 提示时输入 `yes`。把服务名称、地域、获准接入的账号以及按需返回的服务所属账号交给负责云网络的同事；地址 ID 用于 OceanBase 侧关联，不是云厂商 Endpoint ID。服务状态和名称以实际输出为准；服务所属账号仅在接口返回时才有输出。
+   Terraform 提示时输入 `yes`。输出中 `private_link_service_name` 是服务名称，`private_link_service_status` 是服务状态，`private_link_address_id` 是 OceanBase 侧地址 ID。把服务名称、地域、获准接入的账号以及按需返回的 `private_link_service_account` 交给负责云网络的同事；地址 ID 不是云厂商 Endpoint ID，服务所属账号仅在接口返回时才有输出。
+
+   国内 PRE 本次实测中，服务已返回 `SERVICE_CREATED`，但尚未关联 Endpoint 时，租户为 `ALLOCATING_MASTER_ADDRESS`、私网地址为 `PENDING_CREATE`。不能仅凭服务创建成功就认为租户地址和链路已就绪；关联后需重新检查状态。
 4. 云网络同事在相应地域、获准账号下，使用服务名称和已有 VPC / 交换机创建云厂商 Endpoint。取得 Endpoint ID 后，把 `cn-pre-pvl.tfvars` 的 `private_link_endpoint_id` 改为该 ID，再执行：
 
    ```bash

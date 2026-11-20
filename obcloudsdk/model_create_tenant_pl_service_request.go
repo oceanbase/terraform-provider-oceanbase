@@ -19,7 +19,17 @@ var _ MappedNullable = &CreateTenantPlServiceRequest{}
 
 // CreateTenantPlServiceRequest struct for CreateTenantPlServiceRequest
 type CreateTenantPlServiceRequest struct {
-	UserAccount *string `json:"userAccount,omitempty"`
+	UserAccount  *string                  `json:"userAccount,omitempty"`
+	ProxySetting *PrivateLinkProxySetting `json:"proxySetting,omitempty"`
+}
+
+// PrivateLinkProxySetting describes the ODP created with a PrivateLink service.
+type PrivateLinkProxySetting struct {
+	Mode                   string   `json:"mode"`
+	DeploymentArchitecture string   `json:"deploymentArchitecture"`
+	Zone                   []string `json:"zone"`
+	SlaveZone              []string `json:"slaveZone"`
+	NodeCPU                float64  `json:"nodeCpu"`
 }
 
 // NewCreateTenantPlServiceRequest instantiates a new CreateTenantPlServiceRequest object
@@ -71,8 +81,13 @@ func (o *CreateTenantPlServiceRequest) SetUserAccount(v string) {
 	o.UserAccount = &v
 }
 
+// SetProxySetting sets the optional ODP configuration.
+func (o *CreateTenantPlServiceRequest) SetProxySetting(v PrivateLinkProxySetting) {
+	o.ProxySetting = &v
+}
+
 func (o CreateTenantPlServiceRequest) MarshalJSON() ([]byte, error) {
-	toSerialize,err := o.ToMap()
+	toSerialize, err := o.ToMap()
 	if err != nil {
 		return []byte{}, err
 	}
@@ -83,6 +98,9 @@ func (o CreateTenantPlServiceRequest) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
 	if !IsNil(o.UserAccount) {
 		toSerialize["userAccount"] = o.UserAccount
+	}
+	if !IsNil(o.ProxySetting) {
+		toSerialize["proxySetting"] = o.ProxySetting
 	}
 	return toSerialize, nil
 }
@@ -122,5 +140,3 @@ func (v *NullableCreateTenantPlServiceRequest) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

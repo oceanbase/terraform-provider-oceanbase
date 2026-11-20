@@ -4364,6 +4364,25 @@ components:
       properties:
         userAccount:
           type: string
+        proxySetting:
+          $ref: '#/components/schemas/PrivateLinkProxySetting'
+      type: object
+    PrivateLinkProxySetting:
+      properties:
+        mode:
+          type: string
+        deploymentArchitecture:
+          type: string
+        zone:
+          items:
+            type: string
+          type: array
+        slaveZone:
+          items:
+            type: string
+          type: array
+        nodeCpu:
+          type: number
       type: object
     ProxyClusterInfoDTO:
       example:

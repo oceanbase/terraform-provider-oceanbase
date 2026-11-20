@@ -145,9 +145,12 @@ func privateLinkTenantReady(ctx context.Context, p *oceanbaseProvider, target pr
 	}
 }
 
-func createPrivateLinkService(ctx context.Context, p *oceanbaseProvider, target privateLinkTarget, userAccount string) (string, error) {
+func createPrivateLinkService(ctx context.Context, p *oceanbaseProvider, target privateLinkTarget, userAccount string, proxySetting *obcloudsdk.PrivateLinkProxySetting) (string, error) {
 	body := obcloudsdk.NewCreateTenantPlServiceRequestWithDefaults()
 	body.SetUserAccount(userAccount)
+	if proxySetting != nil {
+		body.SetProxySetting(*proxySetting)
+	}
 	result, response, err := privateLinkClient(p, target.projectID).MultiCloudOpenAPI.CreatePrivateLinkService(ctx, target.clusterID, target.tenantID).RequestId("").Body(*body).Execute()
 	if result == nil {
 		return "", privateLinkAPIError("create PrivateLink service", response, err, false, "", "empty response")

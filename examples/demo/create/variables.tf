@@ -224,3 +224,15 @@ variable "private_link_endpoint_id" {
   type        = string
   default     = ""
 }
+
+variable "private_link_proxy_setting" {
+  description = "创建 PrivateLink 时需要新建商业化 ODP 的配置；不需要时为 null。"
+  type = object({
+    mode                    = string
+    deployment_architecture = string
+    zone                    = list(string)
+    slave_zone              = optional(list(string), [])
+    node_cpu                = number
+  })
+  default = null
+}

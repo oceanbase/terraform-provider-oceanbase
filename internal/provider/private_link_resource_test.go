@@ -10,6 +10,7 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -55,7 +56,68 @@ func serviceTestModel() privateLinkServiceModel {
 	return privateLinkServiceModel{
 		ID: types.StringNull(), ClusterID: types.StringValue("cluster"), TenantID: types.StringValue("tenant"),
 		ProjectID: types.StringValue("project"), UserAccount: types.StringValue("account"),
-		ServiceName: types.StringNull(), ServiceAccount: types.StringNull(), Status: types.StringNull(),
+		ProxySetting: types.ObjectNull(privateLinkProxySettingTypes()),
+		ServiceName:  types.StringNull(), ServiceAccount: types.StringNull(), Status: types.StringNull(),
+	}
+}
+
+func privateLinkProxySettingTypes() map[string]attr.Type {
+	return map[string]attr.Type{
+		"mode": types.StringType, "deployment_architecture": types.StringType,
+		"zone": types.ListType{ElemType: types.StringType}, "slave_zone": types.ListType{ElemType: types.StringType},
+		"node_cpu": types.Float64Type,
+	}
+}
+
+func TestPrivateLinkServiceForwardsProxySetting(t *testing.T) {
+	t.Setenv(EnvResourceCreateTimeoutSeconds, "5")
+	created := false
+	p := privateLinkTestProvider(t, func(w http.ResponseWriter, req *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		switch {
+		case req.Method == http.MethodGet:
+			if !created {
+				_, _ = fmt.Fprint(w, `{"success":true,"data":[]}`)
+				return
+			}
+			_, _ = fmt.Fprint(w, `{"success":true,"data":[{"addressId":"address","privateLinkList":[{"privateLinkStatus":"SERVICE_CREATED","privateLinkServiceId":"service-name","privateLinkUserAccount":"account"}]}]}`)
+		case req.Method == http.MethodPost && strings.HasSuffix(req.URL.Path, "/privatelink/service"):
+			var body struct {
+				UserAccount  string `json:"userAccount"`
+				ProxySetting struct {
+					Mode                   string   `json:"mode"`
+					DeploymentArchitecture string   `json:"deploymentArchitecture"`
+					Zone                   []string `json:"zone"`
+					SlaveZone              []string `json:"slaveZone"`
+					NodeCPU                float64  `json:"nodeCpu"`
+				} `json:"proxySetting"`
+			}
+			if err := json.NewDecoder(req.Body).Decode(&body); err != nil {
+				t.Fatal(err)
+			}
+			setting := body.ProxySetting
+			if body.UserAccount != "account" || setting.Mode != "k8s_shared" || setting.DeploymentArchitecture != "dual_az_active_active_deployment" || len(setting.Zone) != 2 || setting.Zone[0] != "zone-a" || setting.Zone[1] != "zone-b" || setting.SlaveZone == nil || len(setting.SlaveZone) != 0 || setting.NodeCPU != 1 {
+				t.Errorf("unexpected service body: %+v", body)
+			}
+			created = true
+			_, _ = fmt.Fprint(w, `{"success":true,"data":{"addressId":"address"}}`)
+		default:
+			t.Errorf("unexpected request: %s %s", req.Method, req.URL.Path)
+			w.WriteHeader(http.StatusNotFound)
+		}
+	})
+	model := serviceTestModel()
+	model.ProxySetting = types.ObjectValueMust(privateLinkProxySettingTypes(), map[string]attr.Value{
+		"mode": types.StringValue("k8s_shared"), "deployment_architecture": types.StringValue("dual_az_active_active_deployment"),
+		"zone":       types.ListValueMust(types.StringType, []attr.Value{types.StringValue("zone-a"), types.StringValue("zone-b")}),
+		"slave_zone": types.ListNull(types.StringType), "node_cpu": types.Float64Value(1),
+	})
+	r := &privateLinkServiceResource{provider: p}
+	state := privateLinkServiceState(t, r, model)
+	resp := resource.CreateResponse{State: state}
+	r.Create(context.Background(), resource.CreateRequest{Plan: tfsdk.Plan{Raw: state.Raw, Schema: state.Schema}}, &resp)
+	if resp.Diagnostics.HasError() || !created {
+		t.Fatalf("service creation failed: %v", resp.Diagnostics)
 	}
 }
 

@@ -42,3 +42,5 @@ database_user_role   = "readwrite"
 enable_private_link        = false
 private_link_user_account  = ""
 private_link_endpoint_id   = ""
+# 需要同时创建商业化 ODP 时配置对象，参考演示手册第 7 步。
+private_link_proxy_setting = null
