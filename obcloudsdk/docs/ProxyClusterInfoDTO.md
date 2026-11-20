@@ -8,7 +8,7 @@ Name | Type | Description | Notes
 **ProxyMode** | Pointer to **string** |  | [optional] 
 **Zone** | Pointer to **string** |  | [optional] 
 **UnitSpec** | Pointer to **string** |  | [optional] 
-**UnitNum** | Pointer to **int32** |  | [optional] 
+**UnitNum** | Pointer to **float64** |  | [optional]
 **UnitNumLimit** | Pointer to **int32** |  | [optional] 
 **Status** | Pointer to **string** |  | [optional] 
 **ProxyServiceVersion** | Pointer to **string** |  | [optional] 
@@ -137,20 +137,20 @@ HasUnitSpec returns a boolean if a field has been set.
 
 ### GetUnitNum
 
-`func (o *ProxyClusterInfoDTO) GetUnitNum() int32`
+`func (o *ProxyClusterInfoDTO) GetUnitNum() float64`
 
 GetUnitNum returns the UnitNum field if non-nil, zero value otherwise.
 
 ### GetUnitNumOk
 
-`func (o *ProxyClusterInfoDTO) GetUnitNumOk() (*int32, bool)`
+`func (o *ProxyClusterInfoDTO) GetUnitNumOk() (*float64, bool)`
 
 GetUnitNumOk returns a tuple with the UnitNum field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
 ### SetUnitNum
 
-`func (o *ProxyClusterInfoDTO) SetUnitNum(v int32)`
+`func (o *ProxyClusterInfoDTO) SetUnitNum(v float64)`
 
 SetUnitNum sets UnitNum field to given value.
 

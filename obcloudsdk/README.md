@@ -91,7 +91,7 @@ Class | Method | HTTP request | Description
 *MultiCloudOpenAPI* | [**CreateTenantUser**](docs/MultiCloudOpenAPI.md#createtenantuser) | **Post** /api/v2/instances/{instanceId}/tenants/{tenantId}/tenantUsers | 创建租户内的用户
 *MultiCloudOpenAPI* | [**DeleteDatabase**](docs/MultiCloudOpenAPI.md#deletedatabase) | **Delete** /api/v2/instances/{instanceId}/tenants/{tenantId}/databases | 
 *MultiCloudOpenAPI* | [**DeleteInstance**](docs/MultiCloudOpenAPI.md#deleteinstance) | **Delete** /api/v2/instances | DeleteInstance
-*MultiCloudOpenAPI* | [**DeletePrivatelinkEndpoint**](docs/MultiCloudOpenAPI.md#deleteprivatelinkendpoint) | **Delete** /api/v2/instances/{instanceId}/tenants/{tenantId}/privatelink | 删除privatelink地址
+*MultiCloudOpenAPI* | [**DeletePrivatelinkEndpoint**](docs/MultiCloudOpenAPI.md#deleteprivatelinkendpoint) | **Delete** /api/v2/instances/{instanceId}/tenants/{tenantId}/privatelink/endpoint | 删除privatelink地址
 *MultiCloudOpenAPI* | [**DeleteTenant**](docs/MultiCloudOpenAPI.md#deletetenant) | **Delete** /api/v2/instances/{instanceId}/tenants/{tenantId} | 删除租户
 *MultiCloudOpenAPI* | [**DeleteTenantAddress**](docs/MultiCloudOpenAPI.md#deletetenantaddress) | **Delete** /api/v2/instances/{instanceId}/tenants/{tenantId}/address | 删除租户地址
 *MultiCloudOpenAPI* | [**DeleteTenantSecurityIpGroup**](docs/MultiCloudOpenAPI.md#deletetenantsecurityipgroup) | **Delete** /api/v2/instances/{instanceId}/tenants/{tenantId}/securityIpGroups | DeleteTenantSecurityIpGroup

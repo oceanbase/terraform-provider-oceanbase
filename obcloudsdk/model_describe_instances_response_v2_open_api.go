@@ -43,6 +43,7 @@ type DescribeInstancesResponseV2OpenAPI struct {
 	ManagementMode *string `json:"managementMode,omitempty"`
 	InstanceType *string `json:"instanceType,omitempty"`
 	DiskType *string `json:"diskType,omitempty"`
+	StorageArchitecture *string `json:"storageArchitecture,omitempty"`
 	DiskSize *int64 `json:"diskSize,omitempty"`
 	InstanceRole *string `json:"instanceRole,omitempty"`
 	PrimaryInstanceId *string `json:"primaryInstanceId,omitempty"`
@@ -1094,6 +1095,32 @@ func (o *DescribeInstancesResponseV2OpenAPI) SetCpuArchitecture(v string) {
 	o.CpuArchitecture = &v
 }
 
+// GetStorageArchitecture returns the StorageArchitecture field value if set, zero value otherwise.
+func (o *DescribeInstancesResponseV2OpenAPI) GetStorageArchitecture() string {
+	if o == nil || IsNil(o.StorageArchitecture) {
+		return ""
+	}
+	return *o.StorageArchitecture
+}
+
+// GetStorageArchitectureOk returns the StorageArchitecture field and whether it is set.
+func (o *DescribeInstancesResponseV2OpenAPI) GetStorageArchitectureOk() (*string, bool) {
+	if o == nil || IsNil(o.StorageArchitecture) {
+		return nil, false
+	}
+	return o.StorageArchitecture, true
+}
+
+// HasStorageArchitecture returns whether StorageArchitecture is set.
+func (o *DescribeInstancesResponseV2OpenAPI) HasStorageArchitecture() bool {
+	return o != nil && !IsNil(o.StorageArchitecture)
+}
+
+// SetStorageArchitecture assigns StorageArchitecture.
+func (o *DescribeInstancesResponseV2OpenAPI) SetStorageArchitecture(v string) {
+	o.StorageArchitecture = &v
+}
+
 func (o DescribeInstancesResponseV2OpenAPI) MarshalJSON() ([]byte, error) {
 	toSerialize,err := o.ToMap()
 	if err != nil {
@@ -1175,6 +1202,9 @@ func (o DescribeInstancesResponseV2OpenAPI) ToMap() (map[string]interface{}, err
 	}
 	if !IsNil(o.DiskType) {
 		toSerialize["diskType"] = o.DiskType
+	}
+	if !IsNil(o.StorageArchitecture) {
+		toSerialize["storageArchitecture"] = o.StorageArchitecture
 	}
 	if !IsNil(o.DiskSize) {
 		toSerialize["diskSize"] = o.DiskSize

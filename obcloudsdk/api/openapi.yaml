@@ -307,7 +307,7 @@ paths:
           content:
             '*/*':
               schema:
-                $ref: '#/components/schemas/OBCloudResultTenantConnectionDTO'
+                $ref: '#/components/schemas/OBCloudResultListTenantConnectionDTO'
           description: successful operation
       summary: 查询租户地址
       tags:
@@ -380,7 +380,7 @@ paths:
       summary: 查询租户的公网主地址
       tags:
       - MultiCloudOpen
-  api/v2/instances/{instanceId}/tenants/{tenantId}/privatelink:
+  api/v2/instances/{instanceId}/tenants/{tenantId}/privatelink/endpoint:
     delete:
       operationId: deletePrivatelinkEndpoint
       parameters:
@@ -421,6 +421,7 @@ paths:
       summary: 删除privatelink地址
       tags:
       - MultiCloudOpen
+  api/v2/instances/{instanceId}/tenants/{tenantId}/privatelink:
     get:
       operationId: describeTenantPrivateLink
       parameters:
@@ -3321,6 +3322,7 @@ components:
         stopTime: stopTime
         state: state
         diskType: diskType
+        storageArchitecture: storageArchitecture
         resource:
           disk:
             totalDiskSize: 9.301444243932576
@@ -3405,6 +3407,8 @@ components:
         instanceType:
           type: string
         diskType:
+          type: string
+        storageArchitecture:
           type: string
         diskSize:
           format: int64
@@ -4360,6 +4364,25 @@ components:
       properties:
         userAccount:
           type: string
+        proxySetting:
+          $ref: '#/components/schemas/PrivateLinkProxySetting'
+      type: object
+    PrivateLinkProxySetting:
+      properties:
+        mode:
+          type: string
+        deploymentArchitecture:
+          type: string
+        zone:
+          items:
+            type: string
+          type: array
+        slaveZone:
+          items:
+            type: string
+          type: array
+        nodeCpu:
+          type: number
       type: object
     ProxyClusterInfoDTO:
       example:
@@ -4384,8 +4407,8 @@ components:
         unitSpec:
           type: string
         unitNum:
-          format: int32
-          type: integer
+          format: double
+          type: number
         unitNumLimit:
           format: int32
           type: integer
@@ -5901,6 +5924,8 @@ components:
       example:
         replicaMode: replicaMode
         diskSize: 0
+        diskType: diskType
+        storageArchitecture: storageArchitecture
         dryRun: true
         instanceName: instanceName
         saleChannel: saleChannel
@@ -5921,6 +5946,10 @@ components:
         diskSize:
           format: int32
           type: integer
+        diskType:
+          type: string
+        storageArchitecture:
+          type: string
         region:
           type: string
         obVersion:
@@ -5963,6 +5992,7 @@ components:
         - standbyInstanceIds
         stopTime: stopTime
         diskType: diskType
+        storageArchitecture: storageArchitecture
         replicaMode: replicaMode
         nodeNum: 0
         resource:
@@ -6025,6 +6055,8 @@ components:
         deployType:
           type: string
         diskType:
+          type: string
+        storageArchitecture:
           type: string
         deployMode:
           type: string

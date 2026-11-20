@@ -18,6 +18,7 @@ Name | Type | Description | Notes
 **ObRpmVersion** | Pointer to **string** |  | [optional] 
 **DeployType** | Pointer to **string** |  | [optional] 
 **DiskType** | Pointer to **string** |  | [optional] 
+**StorageArchitecture** | Pointer to **string** |  | [optional]
 **DeployMode** | Pointer to **string** |  | [optional] 
 **ReplicaMode** | Pointer to **string** |  | [optional] 
 **DataMergeTime** | Pointer to **string** |  | [optional] 
@@ -37,6 +38,8 @@ Name | Type | Description | Notes
 **StopTime** | Pointer to **string** |  | [optional] 
 
 ## Methods
+
+`GetStorageArchitecture`, `GetStorageArchitectureOk`, `SetStorageArchitecture`, and `HasStorageArchitecture` access the optional storage architecture.
 
 ### NewDescribeInstanceResponseV2OpenAPI
 

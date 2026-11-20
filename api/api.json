@@ -361,7 +361,7 @@
           "200": {
             "description": "successful operation",
             "schema": {
-              "$ref": "#/definitions/OBCloudResultTenantConnectionDTO"
+              "$ref": "#/definitions/OBCloudResultListTenantConnectionDTO"
             }
           }
         }
@@ -539,7 +539,9 @@
             }
           }
         }
-      },
+      }
+    },
+    "api/v2/instances/{instanceId}/tenants/{tenantId}/privatelink/endpoint": {
       "delete": {
         "tags": [
           "MultiCloudOpen"
@@ -2696,6 +2698,9 @@
         "diskType": {
           "type": "string"
         },
+        "storageArchitecture": {
+          "type": "string"
+        },
         "diskSize": {
           "type": "integer",
           "format": "int64"
@@ -3436,8 +3441,8 @@
           "type": "string"
         },
         "unitNum": {
-          "type": "integer",
-          "format": "int32"
+          "type": "number",
+          "format": "double"
         },
         "unitNumLimit": {
           "type": "integer",
@@ -4788,6 +4793,12 @@
           "type": "integer",
           "format": "int32"
         },
+        "diskType": {
+          "type": "string"
+        },
+        "storageArchitecture": {
+          "type": "string"
+        },
         "region": {
           "type": "string"
         },
@@ -4860,6 +4871,9 @@
           "type": "string"
         },
         "diskType": {
+          "type": "string"
+        },
+        "storageArchitecture": {
           "type": "string"
         },
         "deployMode": {

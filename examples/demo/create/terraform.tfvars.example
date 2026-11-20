@@ -1,0 +1,46 @@
+# 复制为目标环境的 .tfvars 文件，并按目标环境的产品规格修改。
+# OpenAPI 地址由 TF_OCEANBASE_API_HOST_CHINA/GLOBAL 环境变量控制，不写在这里。
+site       = "CHINA"
+project_id = "<目标环境的 OceanBase 项目 ID>"
+
+instance_name        = "tf_demo_cluster"
+cloud_provider       = "ALIYUN"
+region               = "cn-hangzhou"
+zones                = ["cn-hangzhou-j", "cn-hangzhou-k"]
+instance_class       = "4C16G"
+ob_version           = "4.4.2"
+disk_size            = 50
+disk_type            = null
+node_num             = 3
+replica_mode         = "2"
+instance_type        = "CLUSTER"
+storage_architecture = "standardStorage"
+sale_channel         = "domestic"
+
+tenant_name        = "tf_demo_tenant"
+tenant_mode        = "MySQL"
+primary_zone       = "cn-hangzhou-j"
+tenant_charset     = "utf8mb4"
+tenant_timezone    = "Asia/Shanghai"
+tenant_unit_num    = 1
+tenant_unit_cpu    = 1
+tenant_unit_memory = 4
+
+# 公网演示默认关闭。启用时填写真实客户端出口 IP 或 CIDR。
+enable_internet     = false
+security_group_name = "tf_demo_ips"
+allowed_ips         = []
+
+# 数据库和账号演示默认关闭。启用时另设 TF_VAR_database_user_password。
+enable_database_user = false
+database_name        = "tf_demo_db"
+database_charset     = "utf8mb4"
+database_user_name   = "tf_demo_user"
+database_user_role   = "readwrite"
+
+# PrivateLink 默认关闭；云厂商主账号 ID 必填，Endpoint ID 可在服务创建后补充。
+enable_private_link        = false
+private_link_user_account  = ""
+private_link_endpoint_id   = ""
+# 需要同时创建商业化 ODP 时配置对象，参考演示手册第 7 步。
+private_link_proxy_setting = null

@@ -23,7 +23,7 @@ type ProxyClusterInfoDTO struct {
 	ProxyMode *string `json:"proxyMode,omitempty"`
 	Zone *string `json:"zone,omitempty"`
 	UnitSpec *string `json:"unitSpec,omitempty"`
-	UnitNum *int32 `json:"unitNum,omitempty"`
+	UnitNum *float64 `json:"unitNum,omitempty"`
 	UnitNumLimit *int32 `json:"unitNumLimit,omitempty"`
 	Status *string `json:"status,omitempty"`
 	ProxyServiceVersion *string `json:"proxyServiceVersion,omitempty"`
@@ -178,9 +178,9 @@ func (o *ProxyClusterInfoDTO) SetUnitSpec(v string) {
 }
 
 // GetUnitNum returns the UnitNum field value if set, zero value otherwise.
-func (o *ProxyClusterInfoDTO) GetUnitNum() int32 {
+func (o *ProxyClusterInfoDTO) GetUnitNum() float64 {
 	if o == nil || IsNil(o.UnitNum) {
-		var ret int32
+		var ret float64
 		return ret
 	}
 	return *o.UnitNum
@@ -188,7 +188,7 @@ func (o *ProxyClusterInfoDTO) GetUnitNum() int32 {
 
 // GetUnitNumOk returns a tuple with the UnitNum field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *ProxyClusterInfoDTO) GetUnitNumOk() (*int32, bool) {
+func (o *ProxyClusterInfoDTO) GetUnitNumOk() (*float64, bool) {
 	if o == nil || IsNil(o.UnitNum) {
 		return nil, false
 	}
@@ -204,8 +204,8 @@ func (o *ProxyClusterInfoDTO) HasUnitNum() bool {
 	return false
 }
 
-// SetUnitNum gets a reference to the given int32 and assigns it to the UnitNum field.
-func (o *ProxyClusterInfoDTO) SetUnitNum(v int32) {
+// SetUnitNum gets a reference to the given float64 and assigns it to the UnitNum field.
+func (o *ProxyClusterInfoDTO) SetUnitNum(v float64) {
 	o.UnitNum = &v
 }
 

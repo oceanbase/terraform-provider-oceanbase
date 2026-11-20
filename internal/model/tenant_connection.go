@@ -42,7 +42,7 @@ type TenantConnection struct {
 	Type            types.String          `tfsdk:"type"`
 	PrivateLink     basetypes.ObjectValue `tfsdk:"private_link"`
 	Status          types.String          `tfsdk:"status"`
-	ConnectionZones []types.String        `tfsdk:"connection_zones"`
+	ConnectionZones types.List            `tfsdk:"connection_zones"`
 	EnableSsl       types.Bool            `tfsdk:"enable_ssl"`
 	EnableRpc       types.Bool            `tfsdk:"enable_rpc"`
 	Role            types.String          `tfsdk:"role"`
@@ -67,7 +67,6 @@ func extractInternetInfo(data *obcloudsdk.TenantConnectionDTO) basetypes.ObjectV
 }
 
 func (tc *TenantConnection) Refresh(data *obcloudsdk.TenantConnectionDTO) {
-	tc.Id = types.StringValue(data.GetAddressId())
 	// tc.Type = types.String(data.GetAddressType())
 	tc.Status = types.StringValue(data.GetAddressStatus())
 	// tc.ConnectionZones = types.ListValue(data.GetConnectionZones())

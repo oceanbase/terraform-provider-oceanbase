@@ -187,7 +187,6 @@ func (t *Tenant) RefreshTenant(data *obcloudsdk.TenantDTO) {
 	t.Vpc = types.StringValue(data.GetVpcId())
 	t.DeployType = types.StringValue(data.GetDeployType())
 	t.Description = types.StringValue(data.GetDescription())
-	t.EnablePublicAddress = types.BoolValue(data.GetEnableProxyPublicLink())
 	t.DailyMergeTime = types.StringValue(data.GetDataMergeTime())
 	t.Timezone = types.StringValue(data.GetTimeZone())
 	t.Charset = types.StringValue(data.GetCharset())

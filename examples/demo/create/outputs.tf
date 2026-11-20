@@ -1,0 +1,13 @@
+output "cluster_id" { value = oceanbase_cluster.demo.id }
+output "tenant_id" { value = oceanbase_tenant.demo.id }
+output "database_name" { value = try(oceanbase_database.demo[0].name, null) }
+output "database_user" { value = try(oceanbase_tenant_user.demo[0].name, null) }
+output "internet_address_id" { value = try(oceanbase_tenant_connection.internet[0].id, null) }
+output "internet_address" { value = try(oceanbase_tenant_connection.internet[0].internet.address, null) }
+output "internet_port" { value = try(oceanbase_tenant_connection.internet[0].internet.port, null) }
+output "private_link_address_id" { value = try(oceanbase_tenant_private_link_service.demo[0].id, null) }
+output "private_link_service_name" { value = try(oceanbase_tenant_private_link_service.demo[0].service_name, null) }
+output "private_link_service_account" { value = try(oceanbase_tenant_private_link_service.demo[0].service_account, null) }
+output "private_link_service_status" { value = try(oceanbase_tenant_private_link_service.demo[0].status, null) }
+output "private_link_connection_status" { value = try(oceanbase_tenant_private_link_connection.demo[0].status, null) }
+output "private_link_domain" { value = try(oceanbase_tenant_private_link_connection.demo[0].domain, null) }

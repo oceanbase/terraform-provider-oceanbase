@@ -42,3 +42,16 @@ provider "oceanbase" {
 }
 ```
 For OceanBase related resources configurations, please refer to the files under example directory.
+
+## Cluster and tenant configuration
+
+| Resource | Configuration |
+| --- | --- |
+| `oceanbase_cluster` | Set `payment_type`, `disk_type`, and `storage_architecture` when creating the cluster. `node_num` may be set on the initial apply or later; it must be a multiple of 3 between 3 and 60. If needed, scaling starts after the new cluster is online. |
+| `oceanbase_tenant` | `enable_public_address` and `whitelist` are creation settings. Use `oceanbase_tenant_connection` and `oceanbase_tenant_security_group` to manage individual addresses and IP groups after creation. |
+| `oceanbase_tenant_connection` | To create a public address, set `type = "INTERNET"`. Omit `private_link`, `enable_ssl`, and `enable_rpc`. The provider reads SSL and RPC settings from the service. |
+| `oceanbase_tenant_private_link_service` | Creates the tenant's primary PrivateLink service and exposes its cloud-facing service name. |
+| `oceanbase_tenant_private_link_connection` | Connects an endpoint created by a cloud provider to a tenant PrivateLink service. |
+| `oceanbase_tenant_security_group` | A single IPv4 address can be written as either `192.0.2.1` or `192.0.2.1/32`. Terraform preserves the configured spelling on refresh. |
+
+You can change a cluster's name and size in one apply, or change a tenant's name, unit configuration and primary zone together. The provider submits each change after the previous one reaches its target. If a cloud operation times out, check the resource by its recorded ID and run `terraform plan` to see which changes are still needed.

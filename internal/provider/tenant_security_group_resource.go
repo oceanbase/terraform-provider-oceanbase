@@ -20,17 +20,18 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
-	"os"
-	"sort"
-	"strconv"
+	"net/netip"
+	"slices"
 	"strings"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
@@ -63,14 +64,17 @@ func (r *tenantSecurityGroupResource) Schema(_ context.Context, _ resource.Schem
 			"cluster_id": schema.StringAttribute{
 				MarkdownDescription: "Cluster id of the tenant",
 				Required:            true,
+				PlanModifiers:       []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
 			"tenant_id": schema.StringAttribute{
 				MarkdownDescription: "Tenant id",
 				Required:            true,
+				PlanModifiers:       []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
 			"name": schema.StringAttribute{
 				MarkdownDescription: "Name of the security group",
 				Required:            true,
+				PlanModifiers:       []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
 			"cidrs": schema.ListAttribute{
 				MarkdownDescription: "Security group cidrs",
@@ -120,25 +124,14 @@ func (r *tenantSecurityGroupResource) Create(ctx context.Context, req resource.C
 		return
 	}
 
-	ips := make([]string, len(plan.Cidrs))
-	for idx, ip := range plan.Cidrs {
-		ips[idx] = ip.ValueString()
-	}
-	createTenantSecurityGroupBody := obcloudsdk.NewMcModifyTenantSecurityIpGroupRequestWithDefaults()
-	createTenantSecurityGroupBody.SetSecurityIpGroupName(plan.Name.ValueString())
-	ipsBytes, err := json.Marshal(ips)
+	body, err := securityGroupRequest(&plan)
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Invalid cidrs config",
-			fmt.Sprintf("Could not marshal cidrs err: %v", err),
-		)
+		resp.Diagnostics.AddError("Invalid CIDRs", err.Error())
 		return
 	}
-	ipsStr := string(ipsBytes)
-	createTenantSecurityGroupBody.SetSecurityIps(ipsStr)
 
 	client := r.provider.clientGenerator.GetClient()
-	result, response, err := client.MultiCloudOpenAPI.CreateTenantSecurityIpGroup(ctx, plan.ClusterId.ValueString(), plan.TenantId.ValueString()).RequestId("").Body(*createTenantSecurityGroupBody).Execute()
+	result, response, err := client.MultiCloudOpenAPI.CreateTenantSecurityIpGroup(ctx, plan.ClusterId.ValueString(), plan.TenantId.ValueString()).RequestId("").Body(*body).Execute()
 	api.LogAPIResult(ctx, result, response, err)
 
 	// TODO: add retry policy according to result and response
@@ -151,28 +144,12 @@ func (r *tenantSecurityGroupResource) Create(ctx context.Context, req resource.C
 	}
 
 	state := plan
-	timeoutDuration := DefaultResourceCreateTimeout
-	envTimeoutSeconds := os.Getenv(EnvResourceCreateTimeoutSeconds)
-	if envTimeoutSeconds != "" {
-		timeoutSeconds, err := strconv.ParseInt(envTimeoutSeconds, 10, 64)
-		if err == nil {
-			timeoutDuration = time.Duration(timeoutSeconds) * time.Second
-		}
-	}
-	err = retry.RetryContext(ctx, timeoutDuration,
-		waitSecurityGroupMatch(ctx, &state, client, cidrsMatchedFuncGenerator(&plan)))
-	// Just add an error log here but consider the resource is created successfully
-	// state is already refreshed while waiting, no need to refresh again here
-	if err != nil {
-		tflog.Error(ctx, "Wait for tenant security match timed out, just save current state")
-	}
-
 	state.Id = types.StringValue(generateSecurityGroupId(plan.ClusterId.ValueString(), plan.TenantId.ValueString(), plan.Name.ValueString()))
-	diags = resp.State.Set(ctx, state)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		resp.Diagnostics.AddWarning("Error after create the tenant", "Set the state error")
-		return
+	timeout := operationTimeout(EnvResourceCreateTimeoutSeconds, DefaultResourceCreateTimeout)
+	err = retry.RetryContext(ctx, timeout, waitSecurityGroupMatch(ctx, &state, client, plan.Cidrs))
+	resp.Diagnostics.Append(resp.State.Set(ctx, state)...)
+	if err != nil {
+		resp.Diagnostics.AddError("Waiting for tenant security group creation failed", err.Error())
 	}
 }
 
@@ -191,6 +168,10 @@ func (r *tenantSecurityGroupResource) Read(ctx context.Context, req resource.Rea
 	}
 	client := r.provider.clientGenerator.GetClient()
 	err := refreshTenantSecurityGroup(ctx, &tenantSecurityGroup, client)
+	if errors.Is(err, errResourceNotFound) {
+		resp.State.RemoveResource(ctx)
+		return
+	}
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Refresh tenant security group info failed",
@@ -204,35 +185,35 @@ func (r *tenantSecurityGroupResource) Read(ctx context.Context, req resource.Rea
 	}
 }
 
-func getTenantSecurityGroupOperation(ctx context.Context, state, plan *model.TenantSecurityGroup) (string, error) {
-	stateCidrs := make(map[string]struct{})
-	planCidrs := make(map[string]struct{})
-	for _, stateCidr := range state.Cidrs {
-		stateCidrs[stateCidr.ValueString()] = struct{}{}
+// The API accepts single IPv4 addresses without the /32 suffix.
+func securityGroupIPs(cidrs []types.String) []string {
+	ips := make([]string, len(cidrs))
+	for i, cidr := range cidrs {
+		value := cidr.ValueString()
+		if prefix, err := netip.ParsePrefix(value); err == nil && prefix.Addr().Is4() && prefix.Bits() == 32 {
+			value = prefix.Addr().String()
+		}
+		ips[i] = value
 	}
-	for _, planCidr := range plan.Cidrs {
-		planCidrs[planCidr.ValueString()] = struct{}{}
-	}
+	return ips
+}
 
-	matched := true
-	for cidr, _ := range stateCidrs {
-		_, found := planCidrs[cidr]
-		if !found {
-			matched = false
-			break
-		}
+func sameSecurityGroupIPs(a, b []types.String) bool {
+	left, right := securityGroupIPs(a), securityGroupIPs(b)
+	slices.Sort(left)
+	slices.Sort(right)
+	return slices.Equal(left, right)
+}
+
+func securityGroupRequest(plan *model.TenantSecurityGroup) (*obcloudsdk.McModifyTenantSecurityIpGroupRequest, error) {
+	ips, err := json.Marshal(securityGroupIPs(plan.Cidrs))
+	if err != nil {
+		return nil, err
 	}
-	for cidr, _ := range planCidrs {
-		_, found := stateCidrs[cidr]
-		if !found {
-			matched = false
-			break
-		}
-	}
-	if !matched {
-		return OperationModifyTenantSecurityGroupCidrs, nil
-	}
-	return OperationNothing, nil
+	body := obcloudsdk.NewMcModifyTenantSecurityIpGroupRequestWithDefaults()
+	body.SetSecurityIpGroupName(plan.Name.ValueString())
+	body.SetSecurityIps(string(ips))
+	return body, nil
 }
 
 func (r *tenantSecurityGroupResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -252,78 +233,28 @@ func (r *tenantSecurityGroupResource) Update(ctx context.Context, req resource.U
 		return
 	}
 
-	operation, err := getTenantSecurityGroupOperation(ctx, &state, &plan)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Update is not supported",
-			fmt.Sprintf("Got error when get operation err: %v", err))
-		return
-	}
-
-	tflog.Debug(ctx, fmt.Sprintf("Got operation: %s", operation))
-
-	client := r.provider.clientGenerator.GetClient()
-	switch operation {
-	case OperationModifyTenantSecurityGroupCidrs:
-		tflog.Info(ctx, "Modify tenant security group cidrs")
-		body := obcloudsdk.NewMcModifyTenantSecurityIpGroupRequestWithDefaults()
-		planCidrs := make([]string, len(plan.Cidrs))
-		for idx, cidr := range plan.Cidrs {
-			planCidrs[idx] = cidr.ValueString()
-		}
-		cidrBytes, err := json.Marshal(planCidrs)
+	if !sameSecurityGroupIPs(state.Cidrs, plan.Cidrs) {
+		body, err := securityGroupRequest(&plan)
 		if err != nil {
-			resp.Diagnostics.AddError(
-				"Invalid cidrs config",
-				fmt.Sprintf("Could not marshal cidrs err: %v", err),
-			)
+			resp.Diagnostics.AddError("Invalid CIDRs", err.Error())
 			return
 		}
-		cidrStr := string(cidrBytes)
-		body.SetSecurityIps(cidrStr)
-		body.SetSecurityIpGroupName(plan.Name.ValueString())
+		client := r.provider.clientGenerator.GetClient()
 		result, response, err := client.MultiCloudOpenAPI.ModifyTenantSecurityIpGroup(ctx, plan.ClusterId.ValueString(), plan.TenantId.ValueString()).Body(*body).RequestId("").Execute()
 		api.LogAPIResult(ctx, result, response, err)
-		if err != nil || response.StatusCode != http.StatusOK || !(*result.Success) {
-			tflog.Error(ctx, "Modify tenant security group cidrs failed")
-			resp.Diagnostics.AddError(
-				"Modify tenant security group cidrs failed",
-				fmt.Sprintf("Got error when update tenant security group cidrs err: %v, response: %v", err, response))
+		if err != nil || response.StatusCode != http.StatusOK || !result.GetSuccess() {
+			resp.Diagnostics.AddError("Modify tenant security group CIDRs failed", fmt.Sprintf("Error: %v, response: %v", err, response))
 			return
 		}
-
-		timeoutDuration := DefaultResourceCreateTimeout
-		envTimeoutSeconds := os.Getenv(EnvResourceCreateTimeoutSeconds)
-		if envTimeoutSeconds != "" {
-			timeoutSeconds, err := strconv.ParseInt(envTimeoutSeconds, 10, 64)
-			if err == nil {
-				timeoutDuration = time.Duration(timeoutSeconds) * time.Second
-			}
+		timeout := operationTimeout(EnvResourceModifyTimeoutSeconds, DefaultResourceModifyTimeout)
+		if err := retry.RetryContext(ctx, timeout, waitSecurityGroupMatch(ctx, &state, client, plan.Cidrs)); err != nil {
+			resp.Diagnostics.Append(resp.State.Set(ctx, state)...)
+			resp.Diagnostics.AddError("Waiting for tenant security group update failed", err.Error())
+			return
 		}
-		err = retry.RetryContext(ctx, timeoutDuration,
-			waitSecurityGroupMatch(ctx, &state, client, cidrsMatchedFuncGenerator(&plan)))
-		// Just add an error log here but consider the resource is created successfully
-		// state is already refreshed while waiting, no need to refresh again here
-		if err != nil {
-			tflog.Error(ctx, "Wait for tenant security match timed out, just save current state")
-		}
-		state.Cidrs = plan.Cidrs
-
-	case OperationNothing:
-		tflog.Info(ctx, "Nothing to do")
-	default:
-		tflog.Info(ctx, "Unsupported operation")
 	}
-
-	err = refreshTenantSecurityGroup(ctx, &state, client)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Refresh tenant security group info failed",
-			fmt.Sprintf("Failed to refresh tenant security group info, err: %v", err))
-		return
-	}
-	diags = resp.State.Set(ctx, state)
-	resp.Diagnostics.Append(diags...)
+	state.Cidrs = plan.Cidrs
+	resp.Diagnostics.Append(resp.State.Set(ctx, state)...)
 }
 
 func (r *tenantSecurityGroupResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -365,13 +296,20 @@ func (r *tenantSecurityGroupResource) Delete(ctx context.Context, req resource.D
 
 	result, response, err := client.MultiCloudOpenAPI.DeleteTenantSecurityIpGroup(ctx, tenantSecurityGroup.ClusterId.ValueString(), tenantSecurityGroup.TenantId.ValueString()).RequestId("").Body(*deleteSecurityGroupBody).Execute()
 	api.LogAPIResult(ctx, result, response, err)
-	if err != nil || response.StatusCode != http.StatusOK || !(*result.Success) {
+	if err != nil || response.StatusCode != http.StatusOK || !result.GetSuccess() {
 		resp.Diagnostics.AddError(
 			"Failed to delete tenant security group",
 			fmt.Sprintf("Unexpected error while delete tenant security group: %v, response: %v", err, response))
 		return
 	}
 
+	timeout := operationTimeout(EnvResourceDeleteTimeoutSeconds, DefaultResourceModifyTimeout)
+	if err := waitForRemoval(ctx, timeout, func(ctx context.Context) error {
+		return refreshTenantSecurityGroup(ctx, &tenantSecurityGroup, client)
+	}); err != nil {
+		resp.Diagnostics.AddError("Waiting for tenant security group deletion failed", err.Error())
+		return
+	}
 	resp.State.RemoveResource(ctx)
 }
 
@@ -387,33 +325,22 @@ func (r *tenantSecurityGroupResource) ImportState(ctx context.Context, req resou
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("cluster_id"), parts[0])...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("tenant_id"), parts[1])...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("name"), parts[2])...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), generateSecurityGroupId(parts[0], parts[1], parts[2]))...)
 }
 
-func cidrsMatchedFuncGenerator(plan *model.TenantSecurityGroup) func(*model.TenantSecurityGroup) bool {
-	return func(state *model.TenantSecurityGroup) bool {
-		planCidrs := make([]string, 0)
-		stateCidrs := make([]string, 0)
-		for _, pc := range plan.Cidrs {
-			planCidrs = append(planCidrs, pc.ValueString())
-		}
-		for _, cc := range state.Cidrs {
-			stateCidrs = append(stateCidrs, cc.ValueString())
-		}
-		sort.Strings(planCidrs)
-		sort.Strings(stateCidrs)
-		return strings.Join(planCidrs, ",") == strings.Join(stateCidrs, ",")
-	}
-}
-
-func waitSecurityGroupMatch(ctx context.Context, state *model.TenantSecurityGroup, client *obcloudsdk.APIClient, statusValidationFunction func(*model.TenantSecurityGroup) bool) retry.RetryFunc {
+func waitSecurityGroupMatch(ctx context.Context, state *model.TenantSecurityGroup, client *obcloudsdk.APIClient, desired []types.String) retry.RetryFunc {
 	return func() *retry.RetryError {
 		err := refreshTenantSecurityGroup(ctx, state, client)
 		if err != nil {
-			return retry.RetryableError(fmt.Errorf("Failed to refresh tenant security group info, err: %v", err))
+			if errors.Is(err, errResourceNotFound) {
+				return retry.RetryableError(err)
+			}
+			return retry.NonRetryableError(err)
 		}
-		if !statusValidationFunction(state) {
-			return retry.RetryableError(fmt.Errorf("Tenant security group is still not match, current status: %v", state))
+		if !sameSecurityGroupIPs(state.Cidrs, desired) {
+			return retry.RetryableError(errors.New("tenant security group CIDRs have not converged"))
 		}
+		state.Cidrs = desired
 		return nil
 	}
 }

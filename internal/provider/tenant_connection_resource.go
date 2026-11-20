@@ -18,12 +18,10 @@ package provider
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
-	"os"
-	"strconv"
 	"strings"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -44,6 +42,7 @@ var (
 	_ resource.Resource                = &tenantConnectionResource{}
 	_ resource.ResourceWithConfigure   = &tenantConnectionResource{}
 	_ resource.ResourceWithImportState = &tenantConnectionResource{}
+	_ resource.ResourceWithModifyPlan  = &tenantConnectionResource{}
 )
 
 type tenantConnectionResource struct {
@@ -197,6 +196,66 @@ func (r *tenantConnectionResource) Configure(_ context.Context, req resource.Con
 	}
 }
 
+func unsupportedConnectionCreateOptions(config *model.TenantConnection) []string {
+	var unsupported []string
+	if !config.PrivateLink.IsNull() {
+		unsupported = append(unsupported, "private_link")
+	}
+	if !config.EnableSsl.IsNull() {
+		unsupported = append(unsupported, "enable_ssl")
+	}
+	if !config.EnableRpc.IsNull() {
+		unsupported = append(unsupported, "enable_rpc")
+	}
+	return unsupported
+}
+
+func (r *tenantConnectionResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	if req.Plan.Raw.IsNull() {
+		return
+	}
+	if req.State.Raw.IsNull() {
+		var config model.TenantConnection
+		resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+		if unsupported := unsupportedConnectionCreateOptions(&config); len(unsupported) > 0 {
+			resp.Diagnostics.AddError("Unsupported tenant connection create options", fmt.Sprintf("The API cannot apply %s when creating a connection. Remove these options before creating the address.", strings.Join(unsupported, ", ")))
+		}
+		return
+	}
+
+	var current, planned model.TenantConnection
+	resp.Diagnostics.Append(req.State.Get(ctx, &current)...)
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &planned)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	var changed []string
+	if !planned.ClusterId.IsUnknown() && !planned.ClusterId.Equal(current.ClusterId) {
+		changed = append(changed, "cluster_id")
+	}
+	if !planned.TenantId.IsUnknown() && !planned.TenantId.Equal(current.TenantId) {
+		changed = append(changed, "tenant_id")
+	}
+	if !planned.Type.IsUnknown() && !planned.Type.Equal(current.Type) {
+		changed = append(changed, "type")
+	}
+	if !planned.PrivateLink.IsUnknown() && !planned.PrivateLink.Equal(current.PrivateLink) {
+		changed = append(changed, "private_link")
+	}
+	if !planned.EnableSsl.IsNull() && !planned.EnableSsl.IsUnknown() && !planned.EnableSsl.Equal(current.EnableSsl) {
+		changed = append(changed, "enable_ssl")
+	}
+	if !planned.EnableRpc.IsNull() && !planned.EnableRpc.IsUnknown() && !planned.EnableRpc.Equal(current.EnableRpc) {
+		changed = append(changed, "enable_rpc")
+	}
+	if len(changed) > 0 {
+		resp.Diagnostics.AddError("Tenant connection updates are not supported", fmt.Sprintf("Cannot change %s on an existing connection. Revert these configuration changes to keep managing the current address.", strings.Join(changed, ", ")))
+	}
+}
+
 func (r *tenantConnectionResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	tflog.Debug(ctx, "Create tenant connection is called")
 	if r.provider == nil || !r.provider.configured {
@@ -210,6 +269,10 @@ func (r *tenantConnectionResource) Create(ctx context.Context, req resource.Crea
 	resp.Diagnostics.Append(diags...)
 
 	if resp.Diagnostics.HasError() {
+		return
+	}
+	if unsupported := unsupportedConnectionCreateOptions(&plan); len(unsupported) > 0 {
+		resp.Diagnostics.AddError("Unsupported tenant connection create options", fmt.Sprintf("The API cannot apply %s when creating a connection. Remove these options before creating the address.", strings.Join(unsupported, ", ")))
 		return
 	}
 
@@ -255,8 +318,10 @@ func (r *tenantConnectionResource) Create(ctx context.Context, req resource.Crea
 	// }
 
 	result, response, err := client.MultiCloudOpenAPI.CreateTenantAddress(ctx, plan.ClusterId.ValueString(), plan.TenantId.ValueString()).Body(*body).RequestId("").Execute()
-	api.LogAPIResult(ctx, result, response, err)
-	if err != nil || response.StatusCode != http.StatusOK || !(result.GetSuccess()) {
+	if err != nil || response != nil {
+		api.LogAPIResult(ctx, result, response, err)
+	}
+	if err != nil || response == nil || response.StatusCode != http.StatusOK || result == nil || !result.GetSuccess() {
 		resp.Diagnostics.AddError(
 			"Error creating tenant connection",
 			fmt.Sprintf("Could not create tenant connection err: %v, response: %v", err, response),
@@ -267,28 +332,26 @@ func (r *tenantConnectionResource) Create(ctx context.Context, req resource.Crea
 	data := result.GetData()
 	state := plan
 	state.Id = types.StringValue(data.GetAddressId())
-
-	timeoutDuration := DefaultResourceCreateTimeout
-	envTimeoutSeconds := os.Getenv(EnvResourceCreateTimeoutSeconds)
-	if envTimeoutSeconds != "" {
-		timeoutSeconds, err := strconv.ParseInt(envTimeoutSeconds, 10, 64)
-		if err == nil {
-			timeoutDuration = time.Duration(timeoutSeconds) * time.Second
-		}
+	if state.Id.ValueString() == "" {
+		resp.Diagnostics.AddError("Missing tenant connection identity", "The create request succeeded but did not return an address ID. Inspect the tenant's connections before retrying.")
+		return
 	}
-	err = retry.RetryContext(ctx, timeoutDuration,
-		waitConnectionOnline(ctx, &state, client, isTenantConnectioOnline))
-	// Just add an error log here but consider the resource is created successfully
-	// state is already refreshed while waiting, no need to refresh again here
-	if err != nil {
-		tflog.Error(ctx, "Wait for tenant connection online timed out, just save current state")
+
+	timeoutDuration := operationTimeout(EnvResourceCreateTimeoutSeconds, DefaultResourceCreateTimeout)
+	waitCtx, cancel := context.WithTimeout(ctx, timeoutDuration)
+	defer cancel()
+	err = retry.RetryContext(waitCtx, timeoutDuration,
+		waitConnectionOnline(waitCtx, &state, client, isTenantConnectioOnline))
+	waitingFor := "did not become online"
+	if err == nil && strings.EqualFold(state.Type.ValueString(), model.ConnectionTypeInternet) {
+		waitingFor = "is online but its tenant did not finish allocating the public address"
+		err = waitForTenantConnectionStatus(waitCtx, &state, client, timeoutDuration, tenantAllocatingInternetAddress)
 	}
 
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		resp.Diagnostics.AddWarning("Error after create the tenant", "Set the state error")
-		return
+	if err != nil {
+		resp.Diagnostics.AddError("Waiting for tenant connection failed", fmt.Sprintf("Connection %q was created but %s: %v. If necessary, import it using %s.%s.%s.%s.", state.Id.ValueString(), waitingFor, err, state.ClusterId.ValueString(), state.TenantId.ValueString(), state.Type.ValueString(), state.Id.ValueString()))
 	}
 }
 
@@ -308,10 +371,33 @@ func (r *tenantConnectionResource) Read(ctx context.Context, req resource.ReadRe
 	}
 	client := r.provider.clientGenerator.GetClient()
 	err := refreshTenantConnection(ctx, &tenantConnection, client)
-	if err != nil {
+	if err != nil && !errors.Is(err, errResourceNotFound) {
 		resp.Diagnostics.AddError(
 			"Refresh tenant connection info failed",
 			fmt.Sprintf("Failed to refresh tenant connection info, err: %v", err))
+		return
+	}
+	if strings.EqualFold(tenantConnection.Type.ValueString(), model.ConnectionTypeInternet) &&
+		(errors.Is(err, errResourceNotFound) || strings.EqualFold(tenantConnection.Status.ValueString(), "PENDING_DELETE")) {
+		pending, statusErr := tenantConnectionReleasePending(ctx, &tenantConnection, client)
+		if statusErr == nil && pending {
+			timeout := operationTimeout(EnvResourceDeleteTimeoutSeconds, DefaultResourceModifyTimeout)
+			statusErr = waitForTenantConnectionStatus(ctx, &tenantConnection, client, timeout, tenantPendingOfflineInternetAddress)
+			if statusErr == nil {
+				err = refreshTenantConnection(ctx, &tenantConnection, client)
+			}
+		}
+		if statusErr != nil {
+			resp.Diagnostics.AddError("Failed to reconcile tenant connection release", statusErr.Error())
+			return
+		}
+	}
+	if errors.Is(err, errResourceNotFound) {
+		resp.State.RemoveResource(ctx)
+		return
+	}
+	if err != nil {
+		resp.Diagnostics.AddError("Refresh tenant connection info failed", err.Error())
 		return
 	}
 	diags = resp.State.Set(ctx, tenantConnection)
@@ -322,12 +408,15 @@ func (r *tenantConnectionResource) Read(ctx context.Context, req resource.ReadRe
 }
 
 func (r *tenantConnectionResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	// nothing to update, just add a log
-	tflog.Debug(ctx, "Update tenant connection is called")
+	resp.Diagnostics.AddError("Tenant connection updates are not supported", "The existing connection was not changed. Revert the configuration change to keep managing the current address.")
 }
 
 func (r *tenantConnectionResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	tflog.Debug(ctx, "Delete tenant connection is called")
+	if r.provider == nil || !r.provider.configured {
+		addConfigureProviderErr(&resp.Diagnostics)
+		return
+	}
 	var tenantConnection model.TenantConnection
 	diags := req.State.Get(ctx, &tenantConnection)
 	resp.Diagnostics.Append(diags...)
@@ -360,16 +449,45 @@ func (r *tenantConnectionResource) Delete(ctx context.Context, req resource.Dele
 	}
 
 	client := r.provider.clientGenerator.GetClient()
-
-	result, response, err := client.MultiCloudOpenAPI.DeleteTenantAddress(ctx, tenantConnection.ClusterId.ValueString(), tenantConnection.TenantId.ValueString()).AddressId(tenantConnection.Id.ValueString()).RequestId("").Execute()
-	api.LogAPIResult(ctx, result, response, err)
-	if err != nil || response.StatusCode != http.StatusOK || !(*result.Success) {
-		resp.Diagnostics.AddError(
-			"Failed to delete tenant connection",
-			fmt.Sprintf("Unexpected error while delete tenant connection: %v, response: %v", err, response))
+	err := refreshTenantConnection(ctx, &tenantConnection, client)
+	if err != nil && !errors.Is(err, errResourceNotFound) {
+		resp.Diagnostics.AddError("Failed to read tenant connection before deletion", err.Error())
+		return
+	}
+	missing := errors.Is(err, errResourceNotFound)
+	pending := false
+	if strings.EqualFold(tenantConnection.Type.ValueString(), model.ConnectionTypeInternet) {
+		pending, err = tenantConnectionReleasePending(ctx, &tenantConnection, client)
+		if err != nil {
+			resp.Diagnostics.AddError("Failed to check tenant connection release", err.Error())
+			return
+		}
+	}
+	if missing && !pending {
+		resp.State.RemoveResource(ctx)
 		return
 	}
 
+	if !missing && !pending && !strings.EqualFold(tenantConnection.Status.ValueString(), "PENDING_DELETE") {
+		result, response, err := client.MultiCloudOpenAPI.DeleteTenantAddress(ctx, tenantConnection.ClusterId.ValueString(), tenantConnection.TenantId.ValueString()).AddressId(tenantConnection.Id.ValueString()).RequestId("").Execute()
+		if err != nil || response != nil {
+			api.LogAPIResult(ctx, result, response, err)
+		}
+		if err != nil || response == nil || response.StatusCode != http.StatusOK || result == nil || !result.GetSuccess() || !result.GetData() {
+			resp.Diagnostics.AddError(
+				"Failed to delete tenant connection",
+				fmt.Sprintf("Unexpected error while delete tenant connection: %v, response: %v", err, response))
+			return
+		}
+	}
+
+	timeout := operationTimeout(EnvResourceDeleteTimeoutSeconds, DefaultResourceModifyTimeout)
+	if err := waitForRemoval(ctx, timeout, func(ctx context.Context) error {
+		return readTenantConnectionRemoval(ctx, &tenantConnection, client)
+	}); err != nil {
+		resp.Diagnostics.AddError("Waiting for tenant connection deletion failed", fmt.Sprintf("Connection %q could not be confirmed deleted: %v", tenantConnection.Id.ValueString(), err))
+		return
+	}
 	resp.State.RemoveResource(ctx)
 }
 
@@ -396,7 +514,10 @@ func waitConnectionOnline(ctx context.Context, state *model.TenantConnection, cl
 	return func() *retry.RetryError {
 		err := refreshTenantConnection(ctx, state, client)
 		if err != nil {
-			return retry.RetryableError(fmt.Errorf("Failed to refresh tenant connection info, err: %v", err))
+			if errors.Is(err, errResourceNotFound) {
+				return retry.RetryableError(err)
+			}
+			return retry.NonRetryableError(fmt.Errorf("failed to refresh tenant connection: %w", err))
 		}
 		if !statusValidationFunction(state) {
 			return retry.RetryableError(fmt.Errorf("Tenant connection status is still not online, current status: %s", state.Status.ValueString()))

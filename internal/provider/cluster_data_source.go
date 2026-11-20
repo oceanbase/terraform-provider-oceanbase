@@ -128,6 +128,14 @@ func (d *clusterDataSource) Schema(_ context.Context, _ datasource.SchemaRequest
 				MarkdownDescription: "Disk size of observer",
 				Computed:            true,
 			},
+			"disk_type": schema.StringAttribute{
+				MarkdownDescription: "Disk type of the cluster",
+				Computed:            true,
+			},
+			"storage_architecture": schema.StringAttribute{
+				MarkdownDescription: "Storage architecture of the cluster",
+				Computed:            true,
+			},
 			"deploy_mode": schema.StringAttribute{
 				MarkdownDescription: "Deploy mode of the cluster, such as 1-1-1",
 				Computed:            true,
@@ -241,7 +249,7 @@ func (d *clusterDataSource) Read(ctx context.Context, req datasource.ReadRequest
 		resp.Diagnostics.AddError(
 			"Refresh obcluster info failed",
 			fmt.Sprintf("Failed to refresh obcluster info err: %v", err))
-
+		return
 	}
 	diags = resp.State.Set(ctx, cluster)
 	resp.Diagnostics.Append(diags...)

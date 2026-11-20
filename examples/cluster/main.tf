@@ -17,7 +17,7 @@ resource "oceanbase_cluster" "obins" {
   instance_class = "4C16G"
   version = "4.2.3"
   region = "cn-shanghai"
-  zones = ["e", "f", "g"]
+  zones = ["cn-shanghai-e", "cn-shanghai-f", "cn-shanghai-g"]
   instance_type = "CLUSTER"
   disk_size = 100
   replica_mode = 3

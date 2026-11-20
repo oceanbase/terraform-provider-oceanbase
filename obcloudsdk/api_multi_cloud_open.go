@@ -1667,7 +1667,7 @@ func (a *MultiCloudOpenAPIService) DeletePrivatelinkEndpointExecute(r ApiDeleteP
 		return localVarReturnValue, nil, &GenericOpenAPIError{error: err.Error()}
 	}
 
-	localVarPath := localBasePath + "/api/v2/instances/{instanceId}/tenants/{tenantId}/privatelink"
+	localVarPath := localBasePath + "/api/v2/instances/{instanceId}/tenants/{tenantId}/privatelink/endpoint"
 	localVarPath = strings.Replace(localVarPath, "{"+"instanceId"+"}", url.PathEscape(parameterValueToString(r.instanceId, "instanceId")), -1)
 	localVarPath = strings.Replace(localVarPath, "{"+"tenantId"+"}", url.PathEscape(parameterValueToString(r.tenantId, "tenantId")), -1)
 
@@ -2781,7 +2781,7 @@ func (r ApiDescribeTenantAddressRequest) AddressId(addressId string) ApiDescribe
 	return r
 }
 
-func (r ApiDescribeTenantAddressRequest) Execute() (*OBCloudResultTenantConnectionDTO, *http.Response, error) {
+func (r ApiDescribeTenantAddressRequest) Execute() (*OBCloudResultListTenantConnectionDTO, *http.Response, error) {
 	return r.ApiService.DescribeTenantAddressExecute(r)
 }
 
@@ -2803,13 +2803,13 @@ func (a *MultiCloudOpenAPIService) DescribeTenantAddress(ctx context.Context, in
 }
 
 // Execute executes the request
-//  @return OBCloudResultTenantConnectionDTO
-func (a *MultiCloudOpenAPIService) DescribeTenantAddressExecute(r ApiDescribeTenantAddressRequest) (*OBCloudResultTenantConnectionDTO, *http.Response, error) {
+//  @return OBCloudResultListTenantConnectionDTO
+func (a *MultiCloudOpenAPIService) DescribeTenantAddressExecute(r ApiDescribeTenantAddressRequest) (*OBCloudResultListTenantConnectionDTO, *http.Response, error) {
 	var (
 		localVarHTTPMethod   = http.MethodGet
 		localVarPostBody     interface{}
 		formFiles            []formFile
-		localVarReturnValue  *OBCloudResultTenantConnectionDTO
+		localVarReturnValue  *OBCloudResultListTenantConnectionDTO
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "MultiCloudOpenAPIService.DescribeTenantAddress")

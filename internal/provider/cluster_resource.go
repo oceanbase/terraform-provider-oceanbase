@@ -21,10 +21,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"os"
-	"strconv"
 	"strings"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -46,6 +43,7 @@ var (
 	_ resource.Resource                = &clusterResource{}
 	_ resource.ResourceWithConfigure   = &clusterResource{}
 	_ resource.ResourceWithImportState = &clusterResource{}
+	_ resource.ResourceWithModifyPlan  = &clusterResource{}
 )
 
 type clusterResource struct {
@@ -68,6 +66,11 @@ func (r *clusterResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 			"disk_size": schema.Int32Attribute{
 				MarkdownDescription: "Disk size of observer",
 				Required:            true,
+			},
+			"disk_type": schema.StringAttribute{
+				MarkdownDescription: "Disk type of the cluster",
+				Optional:            true,
+				Computed:            true,
 			},
 			"region": schema.StringAttribute{
 				MarkdownDescription: "Region id of the cluster",
@@ -94,6 +97,11 @@ func (r *clusterResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 				MarkdownDescription: "Business scenario of cluster, e.g. CLUSTER, ANALYTICAL_CLUSTER, KV_CLUSTER, SHARED_STORAGE_CLUSTER",
 				Required:            true,
 			},
+			"storage_architecture": schema.StringAttribute{
+				MarkdownDescription: "Storage architecture, such as standardStorage or shareStorage",
+				Optional:            true,
+				Computed:            true,
+			},
 
 			// optional fields to create cluster
 			"name": schema.StringAttribute{
@@ -112,9 +120,8 @@ func (r *clusterResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 				Computed:            true,
 			},
 
-			// not available to be set at create time currently
 			"node_num": schema.Int32Attribute{
-				MarkdownDescription: "Total node number of the cluster, it's calculated by summing up the observer numbers in each zone",
+				MarkdownDescription: "Total node number of the cluster, a multiple of 3 between 3 and 60. When set at creation, the cluster is scaled after it becomes online.",
 				Optional:            true,
 				Computed:            true,
 			},
@@ -129,7 +136,7 @@ func (r *clusterResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 				Computed:            true,
 			},
 			"payment_type": schema.StringAttribute{
-				MarkdownDescription: "Payment type of the cluster",
+				MarkdownDescription: "Payment type of the cluster, such as PostPay. Letter case is ignored when comparing the returned value.",
 				Optional:            true,
 				Computed:            true,
 			},
@@ -254,6 +261,30 @@ func (r *clusterResource) Configure(_ context.Context, req resource.ConfigureReq
 	}
 }
 
+func (r *clusterResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	if req.Plan.Raw.IsNull() {
+		return
+	}
+	var nodeNum types.Int32
+	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("node_num"), &nodeNum)...)
+	var instanceType types.String
+	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("instance_type"), &instanceType)...)
+	if !req.State.Raw.IsNull() {
+		var currentNodeNum types.Int32
+		resp.Diagnostics.Append(req.State.GetAttribute(ctx, path.Root("node_num"), &currentNodeNum)...)
+		if nodeNum.Equal(currentNodeNum) {
+			// An existing unsupported type needs no node operation if it is
+			// already at the configured target.
+			instanceType = types.StringNull()
+		}
+	}
+	if !resp.Diagnostics.HasError() {
+		if err := validateClusterNodeNum(nodeNum, instanceType); err != nil {
+			resp.Diagnostics.AddError("Invalid cluster configuration", err.Error())
+		}
+	}
+}
+
 func (r *clusterResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	tflog.Debug(ctx, "Create cluster is called")
 	if r.provider == nil || !r.provider.configured {
@@ -270,36 +301,10 @@ func (r *clusterResource) Create(ctx context.Context, req resource.CreateRequest
 		return
 	}
 
-	// TODO: add more checks
-	if len(plan.Zones) == 0 {
-		resp.Diagnostics.AddError("Zone is empty", "No zone is configured")
+	createInstanceBody, err := clusterCreateRequest(&plan)
+	if err != nil {
+		resp.Diagnostics.AddError("Invalid cluster configuration", err.Error())
 		return
-	}
-	if plan.Region.IsNull() {
-		resp.Diagnostics.AddError("Unknown region", "Region is not allowed to be null")
-		return
-	}
-
-	createInstanceBody := obcloudsdk.NewMultiCloudCreateInstanceRequestWithDefaults()
-	createInstanceBody.SetCloudProvider(plan.CloudProvider.ValueString())
-	createInstanceBody.SetDiskSize(plan.DiskSize.ValueInt32())
-	createInstanceBody.SetRegion(plan.Region.ValueString())
-	createInstanceBody.SetObVersion(plan.Version.ValueString())
-	zoneList := make([]string, 0, len(plan.Zones))
-	for _, zone := range plan.Zones {
-		zoneList = append(zoneList, zone.ValueString())
-	}
-	zonesParam := strings.Join(zoneList, ",")
-	createInstanceBody.SetZones(zonesParam)
-	createInstanceBody.SetInstanceClass(plan.InstanceClass.ValueString())
-	createInstanceBody.SetReplicaMode(plan.ReplicaMode.ValueString())
-	createInstanceBody.SetInstanceType(plan.InstanceType.ValueString())
-	// set optional values
-	if !(plan.SaleChannel.IsNull() || plan.SaleChannel.IsUnknown()) {
-		createInstanceBody.SetSaleChannel(plan.SaleChannel.ValueString())
-	}
-	if !(plan.Name.IsNull() || plan.Name.IsUnknown()) {
-		createInstanceBody.SetInstanceName(plan.Name.ValueString())
 	}
 
 	client := r.provider.clientGenerator.GetClient()
@@ -307,7 +312,7 @@ func (r *clusterResource) Create(ctx context.Context, req resource.CreateRequest
 	api.LogAPIResult(ctx, result, response, err)
 
 	// TODO: add retry policy according to result and response
-	if err != nil || response.StatusCode != http.StatusOK || !(result.GetSuccess()) {
+	if err != nil || response == nil || response.StatusCode != http.StatusOK || !result.GetSuccess() {
 		resp.Diagnostics.AddError(
 			"Error creating cluster",
 			fmt.Sprintf("Could not create cluster: %v, response: %v", err, response),
@@ -316,37 +321,65 @@ func (r *clusterResource) Create(ctx context.Context, req resource.CreateRequest
 	}
 
 	state := plan
+	// The configured target is not an observed value until the cluster has
+	// been read back, or a subsequent scaling operation has completed.
+	state.NodeNum = types.Int32Null()
 	createdInstance := result.GetData()
 	state.Id = types.StringValue(createdInstance.GetInstanceId())
-	diags = resp.State.Set(ctx, state)
+	if state.Id.ValueString() == "" {
+		resp.Diagnostics.AddError("Error creating cluster", "Create response did not contain an instance ID")
+		return
+	}
+	resp.Diagnostics.Append(resp.State.Set(ctx, state)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
 	ctx = tflog.SetField(ctx, "instance_id", state.Id)
 	tflog.Info(ctx, "Successfully created oceanbase cluster")
 
-	timeoutDuration := DefaultClusterCreateTimeout
-	envTimeoutSeconds := os.Getenv(EnvClusterCreateTimeoutSeconds)
-	if envTimeoutSeconds != "" {
-		timeoutSeconds, err := strconv.ParseInt(envTimeoutSeconds, 10, 64)
-		if err == nil {
-			timeoutDuration = time.Duration(timeoutSeconds) * time.Second
-		}
-	}
+	timeoutDuration := operationTimeout(EnvClusterCreateTimeoutSeconds, DefaultClusterCreateTimeout)
 	err = retry.RetryContext(ctx, timeoutDuration,
 		waitForClusterReadyFunc(ctx, &state, client, isClusterOnline))
-	// Just add an error log here but consider the resource is created successfully
-	// state is already refreshed while waiting, no need to refresh again here
-	if err != nil {
-		tflog.Error(ctx, "Wait for cluster online timed out, just save current state")
+	if state.NodeNum.ValueInt32() <= 0 {
+		state.NodeNum = types.Int32Null()
 	}
-
-	tflog.Debug(ctx, "Save obcluster to state")
-	diags = resp.State.Set(ctx, state)
-
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		resp.Diagnostics.AddWarning("Error after create the cluster", "Set the state error")
+	resp.Diagnostics.Append(resp.State.Set(ctx, state)...)
+	if err != nil {
+		resp.Diagnostics.AddError("Cluster creation not confirmed", fmt.Sprintf("Cluster %s was created but did not become online; reconcile this ID before retrying: %v", state.Id.ValueString(), err))
 		return
 	}
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	if state.NodeNum.IsNull() {
+		resp.Diagnostics.AddError("Cluster node count not observed", fmt.Sprintf("Cluster %s was created, but its current node count was not returned; reconcile this ID before retrying", state.Id.ValueString()))
+		return
+	}
+	if !clusterOperationNeeded(OperationModifyNodeNum, &state, &plan) {
+		return
+	}
+	// The create endpoint has no node count field. Scale only after the new
+	// instance is online and its actual count has been read.
+	if err := validateClusterNodeNum(plan.NodeNum, state.InstanceType); err != nil {
+		resp.Diagnostics.AddError("Cluster node count cannot be applied", fmt.Sprintf("Cluster %s was created; reconcile this ID before retrying: %v", state.Id.ValueString(), err))
+		return
+	}
+	if err := applyClusterOperation(ctx, client, state.Id.ValueString(), &plan, OperationModifyNodeNum); err != nil {
+		current := state
+		if refreshCluster(ctx, &current, client) == nil {
+			state = current
+		}
+		resp.Diagnostics.Append(resp.State.Set(ctx, state)...)
+		resp.Diagnostics.AddError("Cluster node count update failed", fmt.Sprintf("Cluster %s was created, but its node count update failed; reconcile this ID before retrying: %v", state.Id.ValueString(), err))
+		return
+	}
+	if err := waitForClusterUpdate(ctx, &state, &plan, OperationModifyNodeNum, client, operationTimeout(EnvClusterModifyTimeoutSeconds, DefaultClusterModifyTimeout)); err != nil {
+		resp.Diagnostics.Append(resp.State.Set(ctx, state)...)
+		resp.Diagnostics.AddError("Cluster node count update not confirmed", fmt.Sprintf("Cluster %s was created and its node count update was accepted, but the target was not confirmed; reconcile this ID before retrying: %v", state.Id.ValueString(), err))
+		return
+	}
+	resp.Diagnostics.Append(resp.State.Set(ctx, state)...)
 }
 
 func (r *clusterResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -364,6 +397,10 @@ func (r *clusterResource) Read(ctx context.Context, req resource.ReadRequest, re
 	}
 	client := r.provider.clientGenerator.GetClient()
 	err := refreshCluster(ctx, &cluster, client)
+	if errors.Is(err, errResourceNotFound) {
+		resp.State.RemoveResource(ctx)
+		return
+	}
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Refresh cluster info failed",
@@ -377,51 +414,67 @@ func (r *clusterResource) Read(ctx context.Context, req resource.ReadRequest, re
 	}
 }
 
-func getClusterOperation(ctx context.Context, state, plan *model.Cluster) (string, error) {
-	// TODO: Is it necessary to check cluster status is ONLINE to perform operations
-	modifiedSpecs := make([]string, 0)
-	// modify node number
-	if !(plan.NodeNum.IsUnknown() || plan.NodeNum.IsNull()) && !plan.NodeNum.Equal(state.NodeNum) {
-		modifiedSpecs = append(modifiedSpecs, SpecNodeNum)
-	}
-	// modify cluster spec
-	if !(plan.InstanceClass.IsUnknown() || plan.InstanceClass.IsNull()) && (!plan.InstanceClass.Equal(state.InstanceClass) || !plan.DiskSize.Equal(state.DiskSize)) {
-		modifiedSpecs = append(modifiedSpecs, SpecInstanceSpec)
-	}
-	// start/stop cluster
-	if !(plan.InstanceClass.IsUnknown() || plan.InstanceClass.IsNull()) && !plan.IsStopped.Equal(state.IsStopped) {
-		modifiedSpecs = append(modifiedSpecs, SpecIsStopped)
-	}
-	// modify instance name
-	if !(plan.Name.IsUnknown() || plan.Name.IsNull()) && !plan.Name.Equal(state.Name) {
-		modifiedSpecs = append(modifiedSpecs, SpecInstanceName)
-	}
-	if len(modifiedSpecs) > 1 {
-		return OperationUnsupported, errors.New(fmt.Sprintf("Modify %s at once is not supported", strings.Join(modifiedSpecs, ", ")))
-	}
-	if len(modifiedSpecs) == 1 {
-		switch modifiedSpecs[0] {
-		case SpecNodeNum:
-			return OperationModifyNodeNum, nil
-		case SpecInstanceSpec:
-			return OperationModifyInstanceSpec, nil
-		case SpecInstanceName:
-			return OperationModifyInstanceName, nil
-		case SpecIsStopped:
-			if plan.IsStopped.ValueBool() {
-				return OperationStopCluster, nil
-			} else {
-				return OperationStartCluster, nil
-			}
-		default:
-			return OperationUnsupported, errors.New("Unsupported operation")
+func getClusterOperations(state, plan *model.Cluster) ([]string, error) {
+	if clusterOperationNeeded(OperationModifyNodeNum, state, plan) {
+		if err := validateClusterNodeNum(plan.NodeNum, state.InstanceType); err != nil {
+			return nil, err
 		}
 	}
-	return OperationNothing, nil
+	for _, field := range []struct {
+		name      string
+		old, next types.String
+	}{
+		{"cloud_provider", state.CloudProvider, plan.CloudProvider}, {"region", state.Region, plan.Region},
+		{"version", state.Version, plan.Version}, {"replica_mode", state.ReplicaMode, plan.ReplicaMode},
+		{"instance_type", state.InstanceType, plan.InstanceType}, {"sale_channel", state.SaleChannel, plan.SaleChannel},
+		{"project_id", state.ProjectId, plan.ProjectId}, {"series", state.Series, plan.Series},
+		{"cpu_arch", state.CpuArch, plan.CpuArch},
+	} {
+		if !field.next.IsNull() && !field.next.IsUnknown() && !field.old.Equal(field.next) {
+			return nil, fmt.Errorf("%s cannot be modified in place", field.name)
+		}
+	}
+	for _, field := range []struct {
+		name      string
+		old, next types.String
+	}{
+		{"payment_type", state.PaymentType, plan.PaymentType},
+		{"disk_type", state.DiskType, plan.DiskType},
+		{"storage_architecture", state.StorageArchitecture, plan.StorageArchitecture},
+	} {
+		if !field.next.IsNull() && !field.next.IsUnknown() && !strings.EqualFold(field.old.ValueString(), field.next.ValueString()) {
+			return nil, fmt.Errorf("%s cannot be modified in place", field.name)
+		}
+	}
+	if !sameClusterZones(state.Zones, plan.Zones) {
+		return nil, errors.New("zones cannot be modified in place")
+	}
+
+	operations := make([]string, 0, 4)
+	if clusterOperationNeeded(OperationStartCluster, state, plan) {
+		operations = append(operations, OperationStartCluster)
+	}
+	if clusterOperationNeeded(OperationModifyInstanceSpec, state, plan) {
+		operations = append(operations, OperationModifyInstanceSpec)
+	}
+	if clusterOperationNeeded(OperationModifyNodeNum, state, plan) {
+		operations = append(operations, OperationModifyNodeNum)
+	}
+	if clusterOperationNeeded(OperationModifyInstanceName, state, plan) {
+		operations = append(operations, OperationModifyInstanceName)
+	}
+	if clusterOperationNeeded(OperationStopCluster, state, plan) {
+		operations = append(operations, OperationStopCluster)
+	}
+	return operations, nil
 }
 
 func (r *clusterResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	tflog.Debug(ctx, "Update cluster is called")
+	if r.provider == nil || !r.provider.configured {
+		addConfigureProviderErr(&resp.Diagnostics)
+		return
+	}
 
 	var plan model.Cluster
 	diags := req.Plan.Get(ctx, &plan)
@@ -437,7 +490,7 @@ func (r *clusterResource) Update(ctx context.Context, req resource.UpdateRequest
 		return
 	}
 
-	operation, err := getClusterOperation(ctx, &state, &plan)
+	operations, err := getClusterOperations(&state, &plan)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Update is not supported",
@@ -445,128 +498,49 @@ func (r *clusterResource) Update(ctx context.Context, req resource.UpdateRequest
 		return
 	}
 
-	tflog.Debug(ctx, fmt.Sprintf("Got operation: %s", operation))
-
 	client := r.provider.clientGenerator.GetClient()
-	switch operation {
-	case OperationModifyNodeNum:
-		tflog.Info(ctx, "Modify cluster node_num")
-		result, response, err := client.MultiCloudOpenAPI.ModifyInstanceNodeNum(ctx, plan.Id.ValueString()).Body(obcloudsdk.MultiCloudModifyInstanceNodeNumRequest{
-			NodeNum: plan.NodeNum.ValueInt32(),
-		}).RequestId("").Execute()
-		api.LogAPIResult(ctx, result, response, err)
-		if err != nil || response.StatusCode != http.StatusOK || !(*result.Success) {
-			tflog.Error(ctx, "Modify cluster node_num failed")
-			resp.Diagnostics.AddError(
-				"Modify cluster node_num failed",
-				fmt.Sprintf("Got error when update cluster node_num err: %v, response: %v", err, response))
-			return
+	for _, operation := range operations {
+		// A preceding operation may already have brought this field to its target.
+		if !clusterOperationNeeded(operation, &state, &plan) {
+			continue
 		}
-	case OperationModifyInstanceSpec:
-		tflog.Info(ctx, "Modify cluster instance spec")
-		result, response, err := client.MultiCloudOpenAPI.ModifyInstanceSpec(ctx, plan.Id.ValueString()).Body(obcloudsdk.MultiCloudModifyInstanceSpecRequest{
-			InstanceClass: plan.InstanceClass.ValueStringPointer(),
-			DiskSize:      plan.DiskSize.ValueInt32Pointer(),
-		}).RequestId("").Execute()
-		api.LogAPIResult(ctx, result, response, err)
-		if err != nil || response.StatusCode != http.StatusOK || !(*result.Success) {
-			tflog.Error(ctx, "Modify cluster spec failed")
-			resp.Diagnostics.AddError(
-				"Modify cluster spec failed",
-				fmt.Sprintf("Got error when update cluster spec err: %v, response: %v", err, response))
-			return
-		}
-	case OperationModifyInstanceName:
-		tflog.Info(ctx, "Modify cluster instance name")
-		result, response, err := client.MultiCloudOpenAPI.ModifyInstanceName(ctx, plan.Id.ValueString()).Body(obcloudsdk.ModifyInstanceNameRequestV2{
-			InstanceName: plan.Name.ValueStringPointer(),
-		}).RequestId("").Execute()
-		api.LogAPIResult(ctx, result, response, err)
-		if err != nil || response.StatusCode != http.StatusOK || !(*result.Success) {
-			tflog.Error(ctx, "Modify cluster name failed")
-			resp.Diagnostics.AddError(
-				"Modify cluster name failed",
-				fmt.Sprintf("Got error when modify cluster name err: %v, response: %v", err, response))
-			return
-		}
-		state.Name = plan.Name
-	case OperationStartCluster:
-		tflog.Info(ctx, "Start cluster")
-		result, response, err := client.MultiCloudOpenAPI.StartCluster(ctx, plan.Id.ValueString()).RequestId("").Execute()
-		api.LogAPIResult(ctx, result, response, err)
-		if err != nil || response.StatusCode != http.StatusOK || !(*result.Success) {
-			tflog.Error(ctx, "Start cluster spec failed")
-			resp.Diagnostics.AddError(
-				"Start cluster failed",
-				fmt.Sprintf("Got error when start cluster err: %v, response: %v", err, response))
-			return
-		}
-	case OperationStopCluster:
-		tflog.Info(ctx, "Stop cluster")
-		result, response, err := client.MultiCloudOpenAPI.StopCluster(ctx, plan.Id.ValueString()).RequestId("").Execute()
-		api.LogAPIResult(ctx, result, response, err)
-		if err != nil || response.StatusCode != http.StatusOK || !(*result.Success) {
-			tflog.Error(ctx, "Stop cluster spec failed")
-			resp.Diagnostics.AddError(
-				"Stop cluster failed",
-				fmt.Sprintf("Got error when stop cluster err: %v, response: %v", err, response))
-			return
-		}
-	case OperationNothing:
-		tflog.Info(ctx, "Nothing to do")
-	default:
-		tflog.Info(ctx, "Unsupported operation")
-	}
-
-	if isAsyncOperation(operation) {
-		timeoutDuration := DefaultClusterModifyTimeout
-		envTimeoutSeconds := os.Getenv(EnvClusterModifyTimeoutSeconds)
-		if envTimeoutSeconds != "" {
-			timeoutSeconds, err := strconv.ParseInt(envTimeoutSeconds, 10, 64)
-			if err == nil {
-				timeoutDuration = time.Duration(timeoutSeconds) * time.Second
+		tflog.Info(ctx, fmt.Sprintf("Apply cluster operation: %s", operation))
+		if err := applyClusterOperation(ctx, client, state.Id.ValueString(), &plan, operation); err != nil {
+			// An error response can be ambiguous. Retain the result only if a read
+			// confirms that this operation actually reached its target.
+			current := state
+			if refreshCluster(ctx, &current, client) == nil && clusterUpdateComplete(operation, &current, &plan) {
+				state = current
 			}
-		}
-
-		tflog.Info(ctx, "Wait cluster turned into operating")
-		err = retry.RetryContext(ctx, timeoutDuration,
-			waitForClusterReadyFunc(ctx, &state, client, isClusterNotOnline))
-		if err != nil {
-			resp.Diagnostics.AddError(
-				"Cluster operation failed after timeout",
-				fmt.Sprintf("Cluster is not turned into operating after timed out: %v", err),
-			)
+			resp.Diagnostics.Append(resp.State.Set(ctx, state)...)
+			resp.Diagnostics.AddError("Cluster update failed", fmt.Sprintf("Operation %s failed: %v", operation, err))
 			return
 		}
-		tflog.Info(ctx, "Cluster already turned into operating")
-
-		tflog.Info(ctx, "Wait cluster turned into target status")
-		validateFunction := isClusterOnline
-		if operation == OperationStopCluster {
-			validateFunction = isClusterStopped
-		}
-		err = retry.RetryContext(ctx, timeoutDuration,
-			waitForClusterReadyFunc(ctx, &state, client, validateFunction))
-		if err != nil {
-			resp.Diagnostics.AddError(
-				"Cluster operation failed after timeout",
-				fmt.Sprintf("Cluster is not ready after timed out: %v", err),
-			)
+		if err := waitForClusterUpdate(ctx, &state, &plan, operation, client, operationTimeout(EnvClusterModifyTimeoutSeconds, DefaultClusterModifyTimeout)); err != nil {
+			resp.Diagnostics.Append(resp.State.Set(ctx, state)...)
+			resp.Diagnostics.AddError("Cluster update not confirmed", fmt.Sprintf("Operation %s did not reach its target: %v", operation, err))
 			return
 		}
-		tflog.Info(ctx, "Cluster already turned into online")
 	}
 
+	for _, field := range []struct {
+		current *types.String
+		next    types.String
+	}{{&state.PaymentType, plan.PaymentType}, {&state.DiskType, plan.DiskType}, {&state.StorageArchitecture, plan.StorageArchitecture}} {
+		if !field.next.IsNull() && !field.next.IsUnknown() && strings.EqualFold(field.current.ValueString(), field.next.ValueString()) {
+			*field.current = field.next
+		}
+	}
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 }
 
-func isAsyncOperation(operation string) bool {
-	return (operation != OperationNothing && operation != OperationModifyInstanceName)
-}
-
 func (r *clusterResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	tflog.Debug(ctx, "Delete cluster is called")
+	if r.provider == nil || !r.provider.configured {
+		addConfigureProviderErr(&resp.Diagnostics)
+		return
+	}
 	var cluster model.ClusterResource
 	diags := req.State.Get(ctx, &cluster)
 	resp.Diagnostics.Append(diags...)
@@ -583,18 +557,37 @@ func (r *clusterResource) Delete(ctx context.Context, req resource.DeleteRequest
 	}
 
 	client := r.provider.clientGenerator.GetClient()
+	if err := refreshCluster(ctx, &cluster.Cluster, client); errors.Is(err, errResourceNotFound) {
+		resp.State.RemoveResource(ctx)
+		return
+	} else if err != nil {
+		resp.Diagnostics.AddError("Cannot verify cluster before deletion", err.Error())
+		return
+	}
+	if cluster.ProjectId.IsNull() || cluster.ProjectId.IsUnknown() || cluster.ProjectId.ValueString() == "" {
+		resp.Diagnostics.AddError("Cannot verify cluster before deletion", "A project ID is required to confirm cluster deletion")
+		return
+	}
 
 	deleteInstanceRequest := obcloudsdk.NewDeleteInstanceOpenRequestWithDefaults()
 	deleteInstanceRequest.SetInstanceId(cluster.Id.ValueString())
 	result, response, err := client.MultiCloudOpenAPI.DeleteInstance(ctx).Body(*deleteInstanceRequest).RequestId("").Execute()
 	api.LogAPIResult(ctx, result, response, err)
-	if err != nil || response.StatusCode != http.StatusOK || !(*result.Success) {
+	if err != nil || response == nil || response.StatusCode != http.StatusOK || !result.GetSuccess() {
 		resp.Diagnostics.AddError(
 			"Failed to delete cluster",
 			fmt.Sprintf("Unexpected error while delete cluster: %v, response: %v", err, response))
 		return
 	}
 
+	err = waitForRemoval(ctx, operationTimeout(EnvClusterDeleteTimeoutSeconds, DefaultClusterModifyTimeout), func(ctx context.Context) error {
+		_, err := findClusterInProject(ctx, client, cluster.ProjectId.ValueString(), cluster.Id.ValueString())
+		return err
+	})
+	if err != nil {
+		resp.Diagnostics.AddError("Cluster deletion not confirmed", fmt.Sprintf("Cluster %s deletion was accepted but its absence was not confirmed: %v", cluster.Id.ValueString(), err))
+		return
+	}
 	resp.State.RemoveResource(ctx)
 }
 
@@ -606,10 +599,6 @@ func (r *clusterResource) ImportState(ctx context.Context, req resource.ImportSt
 func isClusterStopped(cluster *model.Cluster) bool {
 	tflog.Debug(context.Background(), fmt.Sprintf("Cluster status when validate: %s", cluster.Status.ValueString()))
 	return cluster.IsStopped.ValueBool()
-}
-
-func isClusterNotOnline(cluster *model.Cluster) bool {
-	return !isClusterOnline(cluster)
 }
 
 func isClusterOnline(cluster *model.Cluster) bool {
