@@ -1,6 +1,6 @@
 site       = "CHINA"
-cluster_id = "<目标环境中已有的实例 ID>"
-tenant_id  = "<该实例下已有的租户 ID>"
+cluster_id = "REPLACE_WITH_INSTANCE_ID"
+tenant_id  = "REPLACE_WITH_TENANT_ID"
 
 # 只填写需要查询且已经存在的对象；留空表示跳过。
 database_name       = ""
