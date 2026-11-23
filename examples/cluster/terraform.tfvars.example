@@ -1,0 +1,11 @@
+site           = "CHINA"
+project_id     = "REPLACE_WITH_PROJECT_ID"
+instance_name  = "tf_example_cluster"
+region         = "REPLACE_WITH_REGION_ID"
+zones          = ["REPLACE_WITH_ZONE_1", "REPLACE_WITH_ZONE_2"]
+instance_class = "REPLACE_WITH_INSTANCE_CLASS"
+ob_version     = "REPLACE_WITH_DATABASE_VERSION"
+disk_size      = 50
+replica_mode   = "2"
+node_num       = 3
+payment_type   = "PostPay"

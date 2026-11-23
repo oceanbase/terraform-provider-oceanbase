@@ -2,28 +2,69 @@ terraform {
   required_providers {
     oceanbase = {
       source  = "oceanbase.github.io/oceanbase/oceanbase"
+      version = ">= 1.1.0, < 2.0.0"
     }
   }
 }
 
+variable "oceanbase_access_key" {
+  type      = string
+  sensitive = true
+}
+
+variable "oceanbase_secret_key" {
+  type      = string
+  sensitive = true
+}
+
+variable "site" {
+  type    = string
+  default = "CHINA"
+}
+
 provider "oceanbase" {
-  access_key  = "mock_access_key"
-  secret_key = "mock_secret_key"
-  site = "MOCK"
+  access_key = var.oceanbase_access_key
+  secret_key = var.oceanbase_secret_key
+  site       = var.site
 }
 
-resource "oceanbase_cluster" "obins" {
+variable "project_id" { type = string }
+variable "instance_name" { type = string }
+variable "region" { type = string }
+variable "zones" { type = set(string) }
+variable "instance_class" { type = string }
+variable "ob_version" { type = string }
+variable "disk_size" {
+  type    = number
+  default = 50
+}
+variable "replica_mode" {
+  type    = string
+  default = "2"
+}
+variable "node_num" {
+  type    = number
+  default = 3
+}
+variable "payment_type" {
+  type    = string
+  default = "PostPay"
+}
+
+# Choose values supported by the target project and region.
+resource "oceanbase_cluster" "example" {
+  project_id     = var.project_id
+  name           = var.instance_name
   cloud_provider = "ALIYUN"
-  instance_class = "4C16G"
-  version = "4.2.3"
-  region = "cn-shanghai"
-  zones = ["cn-shanghai-e", "cn-shanghai-f", "cn-shanghai-g"]
-  instance_type = "CLUSTER"
-  disk_size = 100
-  replica_mode = 3
-  node_num = 3
+  region         = var.region
+  zones          = var.zones
+  instance_class = var.instance_class
+  version        = var.ob_version
+  disk_size      = var.disk_size
+  replica_mode   = var.replica_mode
+  instance_type  = "CLUSTER"
+  node_num       = var.node_num
+  payment_type   = var.payment_type
 }
 
-output "cluster_output" {
-  value = resource.oceanbase_cluster.obins
-}
+output "cluster_id" { value = oceanbase_cluster.example.id }

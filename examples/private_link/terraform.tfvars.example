@@ -1,0 +1,21 @@
+# Replace these values with resources in your own accounts.
+oceanbase_site     = "CHINA"
+project_id         = "REPLACE_WITH_OCEANBASE_PROJECT_ID"
+cluster_id         = "REPLACE_WITH_OCEANBASE_INSTANCE_ID"
+tenant_id          = "REPLACE_WITH_OCEANBASE_TENANT_ID"
+user_account       = "REPLACE_WITH_ALIBABA_CLOUD_ACCOUNT_ID"
+region             = "REPLACE_WITH_ALIBABA_CLOUD_REGION"
+vpc_id             = "REPLACE_WITH_VPC_ID"
+vswitch_id         = "REPLACE_WITH_VSWITCH_ID"
+zone_id            = "REPLACE_WITH_VSWITCH_ZONE_ID"
+security_group_ids = ["REPLACE_WITH_SECURITY_GROUP_ID"]
+
+# Replace the null assignment with the object below if a new ODP is required.
+proxy_setting = null
+# proxy_setting = {
+#   mode                    = "REPLACE_WITH_SUPPORTED_MODE"
+#   deployment_architecture = "REPLACE_WITH_SUPPORTED_ARCHITECTURE"
+#   zone                    = ["REPLACE_WITH_ZONE_ID"]
+#   slave_zone              = []
+#   node_cpu                = 1
+# }

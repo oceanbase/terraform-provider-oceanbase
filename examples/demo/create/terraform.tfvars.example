@@ -1,14 +1,14 @@
 # 复制为目标环境的 .tfvars 文件，并按目标环境的产品规格修改。
 # OpenAPI 地址由 TF_OCEANBASE_API_HOST_CHINA/GLOBAL 环境变量控制，不写在这里。
 site       = "CHINA"
-project_id = "<目标环境的 OceanBase 项目 ID>"
+project_id = "REPLACE_WITH_PROJECT_ID"
 
 instance_name        = "tf_demo_cluster"
 cloud_provider       = "ALIYUN"
-region               = "cn-hangzhou"
-zones                = ["cn-hangzhou-j", "cn-hangzhou-k"]
-instance_class       = "4C16G"
-ob_version           = "4.4.2"
+region               = "REPLACE_WITH_REGION_ID"
+zones                = ["REPLACE_WITH_ZONE_1", "REPLACE_WITH_ZONE_2"]
+instance_class       = "REPLACE_WITH_INSTANCE_CLASS"
+ob_version           = "REPLACE_WITH_DATABASE_VERSION"
 disk_size            = 50
 disk_type            = null
 node_num             = 3
@@ -19,7 +19,7 @@ sale_channel         = "domestic"
 
 tenant_name        = "tf_demo_tenant"
 tenant_mode        = "MySQL"
-primary_zone       = "cn-hangzhou-j"
+primary_zone       = "REPLACE_WITH_ZONE_1"
 tenant_charset     = "utf8mb4"
 tenant_timezone    = "Asia/Shanghai"
 tenant_unit_num    = 1
@@ -42,5 +42,5 @@ database_user_role   = "readwrite"
 enable_private_link        = false
 private_link_user_account  = ""
 private_link_endpoint_id   = ""
-# 需要同时创建商业化 ODP 时配置对象，参考演示手册第 7 步。
+# 需要同时创建商业化 ODP 时，参考 examples/private_link 的配置模板。
 private_link_proxy_setting = null
